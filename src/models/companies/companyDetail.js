@@ -2,51 +2,38 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const schema = new Schema({
-    company_id:{
-        type:Schema.Types.ObjectId,
-        required:true,
-        alias:"companyId"
-    },
-    company_type:{
-        type:String,//"registered company", "individual"
-        required:true,
-        alias:"companyType"
-    },
-    company_name:{
+    companyId:{
         type:String,
-        alias:"companyName"
+        required:true,
     },
-    pan_no:{
+    companyType:{
+        type:String,
+        required:true,
+        enum:["business", "individual"]
+    },
+    companyName:{
+        type:String,
+        required:true,
+    },
+    panNo:{
         type:Number,//9 digit
-        alias:"panNo"
     },
     address:{
-        provinces:String,
+        province:String,
         district:String,
         city:String,
-        ward_no:{
-            type:String,
-            alias:"wardNo"
-        },
+        wardNo:String,
         street:String
     },
-    contact_name:{
-        first_name:{
-            type:String,
-            alias:"firstName"
-        },
-        last_name:{
-            type:String,
-            alias:"lastName"
-        },
-        alias:"contactName"
+    contactName:{
+        firstName:String,
+        lastName:String,
     },
-    contact_no:{
+    contactNo:{
         type:String,
-        alias:"contactNo"
     },
 },{
-    collection:"company_detail"
+    collection:"companyDetails"
 });
 
 class HelperClass{
@@ -62,11 +49,9 @@ class HelperClass{
     static deleteCompanyDetailById(id, session){
         return this.deleteOne({ _id:id }, { session:session });
     }
-    
-    //new
     static findCompanyDetailByRef(ref, id, session){
         switch(ref){
-            case "company-id": return this.find({company_id:id},{ session:session });
+            case "companyId": return this.find({companyId:id},{ session:session });
             default: return this.find({},{ session:session });
         }
     }

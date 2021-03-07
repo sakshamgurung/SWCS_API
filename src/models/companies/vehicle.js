@@ -2,52 +2,57 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const schema = new Schema({
-    company_id:{
-        type:Schema.Types.ObjectId,
-        required:true,
-        alias:"companyId"
-    },
-    brand_name:{
+    companyId:{
         type:String,
         required:true,
-        alias:"brandName"
     },
-    modal_no:{
-        type:String,
-        alias:"modalNo"
+    isReserved:{
+        type:Boolean,
+        required:true,
     },
-    plate_no:{
+    brandName:{
         type:String,
         required:true,
-        alias:"plateNo"
     },
-    vehicle_type:{
+    modalNo:{
+        type:String,
+    },
+    plateNo:{
         type:String,
         required:true,
-        alias:"vehicleType"
     },
-    vehicle_color:{
+    vehicleType:{
         type:String,
-        alias:"vehicleColor"
+        required:true,
+        enum:["light", "medium", "heavy"]
     },
-    fuel_capacity:{
+    vehicleColor:{
+        type:String,
+    },
+    fuelCapacity:{
         type:Number,
-        alias:"fuelCapacity"
     },
-    waste_capacity:{
+    fuelCapacityUnit:{
         type:String,
-        alias:"wasteCapacity"
+        enum:["litre"]
+    },
+    wasteCapacity:{
+        type:Number,
+    },
+    wasteCapacityUnit:{
+        type:String,
+        enum:["kg","litre","metric cube"]
     },
     description:{
         type:String
     }
 },{
-    collection:"vehicle"
+    collection:"vehicles"
 });
 
 class HelperClass{
     static findAllVehicle(companyId, session){
-        return this.find({ company_id:companyId },{ session:session });
+        return this.find({ companyId:companyId },{ session:session });
     }
     static findVehicleById(id, session){
         return this.find({ _id:id },{ session:session });

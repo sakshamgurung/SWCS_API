@@ -3,12 +3,11 @@ const {StaffGroupServices} = require("../service/staffGroupServices");
 class StaffGroupController{
     async createNewStaffGroup(request, response, next){
         try {
-            const companyId = request.params.id;
             const { body } = request;
-            body = {companyId, ...body};
             
             const staffGroupServices = new StaffGroupServices();
             const result = staffGroupServices.createNewStaffGroup(body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -22,6 +21,7 @@ class StaffGroupController{
 
             const staffGroupServices = new StaffGroupServices();
             const result = await staffGroupServices.getAllStaffGroup(companyId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -31,10 +31,11 @@ class StaffGroupController{
 
     async getStaffGroupById(request, response, next){
         try{
-            const id = request.params.id;
+            const staffGroupId = request.params.id;
 
             const staffGroupServices = new StaffGroupServices();
-            const result = await staffGroupServices.getStaffGroupById(id);
+            const result = await staffGroupServices.getStaffGroupById(staffGroupId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -44,11 +45,12 @@ class StaffGroupController{
 
     async updateStaffGroupById(request, response, next){
         try{
-            const id = request.params.id;
-            const updateData = request.body;
+            const staffGroupId = request.params.id;
+            const {body} = request.body;
 
             const staffGroupServices = new StaffGroupServices();
-            const result = await staffGroupServices.updateStaffGroupById(id, updateData);
+            const result = await staffGroupServices.updateStaffGroupById(staffGroupId, body);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -58,10 +60,11 @@ class StaffGroupController{
 
     async deleteStaffGroupById(request, response, next){
         try {
-            const id = request.params.id;
+            const staffGroupId = request.params.id;
 
             const staffGroupServices = new StaffGroupServices();
-            const result = await staffGroupServices.deleteStaffGroupById(id);
+            const result = await staffGroupServices.deleteStaffGroupById(staffGroupId);
+            
             response.json(result);
         } catch (error) {
             console.error(error.message);

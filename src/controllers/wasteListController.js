@@ -3,12 +3,11 @@ const {WasteListServices} = require("../service/wasteListServices");
 class WasteListController{
     async createNewWasteList(request, response, next){
         try {
-            const companyId = request.params.id;
             const { body } = request;
-            body = {companyId, ...body};
 
             const wasteListServices = new WasteListServices();
             const result = wasteListServices.createNewWasteList(body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -22,6 +21,7 @@ class WasteListController{
 
             const wasteListServices = new WasteListServices();
             const result = await wasteListServices.getAllWasteList(companyId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -31,10 +31,11 @@ class WasteListController{
 
     async getWasteListById(request, response, next){
         try{
-            const id = request.params.id;
+            const wasteListId = request.params.id;
 
             const wasteListServices = new WasteListServices();
-            const result = await wasteListServices.getWasteListById(id);
+            const result = await wasteListServices.getWasteListById(wasteListId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -44,11 +45,12 @@ class WasteListController{
 
     async updateWasteListById(request, response, next){
         try{
-            const id = request.params.id;
-            const updateData = request.body;
+            const wasteListId = request.params.id;
+            const {body} = request;
 
             const wasteListServices = new WasteListServices();
-            const result = await wasteListServices.updateWasteListById(id, updateData);
+            const result = await wasteListServices.updateWasteListById(wasteListId, body);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -58,10 +60,11 @@ class WasteListController{
 
     async deleteWasteListById(request, response, next){
         try {
-            const id = request.params.id;
+            const wasteListId = request.params.id;
 
             const wasteListServices = new WasteListServices();
-            const result = await wasteListServices.deleteWasteListById(id);
+            const result = await wasteListServices.deleteWasteListById(wasteListId);
+            
             response.json(result);
         } catch (error) {
             console.error(error.message);

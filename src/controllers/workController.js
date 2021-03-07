@@ -3,12 +3,11 @@ const {WorkServices} = require("../service/workServices");
 class WorkController{
     async createNewWork(request, response, next){
         try {
-            const companyId = request.params.id;
             const { body } = request;
-            body = {companyId, ...body};
             
             const workServices = new WorkServices();
             const result = workServices.createNewWork(body);
+            
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -23,6 +22,7 @@ class WorkController{
 
             const workServices = new WorkServices();
             const result = await workServices.getAllWork(role, id, idArray);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -32,10 +32,11 @@ class WorkController{
 
     async getWorkById(request, response, next){
         try{
-            const id = request.params.id;
+            const workId = request.params.id;
 
             const workServices = new WorkServices();
-            const result = await workServices.getWorkById(id);
+            const result = await workServices.getWorkById(workId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -45,11 +46,12 @@ class WorkController{
 
     async updateWorkById(request, response, next){
         try{
-            const id = request.params.id;
-            const updateData = request.body;
+            const workId = request.params.id;
+            const {body} = request;
 
             const workServices = new WorkServices();
-            const result = await workServices.updateWorkById(id, updateData);
+            const result = await workServices.updateWorkById(workId, body);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -59,10 +61,12 @@ class WorkController{
 
     async deleteWorkById(request, response, next){
         try {
-            const id = request.params.id;
-
+            const workId = request.params.id;
+            const {body} = request;
+            
             const workServices = new WorkServices();
-            const result = await workServices.deleteWorkById(id);
+            const result = await workServices.deleteWorkById(workId, body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);

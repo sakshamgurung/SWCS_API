@@ -8,6 +8,7 @@ class SubscriptionController{
             
             const subscriptionServices = new SubscriptionServices();
             const result = subscriptionServices.createNewSubscription(body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -21,6 +22,7 @@ class SubscriptionController{
 
             const subscriptionServices = new SubscriptionServices();
             const result = await subscriptionServices.getAllSubscription(customerId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -34,6 +36,7 @@ class SubscriptionController{
 
             const subscriptionServices = new SubscriptionServices();
             const result = await subscriptionServices.getAllSubscriber(companyId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -43,10 +46,12 @@ class SubscriptionController{
     //for customer
     async deleteSubscriptionById(request, response, next){
         try {
-            const id = request.params.id;
+            const subscriptionId = request.params.id;
+            const {body} = request;
 
             const subscriptionServices = new SubscriptionServices();
-            const result = await subscriptionServices.deleteSubscriptionById(id);
+            const result = await subscriptionServices.deleteSubscriptionById(subscriptionId, body);
+            
             response.json(result);
         } catch (error) {
             console.error(error.message);

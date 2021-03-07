@@ -6,20 +6,18 @@ const schema = new Schema({
         type:String,
         required:true
     },
-    waste_type:{
+    wasteType:{
         type:String,
         required:true,
-        alias:"wasteType"
     },
-    waste_name:{
+    wasteName:{
         type:String,
-        alias:"wasteName"
     },
     description:{
         type:String
     }
 },{
-    collection:"waste_catalog"
+    collection:"wasteCatalogs"
 });
 
 class HelperClass{

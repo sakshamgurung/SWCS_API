@@ -7,6 +7,7 @@ class WasteCatalogController{
             
             const wasteCatalogServices = new WasteCatalogServices();
             const result = wasteCatalogServices.createNewWasteCatalog(body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -18,6 +19,7 @@ class WasteCatalogController{
         try{
             const wasteCatalogServices = new WasteCatalogServices();
             const result = await wasteCatalogServices.getAllWasteCatalog();
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -31,6 +33,7 @@ class WasteCatalogController{
             
             const wasteCatalogServices = new WasteCatalogServices();
             const result = await wasteCatalogServices.getWasteCatalogById(id);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -45,6 +48,7 @@ class WasteCatalogController{
 
             const wasteCatalogServices = new WasteCatalogServices();
             const result = await wasteCatalogServices.updateWasteCatalogById(id, updateData);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -55,9 +59,11 @@ class WasteCatalogController{
     async deleteWasteCatalogById(request, response, next){
         try {
             const id = request.params.id;
+            const {body} = request;
 
             const wasteCatalogServices = new WasteCatalogServices();
-            const result = await wasteCatalogServices.deleteWasteCatalogById(id);
+            const result = await wasteCatalogServices.deleteWasteCatalogById(id, body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);

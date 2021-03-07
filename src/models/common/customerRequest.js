@@ -3,65 +3,61 @@ const Schema = mongoose.Schema;
 const ApiError = require('../../error/ApiError');
 
 const schema = new Schema({
-    company_id:{
+    companyId:{
         type:String,
         required:true,
-        alias:"companyId"
     },
-    customer_id:{
+    customerId:{
         type:String,
         required:true,
-        alias:"customerId"
     },
-    request_type:{
+    requestType:{
         type:String,
         required:true,
-        alias:"requestType"
+        enum:["subscription", "subscription with location", "one time"]
     },
-    request_coordinate:{
+    pointName:{
+        type:String,
+    },
+    pointDescription:{
+        type:String
+    },
+    requestCoordinate:{
         type:{latitude:Number, longitude:Number},
-        alias:"requestCoordinate"
     },
-    description:{
-        date:Schema.Types.Date,
-        work_desc:{
-            type:String,
-            alias:"workDesc"
-        }
-    },
-    staff_id:{
-        type:[String],
-        alias:"staffId"
-    },
-    staff_group_id:{
-        type:[String],
-        alias:"staffGroupId"
-    },
-    vehicle_id:{
+    workDescription:{
         type:String,
-        alias:"vehicleId"
     },
-    work_status:{
+    date:{
+        type:Schema.Types.Date
+    },
+    time:{
+        type:Schema.Types.Date
+    },
+    wasteDescription:{
+        type:[ { wasteListId:String, amount:Number, amountUnit:String } ],//"litre", "kg","bora"
+    },
+    staffGroupId:{
+        type:[String],
+    },
+    vehicleId:{
         type:String,
-        alias:"workStatus",
-        enum:["unconfirmed","confirmed","on progress","finished"]
+    },
+    requestStatus:{
+        type:String,
+        enum:["pending","confirmed","finished"]
     }
 },{
-    collection:"customer_request"
+    collection:"customerRequests"
 });
 
 class HelperClass{
     static findAllCustomerRequest(role, id, idArray, session){
         switch(role){
-            case "company": return this.find({company_id:id},{ session:session }); 
-            case "staff": return this.find({
-                $or:[
-                    { staff_id:{ $in: idArray.staffId} },
-                    { staff_group_id:{ $in: idArray.staffGroupId} } 
-                ]
-            },{ session:session });
-            case "customer":
-            default : return this.find({customer_id:id},{ session:session });
+            case "company": return this.find({companyId:id},{ session:session }); 
+            case "customer": return this.find({customerId:id},{ session:session });
+            case "staff": return this.find({staffGroupId:{ $in: idArray}},{ session:session });
+            default : throw ApiError.badRequest("role not defined");
         }
     }
     static findCustomerRequestById(id, session){
@@ -73,36 +69,30 @@ class HelperClass{
     static deleteCustomerRequestById(id, session){
         return this.deleteOne({ _id:id }, { session:session });
     }
-    //new
     static findCustomerRequestByRef(ref, id, session){
         switch(ref){
-            case "company-id": return this.find({company_id:id},{ session:session });
-            case "customer-id": return this.find({customer_id:id},{ session:session });
-            case "staff-id": return this.find({staff_id:id},{ session:session });
-            case "staff-group-id": return this.find({staff_group_id:id},{ session:session });
-            case "vehicle-id": return this.find({vehicle_id:id},{ session:session });
+            case "companyId": return this.find({companyId:id},{ session:session });
+            case "customerId": return this.find({customerId:id},{ session:session });
+            case "staffGroupId": return this.find({staffGroupId:id},{ session:session });
+            case "vehicleId": return this.find({vehicleId:id},{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
-    //new
     static updateCustomerRequestByRef(ref, id, updateData, session){
         switch(ref){
-            case "company-id": return this.updateMany({company_id:id},this.translateAliases( updateData ),{ session:session });
-            case "customer-id": return this.updateMany({customer_id:id},this.translateAliases( updateData ),{ session:session });
-            case "staff-id": return this.updateMany({staff_id:id},this.translateAliases( updateData ),{ session:session });
-            case "staff-group-id": return this.updateMany({staff_group_id:id},this.translateAliases( updateData ),{ session:session });
-            case "vehicle-id": return this.updateMany({vehicle_id:id},this.translateAliases( updateData ),{ session:session });
+            case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ),{ session:session });
+            case "customerId": return this.updateMany({customerId:id},this.translateAliases( updateData ),{ session:session });
+            case "staffGroupId": return this.updateMany({staffGroupId:id},this.translateAliases( updateData ),{ session:session });
+            case "vehicleId": return this.updateMany({vehicleId:id},this.translateAliases( updateData ),{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
-    //new
     static deleteCustomerRequestByRef(ref, id, session){
         switch(ref){
-            case "company-id": return this.deleteMany({company_id:id},{ session:session });
-            case "customer-id": return this.deleteMany({customer_id:id},{ session:session });
-            case "staff-id": return this.deleteMany({staff_id:id},{ session:session });
-            case "staff-group-id": return this.deleteMany({staff_group_id:id},{ session:session });
-            case "vehicle-id": return this.deleteMany({vehicle_id:id},{ session:session });
+            case "companyId": return this.deleteMany({companyId:id},{ session:session });
+            case "customerId": return this.deleteMany({customerId:id},{ session:session });
+            case "staffGroupId": return this.deleteMany({staffGroupId:id},{ session:session });
+            case "vehicleId": return this.deleteMany({vehicleId:id},{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }

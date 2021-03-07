@@ -18,7 +18,7 @@ const handleValidationErrorDB = (err) => {
     return ApiError.badRequest(message);
 };
 
-export {
+module.exports  = {
     handleCastErrorDB,
     handleDuplicateFieldsDB,
     handleValidationErrorDB

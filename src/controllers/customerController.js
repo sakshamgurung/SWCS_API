@@ -1,11 +1,13 @@
 const {CustomerServices} = require("../service/customerServices");
 
 class CustomerController{
-    async createNewCustomer(request, response, next){
+    async newCustomerInfo(request, response, next){
         try {
-            const { body } = request;
+            const { customerDetail } = request.body;
+
             const customerServices = new CustomerServices();
-            const result = customerServices.createNewCustomer(body);
+            const result = customerServices.newCustomerInfo(customerDetail);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -15,16 +17,11 @@ class CustomerController{
 
     async  getAllCustomerInIdArray(request, response, next){
         try{
-            const { body } = request;
+            const { idArray } = request.body;
             const customerInfoType = request.params.type;
-            const result = undefined;
-
+            
             const customerServices = new CustomerServices();
-            if(customerInfoType == "customer"){
-                result = await customerServices.getAllCustomerInIdArray(body);
-            }else if(customerInfoType == "customer-detail"){
-                result = await customerServices.getAllCustomerDetailInIdArray(body);
-            }
+            const result = await customerServices.getAllCustomerInIdArray(customerInfoType, idArray);
 
             response.json(result);
         }catch(error){
@@ -36,15 +33,10 @@ class CustomerController{
     async  getCustomerById(request, response, next){
         try{
             const customerInfoType = request.params.type;
-            const id = request.params.id;
-            const result = undefined;
-
+            const customerId = request.params.id;
+            
             const customerServices = new CustomerServices();
-            if(customerInfoType == "customer"){
-                result = await customerServices.getCustomerById(id);
-            }else if(customerInfoType == "customer-detail"){
-                result = await customerServices.getCustomerDetailById(id);
-            }
+            const result = await customerServices.getCustomerById(customerInfoType, customerId);
 
             response.json(result);
         }catch(error){
@@ -56,24 +48,11 @@ class CustomerController{
     async updateCustomerById(request, response, next){
         try{
             const customerInfoType = request.params.type;
-            const id = request.params.id;
-            const result = undefined;
-            const updateData = request.body;
-
+            const customerId = request.params.id;
+            const {body} = request;
+            
             const customerServices = new CustomerServices();
-            switch(customerInfoType){
-                case "customer": {
-                    result = await customerServices.updateCustomerById(id, updateData);
-                    break;
-                }
-                case "customer-detail": {
-                    result = await customerServices.updateCustomerDetailById(id, updateData);
-                    break;
-                }
-                default:{
-                    throw new Error("customerInfoType not found!!!");
-                }
-            }
+            const result = await customerServices.updateCustomerById(customerInfoType, customerId, body);
 
             response.json(result);
         }catch(error){
@@ -84,11 +63,12 @@ class CustomerController{
 
     async deleteCustomerById(request, response, next){
         try {
-            const id = request.params.id;
-            const updateData = request.body;
+            const customerId = request.params.id;
+            const {body} = request;
 
             const customerServices = new CustomerServices();
-            const result = await customerServices.deleteCustomerById(id, updateData);
+            const result = await customerServices.deleteCustomerById(customerId, body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);

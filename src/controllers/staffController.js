@@ -1,14 +1,13 @@
 const {StaffServices} = require("../service/staffServices");
 
 class StaffController{
-    async createNewStaff(request, response, next){
+    async newStaffInfo(request, response, next){
         try {
-            const companyId = request.params.id;
-            const { body } = request;
-            body = {companyId, ...body};
+            const { staffDetail } = request.body;
             
             const staffServices = new StaffServices();
-            const result = staffServices.createNewStaff(body);
+            const result = staffServices.newStaffInfo(staffDetail);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -20,14 +19,9 @@ class StaffController{
         try{
             const staffInfoType = request.params.type;
             const companyId = request.params.id;
-            const result = undefined;
-
+            
             const staffServices = new StaffServices();
-            if(staffInfoType == "staff"){
-                result = await staffServices.getAllStaff(companyId);
-            }else if(staffInfoType == "staff-detail"){
-                result = await staffServices.getAllStaffDetail(companyId);
-            }
+            const result = await staffServices.getAllStaff(staffInfoType, companyId);;
 
             response.json(result);
         }catch(error){
@@ -39,15 +33,10 @@ class StaffController{
     async  getStaffById(request, response, next){
         try{
             const staffInfoType = request.params.type;
-            const id = request.params.id;
-            const result = undefined;
-
+            const staffId = request.params.id;
+            
             const staffServices = new StaffServices();
-            if(staffInfoType == "staff"){
-                result = await staffServices.getStaffById(id);
-            }else if(staffInfoType == "staff-detail"){
-                result = await staffServices.getStaffDetailById(id);
-            }
+            const result = await staffServices.getStaffById(staffInfoType, staffId);;
 
             response.json(result);
         }catch(error){
@@ -59,24 +48,11 @@ class StaffController{
     async updateStaffById(request, response, next){
         try{
             const staffInfoType = request.params.type;
-            const id = request.params.id;
-            const result = undefined;
-            const updateData = request.body;
+            const staffId = request.params.id;
+            const {body} = request;
 
             const staffServices = new StaffServices();
-            switch(staffInfoType){
-                case "staff": {
-                    result = await staffServices.updateStaffById(id, updateData);
-                    break;
-                }
-                case "staff-detail": {
-                    result = await staffServices.updateStaffDetailById(id, updateData);
-                    break;
-                }
-                default:{
-                    throw new Error("staffInfoType not found!!!");
-                }
-            }
+            const result = await staffServices.updateStaffById(staffInfoType, staffId, body);
 
             response.json(result);
         }catch(error){
@@ -87,11 +63,11 @@ class StaffController{
 
     async deleteStaffById(request, response, next){
         try {
-            const id = request.params.id;
-            const updateData = request.body;
+            const staffId = request.params.id;
+            const {body} = request;
 
             const staffServices = new StaffServices();
-            const result = await staffServices.deleteStaffById(id, updateData);
+            const result = await staffServices.deleteStaffById(staffId, body);
             response.json(result);
         } catch (error) {
             console.error(error.message);

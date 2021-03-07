@@ -3,47 +3,34 @@ const Schema = mongoose.Schema;
 const ApiError = require('../../error/ApiError');
 
 const schema = new Schema({
-    customer_id:{
-        type:Schema.Types.ObjectId,
-        required:true,
-        alias:"customerId"
-    },
-    customer_type:{
+    customerId:{
         type:String,
         required:true,
-        alias:"customerType"
     },
-    business_name:{
+    customerType:{
         type:String,
-        alias:"businessName"
+        required:true,
+        enum:["business","individual"]
+    },
+    businessName:{
+        type:String,
     },
     address:{
-        provinces:String,
+        province:String,
         district:String,
         city:String,
-        ward_no:{
-            type:String,
-            alias:"wardNo"
-        },
+        wardNo:String,
         street:String
     },
-    contact_name:{
-        first_name:{
-            type:String,
-            alias:"firstName"
-        },
-        last_name:{
-            type:String,
-            alias:"lastName"
-        },
-        alias:"contactName"
+    contactName:{
+        firstName:String,
+        lastName:String,
     },
-    contact_no:{
+    contactNo:{
         type:String,
-        alias:"contactNo"
     },
 },{
-    collection:"customer_detail"
+    collection:"customerDetails"
 });
 
 class HelperClass{
@@ -59,10 +46,10 @@ class HelperClass{
     static deleteCustomerDetailById(id, session){
         return this.deleteOne({ _id:id }, { session:session });
     }
-    //new
+
     static findCustomerDetailByRef(ref, id, session){
         switch(ref){
-            case "customer-id": return this.find({customer_id:id},{ session:session });
+            case "customerId": return this.find({customerId:id},{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }

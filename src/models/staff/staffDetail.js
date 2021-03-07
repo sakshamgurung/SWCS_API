@@ -3,55 +3,47 @@ const Schema = mongoose.Schema;
 const ApiError = require('../../error/ApiError');
 
 const schema = new Schema({
-    company_id:{
+    companyId:{
         type:String,
         required:true,
-        alias:"companyId"
     },
-    staff_id:{
+    staffId:{
         type:String,
         required:true,
-        alias:"staffId"
+    },
+    personalId:{
+        type:{
+            idType:String,//citizenship, driver licence, passport
+            idNo:String
+        },
     },
     name:{
-        first_name:{
-            type:String,
-            alias:"firstName"
-        },
-        last_name:{
-            type:String,
-            alias:"lastName"
-        }
+        firstName:String,
+        lastName:String
     },
-    post_title:{
+    postTitle:{
         type:String,
-        alias:"postTitle"
     },
-    staff_group_id:{
+    staffGroupId:{
         type:[String],
-        alias:"staffGroupId"
     },
     address:{
-        provinces:String,
+        province:String,
         district:String,
         city:String,
-        ward_no:{
-            type:String,
-            alias:"wardNo"
-        },
+        wardNo:String,
         street:String
     },
-    contact_no:{
+    contactNo:{
         type:String,
-        alias:"contactNo"
     },
 },{
-    collection:"staff_detail"
+    collection:"staffDetails"
 });
 
 class HelperClass{
     static findAllStaffDetail(companyId, session){
-        return this.find({ company_id:companyId },{ session:session });
+        return this.find({ companyId:companyId },{ session:session });
     }
     static findStaffDetailById(id, session){
         return this.find({ _id:id },{ session:session });
@@ -62,34 +54,34 @@ class HelperClass{
     static deleteStaffDetailById(id, session){
         return this.deleteOne({ _id:id }, { session:session });
     }
-    //new
+
     static findAllStaffDetailByStaffGroupIdArray(idArray, session){
-        return this.find({ staff_group_id:{ $in:idArray } },{ session:session });
+        return this.find({ staffGroupId:{ $in:idArray } },{ session:session });
     }
-    //new
+
     static findStaffDetailByRef(ref, id, session){
         switch(ref){
-            case "company-id": return this.find({company_id:id},{ session:session });
-            case "staff-id": return this.find({staff_id:id},{ session:session });
-            case "staff-group-id": return this.find({staff_group_id:id},{ session:session });
+            case "companyId": return this.find({companyId:id},{ session:session });
+            case "staffId": return this.find({staffId:id},{ session:session });
+            case "staffGroupId": return this.find({staffGroupId:id},{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
-    //new
+
     static updateStaffDetailByRef(ref, id, updateData, session){
         switch(ref){
-            case "company-id": return this.updateMany({company_id:id},this.translateAliases( updateData ),{ session:session });
-            case "staff-id": return this.updateMany({staff_id:id},this.translateAliases( updateData ),{ session:session });
-            case "staff-group-id": return this.updateMany({staff_group_id:id},this.translateAliases( updateData ),{ session:session });
+            case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ),{ session:session });
+            case "staffId": return this.updateMany({staffId:id},this.translateAliases( updateData ),{ session:session });
+            case "staffGroupId": return this.updateMany({staffGroupId:id},this.translateAliases( updateData ),{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
-    //new
+
     static deleteStaffDetailByRef(ref, id, session){
         switch(ref){
-            case "company-id": return this.deleteMany({company_id:id},{ session:session });
-            case "staff-id": return this.deleteMany({staff_id:id},{ session:session });
-            case "staff-group-id": return this.deleteMany({staff_group_id:id},{ session:session });
+            case "companyId": return this.deleteMany({companyId:id},{ session:session });
+            case "staffId": return this.deleteMany({staffId:id},{ session:session });
+            case "staffGroupId": return this.deleteMany({staffGroupId:id},{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }

@@ -2,33 +2,24 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const schema = new Schema({
-    company_id:{
-        type:Schema.Types.ObjectId,
+    companyId:{
+        type:String,
         required:true,
-        alias:"companyId"
     },
-    customer_type:{
-        type:[String],//"business", "individual"
+    customerType:{
+        type:[String],//["business","individual"]
         required:true,
-        alias:"companyType"
     },
-    service_type:{
-        type:[String],//"subscription", "on demand"
+    serviceType:{
+        type:[String],//["subscription", "subscription with location", "one time"]
         required:true,
-        alias:"serviceType"
     },
-    request_needed:{
-        type:Boolean,
-        required:true,
-        alias:"requestNeeded"
-    },
-    pick_up:{
-        type:[String],//"door to door, "pre-definded location and region", "user can request for pick-up location"
-        required:true,
-        alias:"pickUp"
-    }
+    // pickUp:{
+    //     type:[String],//"door to door, "pre-definded location and region"
+    //     required:true,
+    // }
 },{
-    collection:"company_service_detail"
+    collection:"companyServiceDetails"
 });
 
 class HelperClass{
@@ -44,11 +35,9 @@ class HelperClass{
     static deleteCompanyServiceDetailById(id, session){
         return this.deleteOne({ _id:id }, { session:session });
     }
-    
-    //new
     static findCompanyServiceDetailByRef(ref, id, session){
         switch(ref){
-            case "company-id": return this.find({company_id:id},{ session:session });
+            case "companyId": return this.find({companyId:id},{ session:session });
             default: return this.find({},{ session:session });
         }
     }

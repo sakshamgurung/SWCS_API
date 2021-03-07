@@ -3,42 +3,30 @@ const Schema = mongoose.Schema;
 const ApiError = require('../../error/ApiError');
 
 const schema = new Schema({
-    company_id:{
-        type:Schema.Types.ObjectId,
-        alias:"companyId"
-    },
-    track_name:{
+    companyId:{
         type:String,
-        alias:"trackName"
     },
-    track_points:[
-        {
-            coordinates:{longitude:Number, latitude:Number}
-        }
-    ],
-    track_checkpoints:[
-        {
-            coordinates:{longitude:Number, latitude:Number}
-        }
-    ],
-    work_id:{
+    trackName:{
         type:String,
-        alias:"workId"
     },
-    waste_condition:{
+    trackPoints:[
+        {coordinates:{longitude:Number, latitude:Number}}],
+    workId:{
         type:String,
-        alias:"wasteCondition"
+    },
+    wasteCondition:{
+        type:String,
     },
     description:{
         type:String
     }
 },{
-    collection:"geo_object_track"
+    collection:"geoObjectTracks"
 });
 
 class HelperClass{
     static findAllGeoObject(companyId, session){
-        return this.find({ company_id:companyId },{ session:session });
+        return this.find({ companyId:companyId },{ session:session });
     }
     static findGeoObjectById(id, session){
         return this.find({ _id:id },{ session:session });
@@ -52,30 +40,30 @@ class HelperClass{
     //new
     static findGeoObjectByRef(ref, id, session){
         switch(ref){
-            case "company-id": return this.find({company_id:id},{ session:session });
-            case "work-id": return this.find({work_id:id},{ session:session });
+            case "companyId": return this.find({companyId:id},{ session:session });
+            case "workId": return this.find({workId:id},{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
     //new
     static updateGeoObjectByRef(ref, id, updateData, session){
         switch(ref){
-            case "company-id": return this.updateMany({company_id:id},this.translateAliases( updateData ),{ session:session });
-            case "work-id": return this.updateMany({work_id:id},this.translateAliases( updateData ),{ session:session });
+            case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ),{ session:session });
+            case "workId": return this.updateMany({workId:id},this.translateAliases( updateData ),{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
     //new
     static deleteGeoObjectByRef(ref, id, session){
         switch(ref){
-            case "company-id": return this.deleteMany({company_id:id},{ session:session });
-            case "work-id": return this.deleteMany({work_id:id},{ session:session });
+            case "companyId": return this.deleteMany({companyId:id},{ session:session });
+            case "workId": return this.deleteMany({workId:id},{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
 }
 
-schema.index({"track_points.coordinates":'2d'});
+schema.index({"trackPoints.coordinates":'2d'});
 schema.loadClass(HelperClass);
 
 module.exports = Track = mongoose.model('Track', schema);

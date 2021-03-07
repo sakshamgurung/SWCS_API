@@ -5,31 +5,34 @@ const schema = new Schema({
     email:{
         type:String
     },
-    mobile_no:{
+    mobileNo:{
         type:String,
-        alias:"mobileNo"
     },
     password:{
         type:String,
         required:true
     },
     uuid:[String],
+    resetToken:{
+        type:String,
+    },
+    resetTokenTimeStamp:{
+        type:String
+    },
     token:{
         type:String,
         required:true
     },
-    refresh_token:{
+    refreshToken:{
         type:String,
         required:true,
-        alias:"refreshToken"
     },
-    time_stamp:{
+    timeStamp:{
         type:Schema.Types.Date,
         required:true,
-        alias:"timeStamp"
     }
 },{
-    collection:"customer_login"
+    collection:"customerLogins"
 });
 
 class HelperClass{
@@ -45,21 +48,21 @@ class HelperClass{
     static deleteCustomerById(id, session){
         return this.deleteOne({ _id:id }, { session:session });
     }
-    //new
+
     static findCustomerByUUID(uuidArray, session){
         return this.find({ uuid:{ $in: uuidArray }  },{ session:session });
     }
-    //new
+
     static findCustomerByToken(token, session){
         return this.find({ token:token },{ session:session });
     }
-    //new 
+
     static findCustomerByRefreshToken(refreshToken, session){
-        return this.find({ refresh_token: refreshToken },{ session:session });
+        return this.find({ refreshToken: refreshToken },{ session:session });
     }
-    //new
-    static findCustomerByTimeStamp(timeStamp, session){
-        return this.find({ time_stamp:timeStamp },{ session:session });
+
+    static findCompanyByResetToken(resetToken, session){
+        return this.find({ resetToken: resetToken },{ session:session });
     }
 }
 

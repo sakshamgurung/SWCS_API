@@ -13,8 +13,8 @@ class WasteDumpServices{
         return this.result;
     }
 
-    async getAllWasteDump(customerId, companyId){
-        this.result = await WasteDump.findAllWasteDump(customerId, companyId);
+    async getAllWasteDump(ref, id){
+        this.result = await WasteDump.findWasteDumpByRef(ref, id);
         return this.result;
     }
 
@@ -22,11 +22,7 @@ class WasteDumpServices{
         this.result = await WasteDump.findWasteDumpById(id);
         return this.result;
     }
-    //new
-    async getWasteDumpByRef(ref, id){
-        this.result = await WasteDump.findWasteDumpByRef(ref, id);
-        return this.result;
-    }
+
     async updateWasteDumpById(id, updateData){
         this.result = await WasteDump.updateWasteDumpById(id, updateData);
         return this.result;

@@ -8,7 +8,7 @@ const schema = new Schema({
             enum:['company','staff','customer']
         },
         id:{
-            type:Schema.Types.ObjectId
+            type:String
         }
     },
     to:{
@@ -17,22 +17,19 @@ const schema = new Schema({
             enum:['company','staff','customer']
         },
         id:{
-            type:Schema.Types.ObjectId
+            type:String
         }
     },
-    target_collection:{
-        collection_name:{
+    targetCollection:{
+        collectionName:{
             type:String,
-            alias:"collectionName"
         },
-        collection_id:{
-            type:Schema.Types.ObjectId,
-            alias:"collectionId"
+        collectionId:{
+            type:String,
         }
     },
-    sent_date:{
+    sentDate:{
         type:Schema.Types.Date,
-        alias:"sentDate"
     },
     data:{
         type:Schema.Types.Mixed
@@ -41,7 +38,7 @@ const schema = new Schema({
         type:Schema.Types.Mixed
     }
 },{
-    collection:"notification"
+    collection:"notifications"
 });
 
 class HelperClass{
@@ -54,7 +51,6 @@ class HelperClass{
     static deleteNotificationById(id, session){
         return this.deleteOne({ _id:id }, { session:session });
     }
-    //new
     static deleteNotificationByRole(role, id, session){
         return this.deleteMany({ $and: [{'to.role':role},{'to.id':id}] },{ session:session });
     }

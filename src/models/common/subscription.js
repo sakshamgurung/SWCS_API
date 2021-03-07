@@ -3,36 +3,36 @@ const Schema = mongoose.Schema;
 const ApiError = require('../../error/ApiError');
 
 const schema = new Schema({
-    company_id:{
-        type:Schema.Types.ObjectId,
-        required:true
+    companyId:{
+        type:String,
+        required:true,
     },
-    customer_id:{
-        type:Schema.Types.ObjectId,
-        required:true
+    customerId:{
+        type:String,
+        required:true,
     }
 },{
-    collection:"subscription"
+    collection:"subscriptions"
 });
 
 class HelperClass{
     //for company
     static findAllSubscriber(companyId, session){
-        return this.find({ company_id:companyId },{ session:session });
+        return this.find({ companyId:companyId },{ session:session });
     }
     //for customer
     static findAllSubscription(customerId, session){
-        return this.find({ customer_id:customerId },{ session:session });
+        return this.find({ customerId:customerId },{ session:session });
     }
     //for customer
     static deleteSubscriptionById(id, session){
         return this.deleteOne({ _id:id }, { session:session });
     }
-    //new
+
     static deleteSubscriptionByRef(ref, id, session){
         switch(ref){
-            case "customer-id": return this.deleteMany({ customer_id:id }, { session:session });
-            case "company-id": return this.deleteMany({company_id:id}, { session:session });
+            case "customerId": return this.deleteMany({ customerId:id }, { session:session });
+            case "companyId": return this.deleteMany({companyId:id}, { session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }

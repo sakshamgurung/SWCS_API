@@ -38,11 +38,11 @@ class VehicleServices{
             await session.withTransaction(async() => {
                 this.result = {};
                 
-                //removing delete vehicle from work collection's vehicle_id
-                this.result.work = await Work.updateWorkByRef("vehicle-id", id, { vehicleId:"" } ,session)
+                //removing delete vehicle from work collection's vehicleId
+                this.result.work = await Work.updateWorkByRef("vehicleId", id, { vehicleId:"" } ,session)
 
-                //removing delete vehicle from customerRequest collection's vehicle_id
-                this.result.customerRequest = await CustomerRequest.updateCustomerRequestByRef("vehicle-id", id, { vehicleId: "" }, session);
+                //removing delete vehicle from customerRequest collection's vehicleId
+                this.result.customerRequest = await CustomerRequest.updateCustomerRequestByRef("vehicleId", id, { vehicleId: "" }, session);
                 
                 this.result.vehicle = await Vehicle.deleteVehicleById(id, session);
             });

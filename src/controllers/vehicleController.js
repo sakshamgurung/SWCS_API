@@ -3,12 +3,11 @@ const {VehicleServices} = require("../service/vehicleServices");
 class VehicleController{
     async createNewVehicle(request, response, next){
         try {
-            const companyId = request.params.id;
             const { body } = request;
-            body = {companyId, ...body};
 
             const vehicleServices = new VehicleServices();
             const result = vehicleServices.createNewVehicle(body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -22,6 +21,7 @@ class VehicleController{
 
             const vehicleServices = new VehicleServices();
             const result = await vehicleServices.getAllVehicle(companyId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -31,10 +31,11 @@ class VehicleController{
 
     async getVehicleById(request, response, next){
         try{
-            const id = request.params.id;
+            const vehicleId = request.params.id;
 
             const vehicleServices = new VehicleServices();
-            const result = await vehicleServices.getVehicleById(id);
+            const result = await vehicleServices.getVehicleById(vehicleId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -44,11 +45,12 @@ class VehicleController{
 
     async updateVehicleById(request, response, next){
         try{
-            const id = request.params.id;
-            const updateData = request.body;
+            const vehicleId = request.params.id;
+            const {body} = request;
 
             const vehicleServices = new VehicleServices();
-            const result = await vehicleServices.updateVehicleById(id, updateData);
+            const result = await vehicleServices.updateVehicleById(vehicleId, body);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -58,9 +60,11 @@ class VehicleController{
 
     async deleteVehicleById(request, response, next){
         try {
-            const id = request.params.id;
+            const vehicleId = request.params.id;
+
             const vehicleServices = new VehicleServices();
-            const result = await vehicleServices.deleteVehicleById(id);
+            const result = await vehicleServices.deleteVehicleById(vehicleId);
+            
             response.json(result);
         } catch (error) {
             console.error(error.message);

@@ -4,43 +4,11 @@ class GeoObjectController{
     async createNewGeoObject(request, response, next){
         try {
             const geoObjectType = request.params.type;
-            const companyId = request.params.id;
-            let data = undefined;
-            if(geoObjectType == "track"){
-                const {trackName, trackPoints, trackCheckpoints, workId, wasteCondition, description} = request.body;
-                data = {
-                    companyId,
-                    trackName,
-                    track_points:trackPoints,
-                    track_checkpoints:trackCheckpoints,
-                    workId,
-                    wasteCondition,
-                    description
-                }
-            }else if(geoObjectType == "zone"){
-                const {zoneName, zonePoints, workId, wasteCondition, description} = request.body;
-                data = {
-                    companyId,
-                    zoneName,
-                    zone_points:zonePoints,
-                    workId,
-                    wasteCondition,
-                    description
-                }
-            }else if(geoObjectType == "point"){
-                const {pointName, coordinate, workId, wasteCondition, description} = request.body;
-                data = {
-                    companyId,
-                    pointName,
-                    coordinate,
-                    workId,
-                    wasteCondition,
-                    description
-                }
-            }
+            const {body} = request;
             
             const geoObjectServices = new GeoObjectServices();
-            const result = await geoObjectServices.createNewGeoObject(geoObjectType, data);
+            const result = await geoObjectServices.createNewGeoObject(geoObjectType, body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -55,6 +23,7 @@ class GeoObjectController{
             
             const geoObjectServices = new GeoObjectServices();
             const result = await geoObjectServices.getAllGeoObject(geoObjectType, companyId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -65,10 +34,11 @@ class GeoObjectController{
     async getGeoObjectById(request, response, next){
         try{
             const geoObjectType = request.params.type;
-            const id = request.params.id;
+            const geoObjectId = request.params.id;
             
             const geoObjectServices = new GeoObjectServices();
-            const result = await geoObjectServices.getGeoOjectById(geoObjectType, id);
+            const result = await geoObjectServices.getGeoOjectById(geoObjectType, geoObjectId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -79,51 +49,12 @@ class GeoObjectController{
     async updateGeoObjectById(request, response, next){
         try{
             const geoObjectType = request.params.type;
-            const id = request.params.id;
-            let updateData = null;
-            if(geoObjectType == "track"){
-                const {trackName, trackPoints, trackCheckpoints, workId, wasteCondition, description} = request.body;
-                updateData = {
-                    trackName,
-                    track_points:trackPoints,
-                    track_checkpoints:trackCheckpoints,
-                    workId,
-                    wasteCondition,
-                    description
-                };
-            }else if(geoObjectType == "zone"){
-                const {zoneName, zonePoints, workId, wasteCondition, description} = request.body;
-                updateData = {
-                    zoneName,
-                    zone_points:zonePoints,
-                    workId,
-                    wasteCondition,
-                    description
-                };
-            }else if(geoObjectType == "point"){
-                const {pointName, coordinate, workId, wasteCondition, description} = request.body;
-                updateData = {
-                    pointName,
-                    coordinate,
-                    workId,
-                    wasteCondition,
-                    description
-                };
-            }
+            const geoObjectId = request.params.id;
+            const {body} = request;
 
-            if(_.isEmpty(updateData)){
-                throw new Error("updataData is empty");
-            }
-
-            const fields = Object.keys(updateData);
-            fields.forEach((field) => {
-                if(updateData[field] == undefined){
-                    delete updateData[field];
-                }
-            });
-            
             const geoObjectServices = new GeoObjectServices();
-            const result = await geoObjectServices.updateGeoObjectById(geoObjectType, id, updateData);
+            const result = await geoObjectServices.updateGeoObjectById(geoObjectType, geoObjectId, body);
+            
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -134,10 +65,10 @@ class GeoObjectController{
     async deleteGeoObjectById(request, response, next){
         try {
             const geoObjectType = request.params.type;
-            const id = request.params.id;
+            const geoObjectId = request.params.id;
             
             const geoObjectServices = new GeoObjectServices();
-            const result = await geoObjectServices.deleteGeoObjectById(geoObjectType, id);
+            const result = await geoObjectServices.deleteGeoObjectById(geoObjectType, geoObjectId);
             response.json(result);
         } catch (error) {
             console.error(error.message);

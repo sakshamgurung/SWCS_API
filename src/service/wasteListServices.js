@@ -22,14 +22,8 @@ class WasteListServices{
         return this.result;
     }
 
-    
     async getWasteListById(id){
         this.result = await WasteList.findWasteListById(id);
-        return this.result;
-    }
-    
-    async getWasteListByRef(ref, id){
-        this.result = await WasteList.findWasteListByRef(ref, id);
         return this.result;
     }
 
@@ -45,19 +39,19 @@ class WasteListServices{
             session.withTransaction(async() => {
                 this.result = { wasteDump:[] };
 
-                const tempWasteDump = WasteDump.findWasteDumpByRef("waste-list-id", id, session);
+                const tempWasteDump = WasteDump.findWasteDumpByRef("wasteListId", id, session);
                 _.remove(tempWasteDump, wd => wd.is_collected == true );
                 
                 if(wasteDump.remapping){
                     //remapping
                     const{ newWasteListId } = wasteDump;
-                    tempWasteDump.forEach( wd => {
-                        const result = WasteDump.updateWasteDumpById( wd._id, { wasteListId: newWasteListId }, session );
+                    tempWasteDump.forEach(async wd => {
+                        const result = await WasteDump.updateWasteDumpById( wd._id, { wasteListId: newWasteListId }, session );
                         this.result.wasteDump.push(result);
                     });
                 }else{
                     //removing
-                    tempWasteDump.forEach( wd => {
+                    tempWasteDump.forEach(async wd => {
                         const result = await WasteDump.deleteWasteDumpById( wd._id, session );
                         this.result.wasteDump.push(result);
                     });

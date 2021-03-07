@@ -7,6 +7,7 @@ class NotificationController{
 
             const notificationServices = new NotificationServices();
             const result = notificationServices.createNewNotification(body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -16,11 +17,11 @@ class NotificationController{
 
     async getAllNotification(request, response, next){
         try{
-            const role = request.params.role;
-            const id = request.params.id;
+            const {role, id} = request.params;
 
             const notificationServices = new NotificationServices();
             const result = await notificationServices.getAllNotification(role, id);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -30,10 +31,11 @@ class NotificationController{
 
     async getNotificationById(request, response, next){
         try{
-            const id = request.params.id;
+            const notificationId = request.params.id;
 
             const notificationServices = new NotificationServices();
-            const result = await notificationServices.getNotificationById(id);
+            const result = await notificationServices.getNotificationById(notificationId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -43,10 +45,11 @@ class NotificationController{
 
     async deleteNotificationById(request, response, next){
         try {
-            const id = request.params.id;
+            const notificationId = request.params.id;
 
             const notificationServices = new NotificationServices();
-            const result = await notificationServices.deleteNotificationById(id);
+            const result = await notificationServices.deleteNotificationById(notificationId);
+            
             response.json(result);
         } catch (error) {
             console.error(error.message);

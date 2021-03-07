@@ -3,27 +3,24 @@ const Schema = mongoose.Schema;
 const ApiError = require('../../error/ApiError');
 
 const schema = new Schema({
-    customer_id:{
+    customerId:{
         type:String,
         required:true,
-        alias:"customerId"
     },
-    work_id:{
+    workId:{
         type:String,
         required:true,
-        alias:"workId"
     },
-    customer_request_id:{
+    customerRequestId:{
         type:String,
-        alias:"customerRequestId"
     }
 },{
-    collection:"schedule"
+    collection:"schedules"
 });
 
 class HelperClass{
     static findAllSchedule(customerId, session){
-        return this.find({ customer_id:customerId },{ session:session });
+        return this.find({ customerId:customerId },{ session:session });
     }
     static findScheduleById(id, session){
         return this.find({ _id:id },{ session:session });
@@ -34,30 +31,30 @@ class HelperClass{
     static deleteScheduleById(id, session){
         return this.deleteOne({ _id:id }, { session:session });
     }
-    //new
+
     static findScheduleByRef(ref, id, session){
         switch(ref){
-            case "customer-id": return this.find({ customer_id:id},{ session:session });
-            case "work-id": return this.find({ work_id:id},{ session:session });
-            case "customer-request-id": return this.find({ customer_request_id:id },{ session:session });
+            case "customerId": return this.find({ customerId:id},{ session:session });
+            case "workId": return this.find({ workId:id},{ session:session });
+            case "customerRequestId": return this.find({ customerRequestId:id },{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
-    //new
+
     static updateScheduleByRef(ref, id, updateData, session){
         switch(ref){
-            case "customer-id": return this.updateMany({ customer_id:id},this.translateAliases( updateData ),{ session:session });
-            case "work-id": return this.updateMany({ work_id:id},this.translateAliases( updateData ),{ session:session });
-            case "customer-request-id": return this.updateMany({ customer_request_id:id },this.translateAliases( updateData ),{ session:session });
+            case "customerId": return this.updateMany({ customerId:id},this.translateAliases( updateData ),{ session:session });
+            case "workId": return this.updateMany({ workId:id},this.translateAliases( updateData ),{ session:session });
+            case "customerRequestId": return this.updateMany({ customerRequestId:id },this.translateAliases( updateData ),{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
-    //new
+
     static deleteScheduleByRef(ref, id, session){
         switch(ref){
-            case "customer-id": return this.deleteMany({ customer_id:id},{ session:session });
-            case "work-id": return this.deleteMany({ work_id:id},{ session:session });
-            case "customer-request-id": return this.deleteMany({ customer_request_id:id },{ session:session });
+            case "customerId": return this.deleteMany({ customerId:id},{ session:session });
+            case "workId": return this.deleteMany({ workId:id},{ session:session });
+            case "customerRequestId": return this.deleteMany({ customerRequestId:id },{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }

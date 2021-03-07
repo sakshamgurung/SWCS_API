@@ -3,9 +3,17 @@ const router = express.Router();
 const {ScheduleController} = require('../controllers/scheduleController');
 const catchAsync = require('../error/catchAsync');
 
-router.post('/customers/:id/schedules',catchAsync( new ScheduleController().createNewSchedule));
 router.get('/customers/:id/schedules',catchAsync( new ScheduleController().getAllSchedule));
 router.get('/schedules/:id',catchAsync( new ScheduleController().getScheduleById));
-router.put('/schedules/:id',catchAsync( new ScheduleController().updateScheduleById));
-router.delete('/schedules/:id',catchAsync( new ScheduleController().deleteScheduleById));
 module.exports = router;
+/** 
+ * auto created when 
+ *  company confirmed work
+ *  company accepts customer_request
+ * auto deleted when 
+ *  collector finished work
+ *  collector finished customer_request
+ *  company deletes confirmed work
+ *  company deletes accepted request
+ *  customer deletes accepted request
+*/

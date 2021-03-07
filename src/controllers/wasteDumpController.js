@@ -3,12 +3,11 @@ const {WasteDumpServices} = require("../service/wasteDumpServices");
 class WasteDumpController{
     async createNewWasteDump(request, response, next){
         try {
-            const customerId = request.params.id;
             const { body } = request;
-            body = {customerId, ...body};
             
             const wasteDumpServices = new WasteDumpServices();
             const result = wasteDumpServices.createNewWasteDump(body);
+
             response.json(result);
         } catch (error) {
             console.error(error.message);
@@ -18,10 +17,11 @@ class WasteDumpController{
 
     async getAllWasteDump(request, response, next){
         try{
-            const {customerId, companyId} = request.body;
+            const {ref, id} = request.params;
 
             const wasteDumpServices = new WasteDumpServices();
-            const result = await wasteDumpServices.getAllWasteDump(customerId, companyId);
+            const result = await wasteDumpServices.getAllWasteDump(ref, id);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -31,10 +31,11 @@ class WasteDumpController{
 
     async getWasteDumpById(request, response, next){
         try{
-            const id = request.params.id;
+            const wasteDumpId = request.params.id;
 
             const wasteDumpServices = new WasteDumpServices();
-            const result = await wasteDumpServices.getWasteDumpById(id);
+            const result = await wasteDumpServices.getWasteDumpById(wasteDumpId);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -44,11 +45,12 @@ class WasteDumpController{
 
     async updateWasteDumpById(request, response, next){
         try{
-            const id = request.params.id;
-            const updateData = request.body;
+            const wasteDumpId = request.params.id;
+            const {body} = request;
 
             const wasteDumpServices = new WasteDumpServices();
-            const result = await wasteDumpServices.updateWasteDumpById(id, updateData);
+            const result = await wasteDumpServices.updateWasteDumpById(wasteDumpId, body);
+
             response.json(result);
         }catch(error){
             console.error(error.message);
@@ -58,10 +60,12 @@ class WasteDumpController{
 
     async deleteWasteDumpById(request, response, next){
         try {
-            const id = request.params.id;
+            const wasteDumpId = request.params.id;
+            const {body} = request;
 
             const wasteDumpServices = new WasteDumpServices();
-            const result = await wasteDumpServices.deleteWasteDumpById(id);
+            const result = await wasteDumpServices.deleteWasteDumpById(wasteDumpId, body);
+            
             response.json(result);
         } catch (error) {
             console.error(error.message);

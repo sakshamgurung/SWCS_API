@@ -39,13 +39,13 @@ class WasteCatalogServices{
         try{
             await session.withTransaction(async() => {
                 this.result = { wasteList:[] };
-                const tempWasteList = WasteList.findWasteListByRef("waste-catalog-id", id, session);
+                const tempWasteList = await WasteList.findWasteListByRef("wasteCatalogId", id, session);
                 
                 if(wasteList.remapping){
                     //remapping
                     const{ newWasteCatalogId } = wasteList;
-                    tempWasteList.forEach( wl => {
-                        const result = WasteList.updateWasteListById( wl._id, { wasteCatalogId: newWasteCatalogId }, session );
+                    tempWasteList.forEach(async wl => {
+                        const result = await WasteList.updateWasteListById( wl._id, { wasteCatalogId: newWasteCatalogId }, session );
                         this.result.wasteList.push(result);
                     });
                 }else{

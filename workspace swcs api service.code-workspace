@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"name": "SWCS_API",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.gitignore": true,
+			"**/.vscode": true,
+			"**/node_modules": true,
+			"**/tests": true,
+			"**/.classpath": true,
+			"**/.project": true,
+			"**/.settings": true,
+			"**/.factorypath": true
+		}
+	}
+}

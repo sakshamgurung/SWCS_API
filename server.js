@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const config = require('./src/config');
 const connectDB = require('./src/loaders/mongoose');
 
+const companiesURL = require('./src/routes/companies');
 const geoObjectsURL = require('./src/routes/geoObjects');
 
 const apiErrorHandler = require('./src/error/apiErrorHandler');
@@ -24,6 +25,7 @@ app.get('/', (req, res)=>{
   res.send("hello world");
 })
 
+app.use('/api/v1/', companiesURL);
 app.use('/api/v1/', geoObjectsURL);
 
 app.use(apiErrorHandler);
