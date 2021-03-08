@@ -20,8 +20,8 @@ class CustomerRequestServices{
         return this.result;
     }
 
-    async getAllCustomerRequest(role, id, idArray){
-        this.result = await CustomerRequest.findAllCustomerRequest(role, id, idArray);
+    async getAllCustomerRequest(role, id){
+        this.result = await CustomerRequest.findAllCustomerRequest(role, id);
         return this.result;
     }
 

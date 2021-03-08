@@ -58,20 +58,14 @@ class StaffServices{
         const session = await mongoose.startSession();
         try {
             await session.withTransaction(async() => {
-                this.result = {staffGroup:[]};
-                const staffGroup = [];
+                this.result = {};
 
                 //removing deleted staff from the staffGroup collection's staffId field
                 const tempStaffGroup = await StaffGroup.findStaffGroupByRef("staffId", id, session);
-                tempStaffGroup.forEach( sg => {
-                    _.remove(sg.staffId, o => o == id );
-                    staffGroup.push({ staffGroupId:sg._id, staffGroupUpdateData:{ staffId:sg.staffId } });
-                });
-                staffGroup.forEach( async sg => {
-                    const { staffGroupId, staffGroupUpdateData } = sg;
-                    const result = await StaffGroup.updateStaffGroupById(staffGroupId, staffGroupUpdateData, session);
-                    this.result.staffGroup.push(result);
-                });
+                _.remove(tempStaffGroup[0].staffId, o => o == id);
+                const staffGroupId = tempStaffGroup[0]._id;
+                const staffId = tempStaffGroup[0].staffId;
+                this.result.staffGroup = await StaffGroup.updateStaffGroupById(staffGroupId, {staffId:staffId}, session);
                 
                 //removing staff notification
                 Notification.deleteNotificationByRole('staff', id, session);

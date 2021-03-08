@@ -1,4 +1,3 @@
-const { ObjectId } = require('mongodb');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const ApiError = require('../../error/ApiError');
@@ -27,7 +26,7 @@ const schema = new Schema({
         type:Schema.Types.Date,
     },
     staffGroupId:{
-        type:[String],
+        type:String,
     },
     workTitle:{
         type:String,
@@ -63,10 +62,10 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllWork(role, id, idArray, session){
+    static findAllWork(role, id, session){
         switch(role){
-            case "company": return this.find({companyId:ObjectId(id)},{ session:session });
-            case "staff":return this.find({staffGroupId:{ $in: idArray }},{ session:session });
+            case "company": return this.find({companyId:id},{ session:session });
+            case "staff":return this.find({staffGroupId:id},{ session:session });
             default : throw ApiError.badRequest("role not defined");
         }
     }

@@ -23,10 +23,10 @@ class WorkServices{
                 this.result.work = await this.work.save({session:session});
                 const workId = this.result._id;
 
-                workData.geoObjectPointId.forEach( pid => {
+                workData.geoObjectPointId.forEach(async pid => {
                     this.result.geoObjectPoint = await Point.updateGeoObjectById(pid, {workId:workId}, session);
                 });
-                workData.geoObjectTrackId.forEach( tid => {
+                workData.geoObjectTrackId.forEach(async tid => {
                     this.result.geoObjectTrack = await Point.updateGeoObjectById(tid, {workId:workId}, session);
                 });
             });
@@ -36,8 +36,8 @@ class WorkServices{
         return this.result;
     }
 
-    async getAllWork(role, id, idArray){
-        this.result = await Work.findAllWork(role, id, idArray);
+    async getAllWork(role, id){
+        this.result = await Work.findAllWork(role, id);
         return this.result;
     }
 
@@ -80,7 +80,7 @@ class WorkServices{
                     }
 
                     this.result.work = await Work.updateWorkById(id, updateData, session);
-                    //notify staffId and staffGroupId after deleting work
+                    //notify staffGroupId after deleting work
                 
                 }else if(prevWork[0].workStatus == "confirmed" && updateData.workStatus == "on progress"){
 
@@ -158,7 +158,7 @@ class WorkServices{
             await session.withTransaction(async() => {
                 this.result = { geoObjectPoint:[], geoObjectTrack:[] };
 
-                //deleting customerRequest ref from schedule
+                //deleting work ref from schedule
                 this.result.schedule = await Schedule.deleteScheduleByRef("workId", id, session);
 
                 //deleting work ref from geoObjectPoint

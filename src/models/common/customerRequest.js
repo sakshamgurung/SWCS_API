@@ -41,7 +41,7 @@ const schema = new Schema({
         type:[ { wasteListId:String, amount:Number, amountUnit:String } ],//"litre", "kg","bora"
     },
     staffGroupId:{
-        type:[String],
+        type:String,
     },
     vehicleId:{
         type:String,
@@ -55,11 +55,11 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllCustomerRequest(role, id, idArray, session){
+    static findAllCustomerRequest(role, id, session){
         switch(role){
             case "company": return this.find({companyId:id},{ session:session }); 
             case "customer": return this.find({customerId:id},{ session:session });
-            case "staff": return this.find({staffGroupId:{ $in: idArray}},{ session:session });
+            case "staff": return this.find({staffGroupId:id},{ session:session });
             default : throw ApiError.badRequest("role not defined");
         }
     }

@@ -33,7 +33,7 @@ class StaffGroupServices{
         const session = await mongoose.startSession();
         try{
             await session.withTransaction(async () => {
-                this.result = {};
+                this.result = {staffDetail:[]};
                 const prevStaffGroupData = await StaffGroup.findStaffGroupById(id, session);
         
                 const deletedGroupMember = _.difference(prevStaffGroupData[0].staffId, updateData.staffId);
@@ -41,18 +41,14 @@ class StaffGroupServices{
                 
                 if(deletedGroupMember.length > 0){
                     deletedGroupMember.forEach(async gm => {
-                        const staffDetail = await StaffDetail.findStaffDetailById(gm, session);
-                        const tempStaffGroupId = staffDetail[0].staffGroupId;
-                        _.remove(tempStaffGroupId, staffGroupId => staffGroupId == id);
-                        this.result.staffDetail = await StaffDetail.updateStaffDetailById(gm, {staffGroupId:tempStaffGroupId}, session);
+                        const result = await StaffDetail.updateStaffDetailById(gm, {staffGroupId:""}, session);
+                        this.result.staffDetail.push(result);
                     });
                 }
                 if(addedGroupMember.length > 0){
                     addedGroupMember.forEach(async gm => {
-                        const staffDetail = await StaffDetail.findStaffDetailById(gm, session);
-                        const tempStaffGroupId = staffDetail[0].staffGroupId;
-                        tempStaffGroupId.push(id);
-                        this.result.staffDetail = await StaffDetail.updateStaffDetailById(gm, {staffGroupId:tempStaffGroupId}, session);
+                        const result = await StaffDetail.updateStaffDetailById(gm, {staffGroupId:id}, session);
+                        this.result.staffDetail.push(result);
                     });
                 }
         
@@ -68,46 +64,20 @@ class StaffGroupServices{
         const session = await mongoose.startSession();
         try {
             await session.withTransaction(async() => {
-                this.result = { staffDetail:[], work:[], customerRequest:[] };
-                const work = [];
-                const customerRequest = [];
-                const staffDetail = [];
+                this.result = { staffDetail:[] };
                 
-                //removing deleted staffGroup from the staffDetail collection's staffGroup field
+                //removing deleted staffGroupId from the staffDetail collection
                 const tempStaffDetail = await StaffDetail.findStaffDetailByRef("staffGroupId", id, session);
-                tempStaffDetail.forEach( sd => {
-                    _.remove(sd.staffGroupId, o => o == id );
-                    staffDetail.push({ staffDetailId:sd._id, staffDetailUpdateData:{ staffGroupId:sd.staffGroupId } });
-                });
-                staffDetail.forEach(async sd => {
-                    const { staffDetailId, staffDetailUpdateData } = sd;                
-                    const result = await StaffDetail.updateStaffDetailById(staffDetailId, staffDetailUpdateData, session);
+                tempStaffDetail.forEach(async sd => {               
+                    const result = await StaffDetail.updateStaffDetailById(sd._id, {staffGroupId:""}, session);
                     this.result.staffDetail.push(result);
                 });
                 
-                //removing deleted staff from the work collection's staffGroupId field
-                const tempWork = await Work.findWorkByRef("staffGroupId", id, session);
-                tempWork.forEach( w => {
-                    _.remove(w.staffGroupId, o => o == id );
-                    work.push({ workId:w._id, workUpdateData:{ staffGroupId:w.staffGroupId } });
-                });
-                work.forEach(async w => {
-                    const { workId, workUpdateData } = w;
-                    const result = await Work.updateWorkById(workId, workUpdateData, session);
-                    this.result.work.push(result);
-                });
+                //removing deleted staffgroup from the work collection's staffGroupId field
+                this.result.work = await Work.updateWorkByRef("staffGroupId", id, {staffGroupId:""}, session);
                 
-                //removing deleted staff from the customerRequest collection's staffGroupId field
-                const tempCustomerRequest = await CustomerRequest.findCustomerRequestByRef("staffGroupId", id, session);
-                tempCustomerRequest.forEach( cr => {
-                    _.remove(cr.staffGroupId, o => o == id );
-                    customerRequest.push({ customerRequestId:cr._id, customerRequestUpdateData:{ staffGroupId:cr.staffGroupId } });
-                });
-                customerRequest.forEach( cr => {
-                    const { customerRequestId, customerRequestUpdateData } = cr;
-                    const result = await CustomerRequest.updateCustomerRequestById(customerRequestId, customerRequestUpdateData, session);
-                    this.result.customerRequest.push(result);
-                });
+                //removing deleted staffgroup from the customerRequest collection's staffGroupId field
+                this.result.customerRequest = await CustomerRequest.updateCustomerRequestByRef("staffGroupId", id, {staffGroupId:""}, session);
 
                 this.result.staffGroup = await StaffGroup.deleteStaffGroupById(id, session);
 

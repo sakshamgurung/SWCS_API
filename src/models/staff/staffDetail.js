@@ -25,7 +25,7 @@ const schema = new Schema({
         type:String,
     },
     staffGroupId:{
-        type:[String],
+        type:String,
     },
     address:{
         province:String,

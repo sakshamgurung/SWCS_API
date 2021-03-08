@@ -17,11 +17,10 @@ class CustomerRequestController{
 
     async getAllCustomerRequest(request, response, next){
         try{
-            const role = request.params.role;
-            const { id, idArray } = request.body;
+            const {role, id} = request.params;
 
             const customerRequestServices = new CustomerRequestServices();
-            const result = await customerRequestServices.getAllCustomerRequest(role, id, idArray);
+            const result = await customerRequestServices.getAllCustomerRequest(role, id);
 
             response.json(result);
         }catch(error){

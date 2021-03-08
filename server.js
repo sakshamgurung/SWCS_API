@@ -16,10 +16,12 @@ process.on('uncaughtException', err => {
 const app = express();
 connectDB();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({
+//   extended: false
+// }));
+app.use(express.json());
+app.use(express.urlencoded());
 
 app.get('/', (req, res)=>{
   res.send("hello world");

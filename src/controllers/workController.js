@@ -17,11 +17,10 @@ class WorkController{
 
     async getAllWork(request, response, next){
         try{
-            const role = request.params.role;
-            const { id, idArray } = request.body;
+            const {role, id} = request.params;
 
             const workServices = new WorkServices();
-            const result = await workServices.getAllWork(role, id, idArray);
+            const result = await workServices.getAllWork(role, id);
 
             response.json(result);
         }catch(error){
