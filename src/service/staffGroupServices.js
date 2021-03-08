@@ -36,13 +36,13 @@ class StaffGroupServices{
                 this.result = {};
                 const prevStaffGroupData = await StaffGroup.findStaffGroupById(id, session);
         
-                const deletedGroupMember = _.difference(prevStaffGroupData.staffId, updateData.staffId);
-                const addedGroupMember = _.difference(updateData.staffId, prevStaffGroupData.staffId);
+                const deletedGroupMember = _.difference(prevStaffGroupData[0].staffId, updateData.staffId);
+                const addedGroupMember = _.difference(updateData.staffId, prevStaffGroupData[0].staffId);
                 
                 if(deletedGroupMember.length > 0){
                     deletedGroupMember.forEach(async gm => {
                         const staffDetail = await StaffDetail.findStaffDetailById(gm, session);
-                        const tempStaffGroupId = staffDetail.staffGroupId;
+                        const tempStaffGroupId = staffDetail[0].staffGroupId;
                         _.remove(tempStaffGroupId, staffGroupId => staffGroupId == id);
                         this.result.staffDetail = await StaffDetail.updateStaffDetailById(gm, {staffGroupId:tempStaffGroupId}, session);
                     });
@@ -50,7 +50,7 @@ class StaffGroupServices{
                 if(addedGroupMember.length > 0){
                     addedGroupMember.forEach(async gm => {
                         const staffDetail = await StaffDetail.findStaffDetailById(gm, session);
-                        const tempStaffGroupId = staffDetail.staffGroupId;
+                        const tempStaffGroupId = staffDetail[0].staffGroupId;
                         tempStaffGroupId.push(id);
                         this.result.staffDetail = await StaffDetail.updateStaffDetailById(gm, {staffGroupId:tempStaffGroupId}, session);
                     });

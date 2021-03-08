@@ -36,48 +36,26 @@ class CustomerRequestServices{
             await session.withTransaction(async()=> {
                 const prevCustomerRequest = await CustomerRequest.findCustomerRequestById(id, session);
 
-                if(prevCustomerRequest.requestStatus == "pending" && updateData.requestStatus == "denied"){
+                if(prevCustomerRequest[0].requestStatus == "pending" && updateData.requestStatus == "denied"){
                     //delete the request send notification
                     this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
                 
-                }else if(prevCustomerRequest.requestStatus == "pending" && updateData.requestStatus == "confirmed"){
-                    const companyId = prevCustomerRequest.companyId;
-                    const customerId = prevCustomerRequest.customerId;
-                    if(prevCustomerRequest.requestType == "subscription"){
+                }else if(prevCustomerRequest[0].requestStatus == "pending" && updateData.requestStatus == "confirmed"){
+                    const companyId = prevCustomerRequest[0].companyId;
+                    const customerId = prevCustomerRequest[0].customerId;
+                    if(prevCustomerRequest[0].requestType == "subscription"){
                         
                         //create subscription
-                        const newSubData = {companyId:companyId, customerId:customerId};
-                        this.result.subscription = await Subscription.create([newSubData], {session});
-
-                        //delete customerRequest
-                        this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
-                    }else if(prevCustomerRequest.requestType == "subscription with location"){
-                        const coordinate = prevCustomerRequest.requestCoordinate;
-                        const pointName = prevCustomerRequest.pointName;
-                        const pointDescription = prevCustomerRequest.pointDescription;
-                        
-                        //create subscription
-                        const newSubData = {companyId:companyId, customerId:customerId};
+                        const newSubData = {companyId, customerId};
                         this.result.subscription = await Subscription.create([newSubData], {session});
                         
-                        //create new point
-                        const newPointData = {
-                            companyId:companyId, 
-                            pointName:pointName, 
-                            coordinate, wasteCondition:"none", 
-                            description:pointDescription
-                        };
-                        this.result.point = await GeoObjectPoint.create([newPointData], session);
-                        //test
-                        console.log(this.result.point._id);
-                        
-                        //customer used object
+                        //customer used geo object
                         const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, session);
                         if(_.isEmpty(tempCustomerUsedGeoObject)){
                             const newCustomerUsedGeoObjectData = {
-                                customerId:customerId,
-                                usedPoint:[{companyId:companyId, pointId:this.result.point._id}],
-                                usedZone:[]
+                                customerId,
+                                usedPoint:[],
+                                usedTrack:[{companyId, trackId:prevCustomerRequest[0].subscribedGeoObjectId}]
                             }
                             this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.create([newCustomerUsedGeoObjectData], {session});
                         }else{
@@ -88,10 +66,47 @@ class CustomerRequestServices{
                         }
                         //delete customerRequest
                         this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
-                    }else if(prevCustomerRequest.requestType == "one time"){
+                    }else if(prevCustomerRequest[0].requestType == "subscription with location"){
+                        const coordinates = prevCustomerRequest[0].requestCoordinate;
+                        const pointName = prevCustomerRequest[0].pointName;
+                        const pointDescription = prevCustomerRequest[0].pointDescription;
+                        
+                        //create subscription
+                        const newSubData = {companyId, customerId};
+                        this.result.subscription = await Subscription.create([newSubData], {session});
+                        
+                        //create new point
+                        const newPointData = {
+                            companyId, 
+                            pointName, 
+                            coordinates, wasteCondition:"none", 
+                            description:pointDescription
+                        };
+                        this.result.point = await GeoObjectPoint.create([newPointData], session);
+                        //test
+                        console.log(this.result.point._id);
+                        
+                        //customer used geo object
+                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, session);
+                        if(_.isEmpty(tempCustomerUsedGeoObject)){
+                            const newCustomerUsedGeoObjectData = {
+                                customerId:customerId,
+                                usedPoint:[{companyId:companyId, pointId:this.result.point._id}],
+                                usedTrack:[]
+                            }
+                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.create([newCustomerUsedGeoObjectData], {session});
+                        }else{
+                            const usedPoint = tempCustomerUsedGeoObject.usedPoint;
+                            const CustomerUsedGeoObjectId = tempCustomerUsedGeoObject._id;
+                            usedPoint.push({companyId:companyId, pointId:this.result.point._id});
+                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(CustomerUsedGeoObjectId, {usedPoint:usedPoint}, session);
+                        }
+                        //delete customerRequest
+                        this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
+                    }else if(prevCustomerRequest[0].requestType == "one time"){
                         //send notification to driver
                         const newSchedule = {
-                            customerId:prevCustomerRequest.customerId,
+                            customerId,
                             customerRequestId:id
                         };
                         this.result.schedule = await Schedule.create([newSchedule], {session});
@@ -99,7 +114,7 @@ class CustomerRequestServices{
                     
                     }
                     
-                }else if(prevCustomerRequest.requestStatus == "confirmed" && updateData.requestStatus == "finished"){
+                }else if(prevCustomerRequest[0].requestStatus == "confirmed" && updateData.requestStatus == "finished"){
                     this.result.schedule = await Schedule.deleteScheduleByRef("customerRequestId", id, session);
                     this.result.customerRequest = await CustomerRequest.updateCustomerRequestById(id, { requestStatus:"finished" }, session);
                 }

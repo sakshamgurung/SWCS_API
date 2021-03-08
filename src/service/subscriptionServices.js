@@ -8,7 +8,7 @@ const Notification = require('../models/common/notification');
 const Work = require('../models/common/work');
 const Schedule = require('../models/customers/schedule');
 const GeoObjectPoint = require('../models/companies/geoObjectPoint');
-const GeoObjectZone = require('../models/companies/geoObjectZone');
+const GeoObjectTrack = require('../models/companies/geoObjectTrack');
 
 
 class SubscriptionServices{
@@ -44,7 +44,7 @@ class SubscriptionServices{
                 
                 if(!_.isEmpty(tempCustomerUsedGeoObject)){
                     const removeUsedPoint = _.remove(tempCustomerUsedGeoObject[0].usedPoint, o => o.companyId == companyId);
-                    const updateUsedZone = _.remove(tempCustomerUsedGeoObject[0].usedZone, o => o.companyId == companyId);
+                    const updateUsedTrack = _.remove(tempCustomerUsedGeoObject[0].usedTrack, o => o.companyId == companyId);
                     const tempSchedule = await Schedule.findScheduleByRef("customerId", customerId, session);
                     
                     if(!_.isEmpty(removeUsedPoint)){
@@ -66,7 +66,7 @@ class SubscriptionServices{
                         this.result.work = await Work.updateWorkById(workId, {geoObjectPointId: geoObjectPointIdUpdate}, session);
                         
                         //checking if work is empty
-                        if(_.isEmpty(tempWork[0].geoObjectPointId) && _.isEmpty(tempWork[0].geoObjectZoneId)){
+                        if(_.isEmpty(tempWork[0].geoObjectPointId) && _.isEmpty(tempWork[0].geoObjectTrackId)){
                             //notify the company and ask to delete work
                         }
 
@@ -74,11 +74,11 @@ class SubscriptionServices{
                         this.result.geoObjectPoint = await GeoObjectPoint.deleteGeoObjectById(removeUsedPointId, session);
                     }
 
-                    //update geoObjectZone
-                    if(!_.isEmpty(updateUsedZone)){
-                        const updateUsedZoneId = updateUsedZone[0].zoneId;
-                        const tempGeoObjectZone = await GeoObjectZone.findGeoObjectById(updateUsedZoneId, session);
-                        const workId =  tempGeoObjectZone[0].workId;
+                    //update geoObjectTrack
+                    if(!_.isEmpty(updateUsedTrack)){
+                        const updateUsedTrackId = updateUsedTrack[0].trackId;
+                        const tempGeoObjectTrack = await GeoObjectTrack.findGeoObjectById(updateUsedTrackId, session);
+                        const workId =  tempGeoObjectTrack[0].workId;
                         
                         //delete schedule
                         const removeSchedule = _.remove(tempSchedule, o => o.workId == workId);
@@ -89,16 +89,16 @@ class SubscriptionServices{
                         //check if there is any schedule for work id
                         const allSchedule = await Schedule.findScheduleByRef("workId", workId, session);
                         if(_.isEmpty(allSchedule)){
-                            //update work => geoObjectZone
+                            //update work => geoObjectTrack
                             const tempWork = await Work.findWorkById(workId);
-                            _.remove(tempWork[0].geoObjectZoneId, o => o == updateUsedZoneId);
+                            _.remove(tempWork[0].geoObjectTrackId, o => o == updateUsedTrackId);
                             
                             const geoObjectPointIdUpdate = tempWork[0].geoObjectPointId;
                             this.result.work = await Work.updateWorkById(workId, {geoObjectPointId: geoObjectPointIdUpdate}, session);
                             
                             //checking if work is empty
-                            if(_.isEmpty(tempWork[0].geoObjectPointId) && _.isEmpty(tempWork[0].geoObjectZoneId)){
-                                this.result.geoObjectZone = await GeoObjectZone.updateGeoObjectById(updateUsedZone, {workId:""}, session);
+                            if(_.isEmpty(tempWork[0].geoObjectPointId) && _.isEmpty(tempWork[0].geoObjectTrackId)){
+                                this.result.geoObjectTrack = await GeoObjectTrack.updateGeoObjectById(updateUsedTrack, {workId:""}, session);
                                 //notify the company and ask to delete work
 
                             }
@@ -108,12 +108,12 @@ class SubscriptionServices{
                     const customerUsedGeoObjectId = tempCustomerUsedGeoObject[0]._id;
                     
                     //update customerUsedGeoObject
-                    if(_.isEmpty(tempCustomerUsedGeoObject[0].usedPoint) && _.isEmpty(tempCustomerUsedGeoObject[0].usedZone)){
+                    if(_.isEmpty(tempCustomerUsedGeoObject[0].usedPoint) && _.isEmpty(tempCustomerUsedGeoObject[0].usedTrack)){
                         this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.deleteCustomerUsedGeoObjectById(customerUsedGeoObjectId, session);
                     }else{
                         const usedPointUpdate = tempCustomerUsedGeoObject[0].usedPoint;
-                        const usedZoneUpdate = tempCustomerUsedGeoObject[0].usedZone;
-                        const customerUsedGeoObjectUpdateData = {usedPoint:usedPointUpdate, usedZone:usedZoneUpdate};
+                        const usedTrackUpdate = tempCustomerUsedGeoObject[0].usedTrack;
+                        const customerUsedGeoObjectUpdateData = {usedPoint:usedPointUpdate, usedTrack:usedTrackUpdate};
                         this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(customerUsedGeoObjectId, customerUsedGeoObjectUpdateData, session);
                     }
                 }

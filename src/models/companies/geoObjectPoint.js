@@ -13,6 +13,13 @@ const schema = new Schema({
     workId:{
         type:String,
     },
+    wasteLimit:{
+        type:Number
+    },
+    wasteLimitUnit:{
+        type:String,
+        enum:["kg"]
+    },
     wasteCondition:{
         type:String,
         enum:["none", "low", "medium", "high"]

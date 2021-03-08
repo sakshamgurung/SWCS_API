@@ -55,7 +55,7 @@ const schema = new Schema({
     geoObjectPointId:{
         type:[String],
     },
-    geoObjectZoneId:{
+    geoObjectTrackId:{
         type:[String],
     }
 },{
@@ -85,7 +85,7 @@ class HelperClass{
             case "staffGroupId": return this.find({staffGroupId:id},{ session:session });
             case "vehicleId": return this.find({vehicleId:id},{ session:session });
             case "geoObjectPointId": return this.find({geoObjectPointId:id},{ session:session });
-            case "geoObjectZoneId": return this.find({geoObjectZoneId:id},{ session:session });
+            case "geoObjectTrackId": return this.find({geoObjectTrackId:id},{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
@@ -95,7 +95,7 @@ class HelperClass{
             case "staffGroupId": return this.updateMany({staffGroupId:id},this.translateAliases( updateData ),{ session:session });
             case "vehicleId": return this.updateMany({vehicleId:id},this.translateAliases( updateData ),{ session:session });
             case "geoObjectPointId": return this.updateMany({geoObjectPointId:id},this.translateAliases( updateData ),{ session:session });
-            case "geoObjectZoneId": return this.updateMany({geoObjectZoneId:id},this.translateAliases( updateData ),{ session:session });
+            case "geoObjectTrackId": return this.updateMany({geoObjectTrackId:id},this.translateAliases( updateData ),{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
@@ -105,7 +105,7 @@ class HelperClass{
             case "staffGroupId": return this.deleteMany({staffGroupId:id},{ session:session });
             case "vehicleId": return this.deleteMany({vehicleId:id},{ session:session });
             case "geoObjectPointId": return this.deleteMany({geoObjectPointId:id},{ session:session });
-            case "geoObjectZoneId": return this.deleteMany({geoObjectZoneId:id},{ session:session });
+            case "geoObjectTrackId": return this.deleteMany({geoObjectTrackId:id},{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }

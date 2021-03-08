@@ -25,6 +25,9 @@ const schema = new Schema({
     requestCoordinate:{
         type:{latitude:Number, longitude:Number},
     },
+    subscribedGeoObjectId:{
+        type:String,
+    },
     workDescription:{
         type:String,
     },

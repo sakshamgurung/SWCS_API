@@ -5,7 +5,7 @@ const Work = require('../models/common/work');
 const Schedule = require('../models/customers/schedule');
 const CustomerUsedGeoObject = require('../models/customers/customerUsedGeoObject');
 const Point = require('../models/companies/geoObjectPoint')
-const Zone = require('../models/companies/geoObjectZone')
+const Track = require('../models/companies/geoObjectTrack')
 
 class WorkServices{
 
@@ -15,8 +15,24 @@ class WorkServices{
     }
     
     async createNewWork(workData){
-        this.work = new Work(workData);
-        this.result = await this.work.save();
+        this.result = {};
+        const session = await mongoose.startSession();
+        try{
+            await session.withTransaction(async()=>{
+                this.work = new Work(workData);
+                this.result.work = await this.work.save({session:session});
+                const workId = this.result._id;
+
+                workData.geoObjectPointId.forEach( pid => {
+                    this.result.geoObjectPoint = await Point.updateGeoObjectById(pid, {workId:workId}, session);
+                });
+                workData.geoObjectTrackId.forEach( tid => {
+                    this.result.geoObjectTrack = await Point.updateGeoObjectById(tid, {workId:workId}, session);
+                });
+            });
+        }finally{
+            session.endSession();
+        }
         return this.result;
     }
 
@@ -36,9 +52,9 @@ class WorkServices{
             await session.withTransaction(async()=> {
                 const prevWork = await Work.findWorkById(id, session);
 
-                if(prevWork.workStatus == "unconfirmed"){
-                    const deletedPointId = _.difference(prevWork.geoObjectPointId, updateData.geoObjectPointId);
-                    const addedPointId = _.difference(updateData.geoObjectPointId, prevWork.geoObjectPointId);
+                if(prevWork[0].workStatus == "unconfirmed"){
+                    const deletedPointId = _.difference(prevWork[0].geoObjectPointId, updateData.geoObjectPointId);
+                    const addedPointId = _.difference(updateData.geoObjectPointId, prevWork[0].geoObjectPointId);
                     if(deletedPointId.length > 0 ){
                         deletedPointId.forEach(async p => { 
                             this.result.point = await Point.updateGeoObjectById(p, {workId:""},  session);
@@ -50,27 +66,27 @@ class WorkServices{
                         });
                     }
 
-                    const deletedZoneId = _.difference(prevWork.geoObjectZoneId, updateData.geoObjectZoneId);
-                    const addedZoneId = _.difference(updateData.geoObjectZoneId, prevWork.geoObjectZoneId);
-                    if(deletedZoneId.length > 0 ){
-                        deletedZoneId.forEach(async z => { 
-                            this.result.zone = await Zone.updateGeoObjectById(z, {workId:""},  session);
+                    const deletedTrackId = _.difference(prevWork[0].geoObjectTrackId, updateData.geoObjectTrackId);
+                    const addedTrackId = _.difference(updateData.geoObjectTrackId, prevWork[0].geoObjectTrackId);
+                    if(deletedTrackId.length > 0 ){
+                        deletedTrackId.forEach(async t => { 
+                            this.result.Track = await Track.updateGeoObjectById(t, {workId:""},  session);
                         });
                     }
-                    if(addedZoneId.length > 0 ){
-                        addedZoneId.forEach(async z => { 
-                            this.result.zone = await Zone.updateGeoObjectById(z, {workId:id},  session);
+                    if(addedTrackId.length > 0 ){
+                        addedTrackId.forEach(async t => { 
+                            this.result.Track = await Track.updateGeoObjectById(t, {workId:id},  session);
                         });
                     }
 
                     this.result.work = await Work.updateWorkById(id, updateData, session);
                     //notify staffId and staffGroupId after deleting work
                 
-                }else if(prevWork.workStatus == "confirmed" && updateData.workStatus == "on progress"){
+                }else if(prevWork[0].workStatus == "confirmed" && updateData.workStatus == "on progress"){
 
-                    const zoneId = await Zone.findGeoObjectByRef("workId", id, session);
-                    zoneId.forEach(async z => {
-                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedZone.zoneId", z._id, session);
+                    const trackId = await Track.findGeoObjectByRef("workId", id, session);
+                    trackId.forEach(async t => {
+                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedTrack.trackId", t._id, session);
                         customerId.forEach(async c => {
                             const newSchedule = {
                                 customerId:c.customerId,
@@ -94,21 +110,21 @@ class WorkServices{
                     
                     this.result.work = await Work.updateWorkById(id, { workStatus:"on progress" }, session);
 
-                }else if(prevWork.workStatus == "on progress" && updateData.workStatus == "finished" ){
-                    this.result = { geoObjectPoint:[], geoObjectZone:[] };
+                }else if(prevWork[0].workStatus == "on progress" && updateData.workStatus == "finished" ){
+                    this.result = { geoObjectPoint:[], geoObjectTrack:[] };
                     
-                    const zoneId = await Zone.findGeoObjectByRef("workId", id, session);
-                    zoneId.forEach(async z => {
-                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedZone.zoneId", z._id, session);
+                    const trackId = await Track.findGeoObjectByRef("workId", id, session);
+                    trackId.forEach(async t => {
+                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedTrack.trackId", t._id, session);
                         customerId.forEach(async c => {
-                            _.remove( c.usedZone, uz => { return uz.zoneId == z._id; });
+                            _.remove( c.usedTrack, ut => { return ut.trackId == t._id; });
                             const customerId = c.customerId;
-                            const customerUsedGeoObjectUpdateData = { usedZone:c.usedZone };
+                            const customerUsedGeoObjectUpdateData = { usedTrack:c.usedTrack };
                             this.result.customerUsedGeoObject = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectByRef("customerId", customerId, 
                             customerUsedGeoObjectUpdateData, session);
                         });
-                        const result = await Zone.updateGeoObjectById(z._id, { workId:"" }, session);
-                        this.result.geoObjectZone.push(result);
+                        const result = await Track.updateGeoObjectById(t._id, { workId:"" }, session);
+                        this.result.geoObjectTrack.push(result);
                     });
                     
                     const pointId = await Point.findGeoObjectByRef("workId", id, session);
@@ -140,7 +156,7 @@ class WorkServices{
         const session = await mongoose.startSession();
         try{
             await session.withTransaction(async() => {
-                this.result = { geoObjectPoint:[], geoObjectZone:[] };
+                this.result = { geoObjectPoint:[], geoObjectTrack:[] };
 
                 //deleting customerRequest ref from schedule
                 this.result.schedule = await Schedule.deleteScheduleByRef("workId", id, session);
@@ -153,12 +169,12 @@ class WorkServices{
                     this.result.geoObjectPoint.push(result);
                 });
                 
-                //deleting work ref from geoObjectZone
-                const tempZone = await Zone.findGeoObjectByRef("workId", id, session);
+                //deleting work ref from geoObjectTrack
+                const tempTrack = await Track.findGeoObjectByRef("workId", id, session);
 
-                tempZone.forEach(async z => {
-                    const result = await Zone.updateGeoObjectById(z._id, { workId:"" }, session);
-                    this.result.geoObjectZone.push(result);
+                tempTrack.forEach(async t => {
+                    const result = await Track.updateGeoObjectById(t._id, { workId:"" }, session);
+                    this.result.geoObjectTrack.push(result);
                 });
                 
                 this.result.work = await Work.deleteWorkById(id, session);

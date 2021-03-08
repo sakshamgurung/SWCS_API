@@ -11,6 +11,10 @@ const schema = new Schema({
         type:String,
         required:true,
     },
+    geoObjectType:{
+        type:String,
+        enum:["track", "point"]
+    },
     geoObjectId:{
         type:String,
         required:true,
@@ -44,7 +48,7 @@ const schema = new Schema({
                 type:Schema.Types.Date
             },
             coordinates:{ longitude:Number, latitude:Number },
-            zone:[
+            track:[
                 { 
                     coordinates:{longitude:Number, latitude:Number} 
                 }

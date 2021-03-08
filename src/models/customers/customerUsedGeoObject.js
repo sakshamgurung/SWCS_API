@@ -13,10 +13,10 @@ const schema = new Schema({
             pointId:String
         }],
     },
-    usedZone:{
+    usedTrack:{
         type:[{
             companyId:String,
-            zoneId:String
+            trackId:String
         }],
     }
 },{
@@ -39,7 +39,7 @@ class HelperClass{
         switch(ref){
             case "customerId": return this.find({customerId:id},{ session:session });
             case "usedPoint.pointId": return this.find({ "usedPoint.pointId":id},{ session:session });
-            case "usedZone.zoneId": return this.find({ "usedZone.zoneId":id },{ session:session });
+            case "usedTrack.trackId": return this.find({ "usedTrack.trackId":id },{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
@@ -48,7 +48,7 @@ class HelperClass{
         switch(ref){
             case "customerId": return this.updateMany({customerId:id},this.translateAliases( updateData ),{ session:session });
             case "usedPoint.pointId": return this.updateMany({ "usedPoint.pointId":id},this.translateAliases( updateData ),{ session:session });
-            case "usedZone.zoneId": return this.updateMany({ "usedZone.zoneId":id },this.translateAliases( updateData ),{ session:session });
+            case "usedTrack.trackId": return this.updateMany({ "usedTrack.trackId":id },this.translateAliases( updateData ),{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
@@ -57,7 +57,7 @@ class HelperClass{
         switch(ref){
             case "customerId": return this.deleteMany({customerId:id},{ session:session });
             case "usedPoint.pointId": return this.deleteMany({ "usedPoint.pointId":id},{ session:session });
-            case "usedZone.zoneId": return this.deleteMany({ "usedZone.zoneId":id },{ session:session });
+            case "usedTrack.trackId": return this.deleteMany({ "usedTrack.trackId":id },{ session:session });
             default: throw ApiError.badRequest("ref not defined");
         }
     }
