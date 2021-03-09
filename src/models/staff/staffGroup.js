@@ -16,50 +16,101 @@ const schema = new Schema({
     },
     description:{
         type:String
+    },
+    isReserved:{
+        type:Boolean,
+        required:true,
     }
 },{
     collection:"staffGroups"
 });
 
 class HelperClass{
-    static findAllStaffGroup(companyId, session){
-        return this.find({ companyId:companyId },{ session:session });
+    static findAllStaffGroup(companyId, projection, session){
+        if(session == undefined){
+            return this.find({ companyId }, projection);
+        }else{
+            return this.find({ companyId }, projection, { session });
+        }
     }
-    static findStaffGroupById(id, session){
-        return this.find({ _id:id },{ session:session });
+
+    static findStaffGroupById(id, projection, session){
+        if(session == undefined){
+            return this.find({ _id:id }, projection);
+        }else{
+            return this.find({ _id:id }, projection, { session });
+        }
     }
+
     static updateStaffGroupById(id, updateData, session){
-        return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session:session });
+        if(session == undefined){
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ));
+        }else{
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session });
+        }
     }
+    
     static deleteStaffGroupById(id, session){
-        return this.deleteOne({ _id:id }, { session:session });
+        if(session == undefined){
+            return this.deleteOne({ _id:id });
+        }else{
+            return this.deleteOne({ _id:id }, { session });
+        }
     }
 
-    static findAllStaffGroupByStaffIdArray(idArray, session){
-        return this.find({ staffId:{ $in:idArray } },{ session:session });
+    static findAllStaffGroupByStaffIdArray(idArray, projection, session){
+        if(session == undefined){
+            return this.find({ staffId:{ $in:idArray } }, projection);
+        }else{
+            return this.find({ staffId:{ $in:idArray } }, projection, { session });
+        }
     }
 
-    static findStaffGroupByRef(ref, id, session){
-        switch(ref){
-            case "companyId": return this.find({companyId:id},{ session:session });
-            case "staffId": return this.find({staffId:id},{ session:session });
-            default: throw ApiError.badRequest("ref not defined");
+    static findStaffGroupByRef(ref, id, projection, session){
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.find({companyId:id}, projection);
+                case "staffId": return this.find({staffId:id}, projection);
+                default: throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.find({companyId:id}, projection, { session });
+                case "staffId": return this.find({staffId:id}, projection, { session });
+                default: throw ApiError.badRequest("ref not defined");
+            }
         }
     }
 
     static updateStaffGroupByRef(ref, id, updateData, session){
-        switch(ref){
-            case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ),{ session:session });
-            case "staffId": return this.updateMany({staffId:id},this.translateAliases( updateData ),{ session:session });
-            default: throw ApiError.badRequest("ref not defined");
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ));
+                case "staffId": return this.updateMany({staffId:id},this.translateAliases( updateData ));
+                default: throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ),{ session });
+                case "staffId": return this.updateMany({staffId:id},this.translateAliases( updateData ),{ session });
+                default: throw ApiError.badRequest("ref not defined");
+            }
         }
     }
 
     static deleteStaffGroupByRef(ref, id, session){
-        switch(ref){
-            case "companyId": return this.deleteMany({companyId:id},{ session:session });
-            case "staffId": return this.deleteMany({staffId:id},{ session:session });
-            default: throw ApiError.badRequest("ref not defined");
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.deleteMany({companyId:id});
+                case "staffId": return this.deleteMany({staffId:id});
+                default: throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.deleteMany({companyId:id},{ session });
+                case "staffId": return this.deleteMany({staffId:id},{ session });
+                default: throw ApiError.badRequest("ref not defined");
+            }
         }
     }
 

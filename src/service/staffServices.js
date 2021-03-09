@@ -61,11 +61,11 @@ class StaffServices{
                 this.result = {};
 
                 //removing deleted staff from the staffGroup collection's staffId field
-                const tempStaffGroup = await StaffGroup.findStaffGroupByRef("staffId", id, session);
+                const tempStaffGroup = await StaffGroup.findStaffGroupByRef("staffId", id, {}, session);
                 _.remove(tempStaffGroup[0].staffId, o => o == id);
                 const staffGroupId = tempStaffGroup[0]._id;
                 const staffId = tempStaffGroup[0].staffId;
-                this.result.staffGroup = await StaffGroup.updateStaffGroupById(staffGroupId, {staffId:staffId}, session);
+                this.result.staffGroup = await StaffGroup.updateStaffGroupById(staffGroupId, {staffId}, session);
                 
                 //removing staff notification
                 Notification.deleteNotificationByRole('staff', id, session);

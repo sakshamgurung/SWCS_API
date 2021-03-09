@@ -20,10 +20,10 @@ class CompanyServices{
                 this.result = {};
 
                 this.companyDetail = new CompanyDetail(companyDetail);
-                this.result.companyDetail = await this.companyDetail.save({session:session});
+                this.result.companyDetail = await this.companyDetail.save({session});
 
                 this.companyServiceDetail = new CompanyServiceDetail(companyServiceDetail);
-                this.result.companyServiceDetail = await this.companyServiceDetail.save({session:session});
+                this.result.companyServiceDetail = await this.companyServiceDetail.save({session});
             });
         }finally{
             session.endSession();

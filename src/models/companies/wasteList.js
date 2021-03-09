@@ -38,40 +38,83 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllWasteList(companyId, session){
-        return this.find({ companyId:companyId },{ session:session });
-    }
-    static findWasteListById(id, session){
-        return this.find({ _id:id },{ session:session });
-    }
-    static updateWasteListById(id, updateData, session){
-        return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session:session });
-    }
-    static deleteWasteListById(id, session){
-        return this.deleteOne({ _id:id }, { session:session });
+    static findAllWasteList(companyId, projection, session){
+        if(session == undefined){
+            return this.find({ companyId }, projection);
+        }else{
+            return this.find({ companyId }, projection, { session });
+        }
     }
 
-    static findWasteListByRef(ref, id, session){
-        switch(ref){
-            case "companyId": return this.find({companyId:id},{ session:session });
-            case "wasteCatalogId": return this.find({wasteCatalogId:id},{ session:session });
-            default: throw ApiError.badRequest("ref not defined");
+    static findWasteListById(id, projection, session){
+        if(session == undefined){
+            return this.find({ _id:id }, projection);
+        }else{
+            return this.find({ _id:id }, projection, { session });
+        }
+    }
+
+    static updateWasteListById(id, updateData, session){
+        if(session == undefined){
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ));
+        }else{
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session });
+        }
+    }
+
+    static deleteWasteListById(id, session){
+        if(session == undefined){
+            return this.deleteOne({ _id:id });
+        }else{
+            return this.deleteOne({ _id:id }, { session });
+        }
+    }
+
+    static findWasteListByRef(ref, id, projection, session){
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.find({companyId:id}, projection);
+                case "wasteCatalogId": return this.find({wasteCatalogId:id}, projection);
+                default: throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.find({companyId:id}, projection, { session });
+                case "wasteCatalogId": return this.find({wasteCatalogId:id}, projection, { session });
+                default: throw ApiError.badRequest("ref not defined");
+            }
         }
     }
 
     static updateWasteListByRef(ref, id, updateData, session){
-        switch(ref){
-            case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ),{ session:session });
-            case "wasteCatalogId": return this.updateMany({wasteCatalogId:id},this.translateAliases( updateData ),{ session:session });
-            default: throw ApiError.badRequest("ref not defined");
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ));
+                case "wasteCatalogId": return this.updateMany({wasteCatalogId:id},this.translateAliases( updateData ));
+                default: throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ),{ session });
+                case "wasteCatalogId": return this.updateMany({wasteCatalogId:id},this.translateAliases( updateData ),{ session });
+                default: throw ApiError.badRequest("ref not defined");
+            }
         }
     }
 
     static deleteWasteListByRef(ref, id, session){
-        switch(ref){
-            case "companyId": return this.deleteMany({companyId:id},{ session:session });
-            case "wasteCatalogId": return this.deleteMany({wasteCatalogId:id},{ session:session });
-            default: throw ApiError.badRequest("ref not defined");
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.deleteMany({companyId:id});
+                case "wasteCatalogId": return this.deleteMany({wasteCatalogId:id});
+                default: throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.deleteMany({companyId:id},{ session });
+                case "wasteCatalogId": return this.deleteMany({wasteCatalogId:id},{ session });
+                default: throw ApiError.badRequest("ref not defined");
+            }
         }
     }
 }

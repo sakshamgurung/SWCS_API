@@ -1,5 +1,5 @@
 const express = require("express");
-const route = express.Router();
+const router = express.Router();
 const {AccountController} = require('../controllers/accountController');
 const catchAsync = require('../error/catchAsync');
 

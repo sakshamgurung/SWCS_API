@@ -6,7 +6,7 @@ class CompanyController{
             const { companyDetail, companyServiceDetail } = request.body;
             
             const companyServices = new CompanyServices();
-            const result = companyServices.newCompanyInfo(companyDetail, companyServiceDetail);// two database will be created
+            const result = await companyServices.newCompanyInfo(companyDetail, companyServiceDetail);// two database will be created
             
             response.json(result);
         } catch (error) {

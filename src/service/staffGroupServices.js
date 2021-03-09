@@ -34,7 +34,7 @@ class StaffGroupServices{
         try{
             await session.withTransaction(async () => {
                 this.result = {staffDetail:[]};
-                const prevStaffGroupData = await StaffGroup.findStaffGroupById(id, session);
+                const prevStaffGroupData = await StaffGroup.findStaffGroupById(id, {}, session);
         
                 const deletedGroupMember = _.difference(prevStaffGroupData[0].staffId, updateData.staffId);
                 const addedGroupMember = _.difference(updateData.staffId, prevStaffGroupData[0].staffId);
@@ -67,7 +67,7 @@ class StaffGroupServices{
                 this.result = { staffDetail:[] };
                 
                 //removing deleted staffGroupId from the staffDetail collection
-                const tempStaffDetail = await StaffDetail.findStaffDetailByRef("staffGroupId", id, session);
+                const tempStaffDetail = await StaffDetail.findStaffDetailByRef("staffGroupId", id, {}, session);
                 tempStaffDetail.forEach(async sd => {               
                     const result = await StaffDetail.updateStaffDetailById(sd._id, {staffGroupId:""}, session);
                     this.result.staffDetail.push(result);

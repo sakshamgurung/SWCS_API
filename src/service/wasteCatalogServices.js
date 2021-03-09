@@ -39,7 +39,7 @@ class WasteCatalogServices{
         try{
             await session.withTransaction(async() => {
                 this.result = { wasteList:[] };
-                const tempWasteList = await WasteList.findWasteListByRef("wasteCatalogId", id, session);
+                const tempWasteList = await WasteList.findWasteListByRef("wasteCatalogId", id, {}, session);
                 
                 if(wasteList.remapping){
                     //remapping

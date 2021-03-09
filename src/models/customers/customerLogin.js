@@ -36,33 +36,84 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllCustomerInIdArray(idArray, session){
-        return this.find({ _id:{ $in:idArray } },{ session:session });
+    static findAllCustomerInIdArray(idArray, projection, session){
+        if(session == undefined){
+            return this.find({ _id:{ $in:idArray } }, projection); 
+        }else{
+            return this.find({ _id:{ $in:idArray } }, projection, { session });
+        }
     }
-    static findCustomerById(id, session){
-        return this.find({ _id:id },{ session:session });
+    
+    static findCustomerById(id, projection, session){
+        if(session == undefined){
+            return this.find({ _id:id }, projection);
+        }else{
+            return this.find({ _id:id }, projection, { session });
+        }
     }
+    
     static updateCustomerById(id, updateData, session){
-        return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session:session });
+        if(session == undefined){
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ));
+        }else{
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session });
+        }
     }
+
     static deleteCustomerById(id, session){
-        return this.deleteOne({ _id:id }, { session:session });
+        if(session == undefined){
+            return this.deleteOne({ _id:id });
+        }else{
+            return this.deleteOne({ _id:id }, { session });
+        }
     }
 
-    static findCustomerByUUID(uuidArray, session){
-        return this.find({ uuid:{ $in: uuidArray }  },{ session:session });
+    static findCustomerByEmail(email, projection, session){
+        if(session == undefined){
+            return this.find({ email}, projection);
+        }else{
+            return this.find({ email}, projection, { session });
+        }
     }
 
-    static findCustomerByToken(token, session){
-        return this.find({ token:token },{ session:session });
+    static findCustomerByMobileNo(mobileNo, projection, session){
+        if(session == undefined){
+            return this.find({ mobileNo}, projection);
+        }else{
+            return this.find({ mobileNo}, projection, { session });
+        }
     }
 
-    static findCustomerByRefreshToken(refreshToken, session){
-        return this.find({ refreshToken: refreshToken },{ session:session });
+    static findCustomerByUUID(uuidArray, projection, session){
+        if(session == undefined){
+            return this.find({ uuid:{ $in: uuidArray }  }, projection);
+        }else{
+            return this.find({ uuid:{ $in: uuidArray }  }, projection, { session });
+        }
     }
 
-    static findCompanyByResetToken(resetToken, session){
-        return this.find({ resetToken: resetToken },{ session:session });
+    static findCustomerByToken(token, projection, session){
+        if(session == undefined){
+            return this.find({ token }, projection);
+        }else{
+            return this.find({ token }, projection, { session });
+        }
+    }
+
+    static findCustomerByRefreshToken(refreshToken, projection, session){
+        if(session == undefined){
+            return this.find({ refreshToken }, projection);
+        }else{
+            return this.find({ refreshToken }, projection, { session });
+        }
+    }
+
+    static findCustomerByResetToken(resetToken, projection, session){
+        if(session == undefined){
+            return this.find({ resetToken }, projection);
+        }else{
+            return this.find({ resetToken }, projection, { session });
+        }
     }
 }
 

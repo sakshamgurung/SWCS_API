@@ -76,9 +76,9 @@ class GeoObjectServices{
                 }else if(updateType == "remapping"){
                     let tempWork;
                     if(geoObjectType == "track"){
-                        tempWork = await Work.findWorkByRef("geoObjectTrackId", id, session);
+                        tempWork = await Work.findWorkByRef("geoObjectTrackId", id, {}, session);
                     }else if(geoObjectType == "point"){
-                        tempWork = await Work.findWorkByRef("geoObjectPointId", id, session);
+                        tempWork = await Work.findWorkByRef("geoObjectPointId", id, {}, session);
                     }else{
                         throw ApiError.badRequest("geo object type not valid");
                     }
@@ -90,7 +90,7 @@ class GeoObjectServices{
                     if(blockFlag != -1){
                         _.remove( tempWork, w => { return w.workStatus == "finished" });
 
-                        const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", id, session);
+                        const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", id, {}, session);
                         _.remove( tempWasteDump, wd => { return wd.isCollected == true });
 
                         /** remapping
@@ -155,7 +155,7 @@ class GeoObjectServices{
                 const customerUsedGeoObject = [];
 
                 //removing non collected wasteDump
-                const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", id, session);
+                const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", id, {}, session);
                 _.remove(tempWasteDump, o => o.isCollected == true );
                 tempWasteDump.forEach(async wd => {
                     const result = await WasteDump.deleteWasteDumpById( wd._id, session );
@@ -164,13 +164,13 @@ class GeoObjectServices{
                 
                 if(geoObjectType == "track"){
                     //removing geoObject ref from work
-                    const tempWork = await Work.findWorkByRef("geoObjectTrackId", id, session);
+                    const tempWork = await Work.findWorkByRef("geoObjectTrackId", id, {}, session);
                     tempWork.forEach( w => {
                         _.remove(w.geoObjectTrackId, got => got == id);
                         work.push({workId:w._id, workUpdateData:{geoObjectTrackId:w.geoObjectTrackId}});
                     })
                     //removing geoObject ref from customerUsedGeoObject
-                    const tempCustomerUsedGeoObjects = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedTrack.TrackId", id, session);
+                    const tempCustomerUsedGeoObjects = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedTrack.TrackId", id, {}, session);
                     tempCustomerUsedGeoObjects.forEach( cugo => {
                         _.remove(cugo.usedTrack, o => o.trackId == id );
                         let deleteCustomerUsedGeoObject = false;
@@ -186,13 +186,13 @@ class GeoObjectServices{
 
                 }else if(geoObjectType == "point"){
                     //removing geoObject ref from work
-                    const tempWork = await Work.findWorkByRef("geoObjectPointId", id, session);
+                    const tempWork = await Work.findWorkByRef("geoObjectPointId", id, {}, session);
                     tempWork.forEach( w => {
                         _.remove(w.geoObjectPointId, gop => gop == id);
                         work.push({workId:w._id, workUpdateData:{geoObjectPointId:w.geoObjectPointId}});
                     })
                     //removing geoObject ref from customerUsedGeoObject
-                    const tempCustomerUsedGeoObjects = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedPoint.pointId", id, session);
+                    const tempCustomerUsedGeoObjects = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedPoint.pointId", id, {}, session);
                     tempCustomerUsedGeoObjects.forEach( cugo => {
                         _.remove(cugo.usedPoint, o => o.pointId == id );
                         let deleteCustomerUsedGeoObject = false;

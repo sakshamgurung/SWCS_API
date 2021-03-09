@@ -6,7 +6,7 @@ class StaffGroupController{
             const { body } = request;
             
             const staffGroupServices = new StaffGroupServices();
-            const result = staffGroupServices.createNewStaffGroup(body);
+            const result =  await staffGroupServices.createNewStaffGroup(body);
 
             response.json(result);
         } catch (error) {

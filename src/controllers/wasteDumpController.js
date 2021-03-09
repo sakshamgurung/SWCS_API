@@ -6,7 +6,7 @@ class WasteDumpController{
             const { body } = request;
             
             const wasteDumpServices = new WasteDumpServices();
-            const result = wasteDumpServices.createNewWasteDump(body);
+            const result =  await wasteDumpServices.createNewWasteDump(body);
 
             response.json(result);
         } catch (error) {

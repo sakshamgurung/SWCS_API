@@ -7,7 +7,7 @@ class AccountController{
             const { role } = request.params;
 
             const accountServices = new AccountServices();
-            const result = accountServices.signUp(role, signUpData);
+            const result = await accountServices.signUp(role, signUpData);
             response.json(result);
         } catch (error) {
             console.error(error.message);

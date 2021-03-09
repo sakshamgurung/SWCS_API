@@ -20,14 +20,14 @@ class WorkServices{
         try{
             await session.withTransaction(async()=>{
                 this.work = new Work(workData);
-                this.result.work = await this.work.save({session:session});
+                this.result.work = await this.work.save({session});
                 const workId = this.result._id;
 
                 workData.geoObjectPointId.forEach(async pid => {
-                    this.result.geoObjectPoint = await Point.updateGeoObjectById(pid, {workId:workId}, session);
+                    this.result.geoObjectPoint = await Point.updateGeoObjectById(pid, {workId}, session);
                 });
                 workData.geoObjectTrackId.forEach(async tid => {
-                    this.result.geoObjectTrack = await Point.updateGeoObjectById(tid, {workId:workId}, session);
+                    this.result.geoObjectTrack = await Point.updateGeoObjectById(tid, {workId}, session);
                 });
             });
         }finally{
@@ -50,7 +50,7 @@ class WorkServices{
         const session = await mongoose.startSession();
         try{
             await session.withTransaction(async()=> {
-                const prevWork = await Work.findWorkById(id, session);
+                const prevWork = await Work.findWorkById(id, {}, session);
 
                 if(prevWork[0].workStatus == "unconfirmed"){
                     const deletedPointId = _.difference(prevWork[0].geoObjectPointId, updateData.geoObjectPointId);
@@ -84,9 +84,9 @@ class WorkServices{
                 
                 }else if(prevWork[0].workStatus == "confirmed" && updateData.workStatus == "on progress"){
 
-                    const trackId = await Track.findGeoObjectByRef("workId", id, session);
+                    const trackId = await Track.findGeoObjectByRef("workId", id, {}, session);
                     trackId.forEach(async t => {
-                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedTrack.trackId", t._id, session);
+                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedTrack.trackId", t._id, {}, session);
                         customerId.forEach(async c => {
                             const newSchedule = {
                                 customerId:c.customerId,
@@ -96,9 +96,9 @@ class WorkServices{
                         });
                     });
                     
-                    const pointId = await Point.findGeoObjectByRef("workId", id, session);
+                    const pointId = await Point.findGeoObjectByRef("workId", id, {}, session);
                     pointId.forEach(async p => {
-                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedPoint.pointId", p._id, session);
+                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedPoint.pointId", p._id, {}, session);
                         customerId.forEach(async c => {
                             const newSchedule = {
                                 customerId:c.customerId,
@@ -113,9 +113,9 @@ class WorkServices{
                 }else if(prevWork[0].workStatus == "on progress" && updateData.workStatus == "finished" ){
                     this.result = { geoObjectPoint:[], geoObjectTrack:[] };
                     
-                    const trackId = await Track.findGeoObjectByRef("workId", id, session);
+                    const trackId = await Track.findGeoObjectByRef("workId", id, {}, session);
                     trackId.forEach(async t => {
-                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedTrack.trackId", t._id, session);
+                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedTrack.trackId", t._id, {}, session);
                         customerId.forEach(async c => {
                             _.remove( c.usedTrack, ut => { return ut.trackId == t._id; });
                             const customerId = c.customerId;
@@ -127,9 +127,9 @@ class WorkServices{
                         this.result.geoObjectTrack.push(result);
                     });
                     
-                    const pointId = await Point.findGeoObjectByRef("workId", id, session);
+                    const pointId = await Point.findGeoObjectByRef("workId", id, {}, session);
                     pointId.forEach(async p => {
-                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedPoint.pointId", p._id, session);
+                        const customerId = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedPoint.pointId", p._id, {}, session);
                         customerId.forEach(async c => {
                             _.remove( c.usedPoint, up => { return up.pointId == p._id; });
                             const customerId = c.customerId;
@@ -162,7 +162,7 @@ class WorkServices{
                 this.result.schedule = await Schedule.deleteScheduleByRef("workId", id, session);
 
                 //deleting work ref from geoObjectPoint
-                const tempPoint = await Point.findGeoObjectByRef("workId", id, session);
+                const tempPoint = await Point.findGeoObjectByRef("workId", id, {}, session);
 
                 tempPoint.forEach(async p => {
                     const result = await Point.updateGeoObjectById(p._id, { workId:"" }, session);
@@ -170,7 +170,7 @@ class WorkServices{
                 });
                 
                 //deleting work ref from geoObjectTrack
-                const tempTrack = await Track.findGeoObjectByRef("workId", id, session);
+                const tempTrack = await Track.findGeoObjectByRef("workId", id, {}, session);
 
                 tempTrack.forEach(async t => {
                     const result = await Track.updateGeoObjectById(t._id, { workId:"" }, session);

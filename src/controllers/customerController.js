@@ -6,7 +6,7 @@ class CustomerController{
             const { customerDetail } = request.body;
 
             const customerServices = new CustomerServices();
-            const result = customerServices.newCustomerInfo(customerDetail);
+            const result =  await customerServices.newCustomerInfo(customerDetail);
 
             response.json(result);
         } catch (error) {

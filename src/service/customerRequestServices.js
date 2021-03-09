@@ -34,7 +34,7 @@ class CustomerRequestServices{
         const session = await mongoose.startSession();
         try{
             await session.withTransaction(async()=> {
-                const prevCustomerRequest = await CustomerRequest.findCustomerRequestById(id, session);
+                const prevCustomerRequest = await CustomerRequest.findCustomerRequestById(id, {}, session);
 
                 if(prevCustomerRequest[0].requestStatus == "pending" && updateData.requestStatus == "denied"){
                     //delete the request send notification
@@ -50,7 +50,7 @@ class CustomerRequestServices{
                         this.result.subscription = await Subscription.create([newSubData], {session});
                         
                         //customer used geo object
-                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, session);
+                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, {}, session);
                         if(_.isEmpty(tempCustomerUsedGeoObject)){
                             const newCustomerUsedGeoObjectData = {
                                 customerId,
@@ -61,8 +61,8 @@ class CustomerRequestServices{
                         }else{
                             const usedPoint = tempCustomerUsedGeoObject.usedPoint;
                             const CustomerUsedGeoObjectId = tempCustomerUsedGeoObject._id;
-                            usedPoint.push({companyId:companyId, pointId:this.result.point.id});
-                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(CustomerUsedGeoObjectId, {usedPoint:usedPoint}, session);
+                            usedPoint.push({companyId, pointId:this.result.point.id});
+                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(CustomerUsedGeoObjectId, {usedPoint}, session);
                         }
                         //delete customerRequest
                         this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
@@ -87,19 +87,19 @@ class CustomerRequestServices{
                         console.log(this.result.point._id);
                         
                         //customer used geo object
-                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, session);
+                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, {}, session);
                         if(_.isEmpty(tempCustomerUsedGeoObject)){
                             const newCustomerUsedGeoObjectData = {
-                                customerId:customerId,
-                                usedPoint:[{companyId:companyId, pointId:this.result.point._id}],
+                                customerId,
+                                usedPoint:[{companyId, pointId:this.result.point._id}],
                                 usedTrack:[]
                             }
                             this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.create([newCustomerUsedGeoObjectData], {session});
                         }else{
                             const usedPoint = tempCustomerUsedGeoObject.usedPoint;
                             const CustomerUsedGeoObjectId = tempCustomerUsedGeoObject._id;
-                            usedPoint.push({companyId:companyId, pointId:this.result.point._id});
-                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(CustomerUsedGeoObjectId, {usedPoint:usedPoint}, session);
+                            usedPoint.push({companyId, pointId:this.result.point._id});
+                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(CustomerUsedGeoObjectId, {usedPoint}, session);
                         }
                         //delete customerRequest
                         this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);

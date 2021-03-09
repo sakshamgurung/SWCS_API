@@ -62,7 +62,7 @@ class CustomerServices{
             await session.withTransaction(async() => {
                 this.result = { wasteDump:{ update:[], delete:[] } };
                 //should delete references to customerLogin and customerDetail from other collections too
-                const tempWasteDump = await WasteDump.findWasteDumpByRef("customerId", id, session);
+                const tempWasteDump = await WasteDump.findWasteDumpByRef("customerId", id, {}, session);
                 const archiveWasteDump = _.remove(tempWasteDump, o => o.isCollected == true);
                 archiveWasteDump.forEach(async wd => {
                     const  result = await WasteDump.updateWasteDumpById( wd._id, { customerId:"" }, session );

@@ -40,16 +40,16 @@ class SubscriptionServices{
             await session.withTransaction(async() => {
                 const {customerId, companyId} = updateData;
                 this.result = {wasteDump:[], notification:[]};
-                const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, session);
+                const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, {}, session);
                 
                 if(!_.isEmpty(tempCustomerUsedGeoObject)){
                     const removeUsedPoint = _.remove(tempCustomerUsedGeoObject[0].usedPoint, o => o.companyId == companyId);
                     const updateUsedTrack = _.remove(tempCustomerUsedGeoObject[0].usedTrack, o => o.companyId == companyId);
-                    const tempSchedule = await Schedule.findScheduleByRef("customerId", customerId, session);
+                    const tempSchedule = await Schedule.findScheduleByRef("customerId", customerId, {}, session);
                     
                     if(!_.isEmpty(removeUsedPoint)){
                         const removeUsedPointId = removeUsedPoint[0].pointId;
-                        const tempGeoObjectPoint = await GeoObjectPoint.findGeoObjectById(removeUsedPointId, session);
+                        const tempGeoObjectPoint = await GeoObjectPoint.findGeoObjectById(removeUsedPointId, {}, session);
                         const workId =  tempGeoObjectPoint[0].workId;
                         
                         //delete schedule
@@ -77,7 +77,7 @@ class SubscriptionServices{
                     //update geoObjectTrack
                     if(!_.isEmpty(updateUsedTrack)){
                         const updateUsedTrackId = updateUsedTrack[0].trackId;
-                        const tempGeoObjectTrack = await GeoObjectTrack.findGeoObjectById(updateUsedTrackId, session);
+                        const tempGeoObjectTrack = await GeoObjectTrack.findGeoObjectById(updateUsedTrackId, {}, session);
                         const workId =  tempGeoObjectTrack[0].workId;
                         
                         //delete schedule
@@ -87,7 +87,7 @@ class SubscriptionServices{
                         }
                         
                         //check if there is any schedule for work id
-                        const allSchedule = await Schedule.findScheduleByRef("workId", workId, session);
+                        const allSchedule = await Schedule.findScheduleByRef("workId", workId, {}, session);
                         if(_.isEmpty(allSchedule)){
                             //update work => geoObjectTrack
                             const tempWork = await Work.findWorkById(workId);
@@ -119,7 +119,7 @@ class SubscriptionServices{
                 }
 
                 //delete isCollected==false wasteDump
-                const tempWasteDump = await WasteDump.findWasteDumpByRef("customerId", customerId, session);
+                const tempWasteDump = await WasteDump.findWasteDumpByRef("customerId", customerId, {}, session);
                 const removeWasteDump = _.remove(tempWasteDump, o => (o.companyId == companyId && o.isCollected == false));
                 removeWasteDump.forEach(async wd => {
                     const result = await WasteDump.deleteWasteDumpById(wd._id, session);
@@ -127,7 +127,7 @@ class SubscriptionServices{
                 });
 
                 //delete notification from company
-                const tempNotification = await Notification.findAllNotification("customer", customerId, session);
+                const tempNotification = await Notification.findAllNotification("customer", customerId, {}, session);
                 const removeNotification = _.remove(tempNotification, o => (o.from.role == "company" && o.from.id == companyId) );
                 removeNotification.forEach(async n => {
                     const result = await Notification.deleteNotificationById(n._id, session);

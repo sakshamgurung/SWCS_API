@@ -6,7 +6,7 @@ class CustomerRequestController{
             const { body } = request;
             
             const customerRequestServices = new CustomerRequestServices();
-            const result = customerRequestServices.createNewCustomerRequest(body);
+            const result =  await customerRequestServices.createNewCustomerRequest(body);
 
             response.json(result);
         } catch (error) {

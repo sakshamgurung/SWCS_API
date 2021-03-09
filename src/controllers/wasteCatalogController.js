@@ -6,7 +6,7 @@ class WasteCatalogController{
             const { body } = request;
             
             const wasteCatalogServices = new WasteCatalogServices();
-            const result = wasteCatalogServices.createNewWasteCatalog(body);
+            const result =  await wasteCatalogServices.createNewWasteCatalog(body);
 
             response.json(result);
         } catch (error) {

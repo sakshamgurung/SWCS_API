@@ -22,7 +22,7 @@ class WasteDumpServices{
             await session.withTransaction(async()=>{
                 const {geoObjectType, geoObjectId, amountUnit, amount} = wasteDumpData;
 
-                const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", geoObjectId, session);
+                const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", geoObjectId, {}, session);
                 _.remove(tempWasteDump, o => o.isCollected == true);
 
                 tempWasteDump.forEach(wd => {
@@ -40,7 +40,7 @@ class WasteDumpServices{
                 }
 
                 if(geoObjectType == "track"){
-                    const tempTrack = await Track.findGeoObjectById(geoObjectId, session);
+                    const tempTrack = await Track.findGeoObjectById(geoObjectId, {}, session);
                     const {wasteLimit} = tempTrack[0];
                     if(0<currentAmount && currentAmount<=(wasteLimit/3)){
                         wasteCondition = "low";
@@ -50,10 +50,10 @@ class WasteDumpServices{
                     if(currentAmount>=wasteLimit){
                         wasteCondition = "high";
                     }
-                    this.result.track = await Track.updateGeoObjectById(geoObjectId, {wasteCondition:wasteCondition}, session);
+                    this.result.track = await Track.updateGeoObjectById(geoObjectId, {wasteCondition}, session);
 
                 }else if(geoObjectType == "point"){
-                    const tempPoint = await Point.findGeoObjectById(geoObjectId, session);
+                    const tempPoint = await Point.findGeoObjectById(geoObjectId, {}, session);
                     const {wasteLimit} = tempPoint[0];
                     if(0<currentAmount && currentAmount<=(wasteLimit/3)){
                         wasteCondition = "low";
@@ -63,11 +63,11 @@ class WasteDumpServices{
                     if(currentAmount>=wasteLimit){
                         wasteCondition = "high";
                     }
-                    this.result.point = await Point.updateGeoObjectById(geoObjectId, {wasteCondition:wasteCondition}, session);
+                    this.result.point = await Point.updateGeoObjectById(geoObjectId, {wasteCondition}, session);
                 }
 
                 this.wasteDump = new WasteDump(wasteDumpData);
-                this.result.wasteDump = await this.wasteDump.save({session:session});
+                this.result.wasteDump = await this.wasteDump.save({session});
             });
         }finally{
             session.endSession();

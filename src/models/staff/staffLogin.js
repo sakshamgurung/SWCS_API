@@ -40,33 +40,84 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllStaff(companyId, session){
-        return this.find({ companyId:companyId },{ session:session });
-    }
-    static findStaffById(id, session){
-        return this.find({ _id:id },{ session:session });
-    }
-    static updateStaffById(id, updateData, session){
-        return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session:session });
-    }
-    static deleteStaffById(id, session){
-        return this.deleteOne({ _id:id }, { session:session });
+    static findAllStaff(companyId, projection, session){
+        if(session == undefined){
+            return this.find({ companyId }, projection);
+        }else{
+            return this.find({ companyId }, projection, { session });
+        }
     }
 
-    static findStaffByUUID(uuidArray, session){
-        return this.find({ uuid:{ $in: uuidArray } },{ session:session });
+    static findStaffById(id, projection, session){
+        if(session == undefined){
+            return this.find({ _id:id }, projection);
+        }else{
+            return this.find({ _id:id }, projection, { session });
+        }
+    }
+
+    static updateStaffById(id, updateData, session){
+        if(session == undefined){
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ));
+        }else{
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session });
+        }
+    }
+
+    static deleteStaffById(id, session){
+        if(session == undefined){
+            return this.deleteOne({ _id:id });
+        }else{
+            return this.deleteOne({ _id:id }, { session });
+        }
+    }
+
+    static findStaffByEmail(email, projection, session){
+        if(session == undefined){
+            return this.find({ email}, projection);
+        }else{
+            return this.find({ email}, projection, { session });
+        }
+    }
+
+    static findStaffByMobileNo(mobileNo, projection, session){
+        if(session == undefined){
+            return this.find({ mobileNo}, projection);
+        }else{
+            return this.find({ mobileNo}, projection, { session });
+        }
     }
     
-    static findStaffByToken(token, session){
-        return this.find({ token:token },{ session:session });
+    static findStaffByUUID(uuidArray, projection, session){
+        if(session == undefined){
+            return this.find({ uuid:{ $in: uuidArray } }, projection);
+        }else{
+            return this.find({ uuid:{ $in: uuidArray } }, projection, { session });
+        }
+    }
+    
+    static findStaffByToken(token, projection, session){
+        if(session == undefined){
+            return this.find({ token }, projection);
+        }else{
+            return this.find({ token }, projection, { session });
+        }
     }
      
-    static findStaffByRefreshToken(refreshToken, session){
-        return this.find({ refreshToken: refreshToken },{ session:session });
+    static findStaffByRefreshToken(refreshToken, projection, session){
+        if(session == undefined){
+            return this.find({ refreshToken }, projection);
+        }else{
+            return this.find({ refreshToken }, projection, { session });
+        }
     }
      
-    static findCompanyByResetToken(resetToken, session){
-        return this.find({ resetToken: resetToken },{ session:session });
+    static findStaffByResetToken(resetToken, projection, session){
+        if(session == undefined){
+            return this.find({ resetToken }, projection);
+        }else{
+            return this.find({ resetToken }, projection, { session });
+        }
     }
 }
 

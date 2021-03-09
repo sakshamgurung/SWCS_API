@@ -6,7 +6,7 @@ class VehicleController{
             const { body } = request;
 
             const vehicleServices = new VehicleServices();
-            const result = vehicleServices.createNewVehicle(body);
+            const result =  await vehicleServices.createNewVehicle(body);
 
             response.json(result);
         } catch (error) {

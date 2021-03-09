@@ -21,17 +21,36 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllWasteCatalog(session){
-        return this.find({},{ session:session });
+    static findAllWasteCatalog(projection, session){
+        if(session == undefined){
+            return this.find({}, projection);
+        }else{
+            return this.find({}, projection,{ session });
+        }
     }
-    static findWasteCatalogById(id, session){
-        return this.find({ _id:id },{ session:session });
+
+    static findWasteCatalogById(id, projection, session){
+        if(session == undefined){
+            return this.find({ _id:id }, projection);
+        }else{
+            return this.find({ _id:id }, projection, { session });
+        }
     }
+
     static updateWasteCatalogById(id, updateData, session){
-        return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session:session });
+        if(session == undefined){
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ));
+        }else{
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session });
+        }
     }
+    
     static deleteWasteCatalogById(id, session){
-        return this.deleteOne({ _id:id }, { session:session });
+        if(session == undefined){
+            return this.deleteOne({ _id:id });
+        }else{
+            return this.deleteOne({ _id:id }, { session });
+        }
     }  
 }
 

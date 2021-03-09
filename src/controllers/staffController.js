@@ -6,7 +6,7 @@ class StaffController{
             const { staffDetail } = request.body;
             
             const staffServices = new StaffServices();
-            const result = staffServices.newStaffInfo(staffDetail);
+            const result =  await staffServices.newStaffInfo(staffDetail);
 
             response.json(result);
         } catch (error) {

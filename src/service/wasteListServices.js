@@ -39,7 +39,7 @@ class WasteListServices{
             session.withTransaction(async() => {
                 this.result = { wasteDump:[] };
 
-                const tempWasteDump = WasteDump.findWasteDumpByRef("wasteListId", id, session);
+                const tempWasteDump = WasteDump.findWasteDumpByRef("wasteListId", id, {}, session);
                 _.remove(tempWasteDump, wd => wd.is_collected == true );
                 
                 if(wasteDump.remapping){

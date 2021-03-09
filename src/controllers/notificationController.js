@@ -6,7 +6,7 @@ class NotificationController{
             const { body } = request;
 
             const notificationServices = new NotificationServices();
-            const result = notificationServices.createNewNotification(body);
+            const result =  await notificationServices.createNewNotification(body);
 
             response.json(result);
         } catch (error) {

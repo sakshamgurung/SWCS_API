@@ -6,7 +6,7 @@ class WasteListController{
             const { body } = request;
 
             const wasteListServices = new WasteListServices();
-            const result = wasteListServices.createNewWasteList(body);
+            const result =  await wasteListServices.createNewWasteList(body);
 
             response.json(result);
         } catch (error) {

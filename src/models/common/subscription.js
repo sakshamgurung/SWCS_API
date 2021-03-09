@@ -17,23 +17,45 @@ const schema = new Schema({
 
 class HelperClass{
     //for company
-    static findAllSubscriber(companyId, session){
-        return this.find({ companyId:companyId },{ session:session });
+    static findAllSubscriber(companyId, projection, session){
+        if(session == undefined){
+            return this.find({ companyId }, projection);
+        }else{
+            return this.find({ companyId }, projection,{ session });
+        }
     }
+
     //for customer
-    static findAllSubscription(customerId, session){
-        return this.find({ customerId:customerId },{ session:session });
+    static findAllSubscription(customerId, projection, session){
+        if(session == undefined){
+            return this.find({ customerId }, projection);
+        }else{
+            return this.find({ customerId }, projection,{ session });
+        }
     }
+    
     //for customer
     static deleteSubscriptionById(id, session){
-        return this.deleteOne({ _id:id }, { session:session });
+        if(session == undefined){
+            return this.deleteOne({ _id:id });
+        }else{
+            return this.deleteOne({ _id:id }, { session });
+        }
     }
 
     static deleteSubscriptionByRef(ref, id, session){
-        switch(ref){
-            case "customerId": return this.deleteMany({ customerId:id }, { session:session });
-            case "companyId": return this.deleteMany({companyId:id}, { session:session });
-            default: throw ApiError.badRequest("ref not defined");
+        if(session == undefined){
+            switch(ref){
+                case "customerId": return this.deleteMany({ customerId:id });
+                case "companyId": return this.deleteMany({companyId:id});
+                default: throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "customerId": return this.deleteMany({ customerId:id }, { session });
+                case "companyId": return this.deleteMany({companyId:id}, { session });
+                default: throw ApiError.badRequest("ref not defined");
+            }
         }
     }
 }

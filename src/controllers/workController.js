@@ -6,7 +6,7 @@ class WorkController{
             const { body } = request;
             
             const workServices = new WorkServices();
-            const result = workServices.createNewWork(body);
+            const result = await  workServices.createNewWork(body);
             
             response.json(result);
         } catch (error) {

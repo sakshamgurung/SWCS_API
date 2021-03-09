@@ -42,17 +42,36 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllNotification(role, id, session){
-        return this.find({ $and: [{'to.role':role},{'to.id':id}] },{ session:session });
+    static findAllNotification(role, id, projection, session){
+        if(session == undefined){
+            return this.find({ $and: [{'to.role':role},{'to.id':id}] }, projection);
+        }else{
+            return this.find({ $and: [{'to.role':role},{'to.id':id}] }, projection,{ session });
+        }
     }
-    static findNotificationById(id, session){
-        return this.find({ _id:id },{ session:session });
+
+    static findNotificationById(id, projection, session){
+        if(session == undefined){
+            return this.find({ _id:id }, projection);
+        }else{
+            return this.find({ _id:id }, projection,{ session });
+        }
     }
+
     static deleteNotificationById(id, session){
-        return this.deleteOne({ _id:id }, { session:session });
+        if(session == undefined){
+            return this.deleteOne({ _id:id });
+        }else{
+            return this.deleteOne({ _id:id }, { session });  
+        }
     }
+    
     static deleteNotificationByRole(role, id, session){
-        return this.deleteMany({ $and: [{'to.role':role},{'to.id':id}] },{ session:session });
+        if(session == undefined){
+            return this.deleteMany({ $and: [{'to.role':role},{'to.id':id}] });
+        }else{
+            return this.deleteMany({ $and: [{'to.role':role},{'to.id':id}] },{ session });
+        }
     }
 }
 

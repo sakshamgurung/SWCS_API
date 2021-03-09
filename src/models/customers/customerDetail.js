@@ -34,23 +34,59 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllCustomerDetailInIdArray(idArray, session){
-        return this.find({ _id:{ $in:idArray } },{ session:session });
-    }
-    static findCustomerDetailById(id, session){
-        return this.find({ _id:id },{ session:session });
-    }
-    static updateCustomerDetailById(id, updateData, session){
-        return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session:session });
-    }
-    static deleteCustomerDetailById(id, session){
-        return this.deleteOne({ _id:id }, { session:session });
+    static findAllCustomerDetailInIdArray(idArray, projection, session){
+        if(session == undefined){
+            return this.find({ _id:{ $in:idArray } }, projection);
+            
+        }else{
+            return this.find({ _id:{ $in:idArray } }, projection, { session });
+         
+        }
     }
 
-    static findCustomerDetailByRef(ref, id, session){
-        switch(ref){
-            case "customerId": return this.find({customerId:id},{ session:session });
-            default: throw ApiError.badRequest("ref not defined");
+    static findCustomerDetailById(id, projection, session){
+        if(session == undefined){
+            return this.find({ _id:id }, projection);
+            
+        }else{
+            return this.find({ _id:id }, projection, { session });
+         
+        }
+    }
+
+    static updateCustomerDetailById(id, updateData, session){
+        if(session == undefined){
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ));
+            
+        }else{
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session });
+         
+        }
+    }
+
+    static deleteCustomerDetailById(id, session){
+        if(session == undefined){
+            return this.deleteOne({ _id:id });
+            
+        }else{
+            return this.deleteOne({ _id:id }, { session });
+         
+        }
+    }
+
+    static findCustomerDetailByRef(ref, id, projection, session){
+        if(session == undefined){
+            switch(ref){
+                case "customerId": return this.find({customerId:id}, projection);
+                default: throw ApiError.badRequest("ref not defined");
+            }
+            
+        }else{
+            switch(ref){
+                case "customerId": return this.find({customerId:id}, projection, { session });
+                default: throw ApiError.badRequest("ref not defined");
+            }
+         
         }
     }
 }

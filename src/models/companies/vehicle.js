@@ -51,17 +51,36 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllVehicle(companyId, session){
-        return this.find({ companyId:companyId },{ session:session });
+    static findAllVehicle(companyId, projection, session){
+        if(session == undefined){
+            return this.find({ companyId }, projection);
+        }else{
+            return this.find({ companyId }, projection, { session });
+        }
     }
-    static findVehicleById(id, session){
-        return this.find({ _id:id },{ session:session });
+
+    static findVehicleById(id, projection, session){
+        if(session == undefined){
+            return this.find({ _id:id }, projection);
+        }else{
+            return this.find({ _id:id }, projection, { session });
+        }
     }
+
     static updateVehicleById(id, updateData, session){
-        return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session:session });
+        if(session == undefined){
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ));
+        }else{
+            return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session });
+        }
     }
+
     static deleteVehicleById(id, session){
-        return this.deleteOne({ _id:id }, { session:session });
+        if(session == undefined){
+            return this.deleteOne({ _id:id });
+        }else{
+            return this.deleteOne({ _id:id }, { session });
+        }
     }
 }
 
