@@ -10,7 +10,8 @@ const schema = new Schema({
         type:String,
     },
     trackPoints:[
-        {coordinates:{longitude:Number, latitude:Number}}],
+        {_id:false, identifier:String, coordinates:{longitude:Number, latitude:Number}}
+    ],
     workId:{
         type:String,
     },
@@ -65,7 +66,7 @@ class HelperClass{
         }
     }
 
-    //new
+    
     static findGeoObjectByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
@@ -82,7 +83,7 @@ class HelperClass{
         }
     }
 
-    //new
+    
     static updateGeoObjectByRef(ref, id, updateData, session){
         if(session == undefined){
             switch(ref){
@@ -99,7 +100,7 @@ class HelperClass{
         }
     }
 
-    //new
+    
     static deleteGeoObjectByRef(ref, id, session){
         if(session == undefined){
             switch(ref){

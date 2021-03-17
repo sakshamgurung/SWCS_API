@@ -69,6 +69,20 @@ class HelperClass{
             }
         }
     }
+
+    static deleteCompanyServiceDetailByRef(ref, id, session){
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.deleteOne({companyId:id});
+                default : throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.deleteOne({companyId:id}, { session });
+                default : throw ApiError.badRequest("ref not defined");
+            }
+        }
+    }
 }
 
 schema.loadClass(HelperClass);

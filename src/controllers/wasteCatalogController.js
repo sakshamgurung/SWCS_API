@@ -1,4 +1,5 @@
 const {WasteCatalogServices} = require("../service/wasteCatalogServices");
+const ApiError = require('../error/ApiError');
 
 class WasteCatalogController{
     async createNewWasteCatalog(request, response, next){
@@ -10,8 +11,7 @@ class WasteCatalogController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste catalog Error: " + error.message);
         }
     }
 
@@ -22,8 +22,7 @@ class WasteCatalogController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste catalog Error: " + error.message);
         }
     }
 
@@ -36,8 +35,7 @@ class WasteCatalogController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste catalog Error: " + error.message);
         }
     }
 
@@ -51,8 +49,7 @@ class WasteCatalogController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste catalog Error: " + error.message);
         }
     }
 
@@ -62,12 +59,11 @@ class WasteCatalogController{
             const {body} = request;
 
             const wasteCatalogServices = new WasteCatalogServices();
-            const result = await wasteCatalogServices.deleteWasteCatalogById(id, body);
+            const {statusCode, status} = await wasteCatalogServices.deleteWasteCatalogById(id, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste catalog Error: " + error.message);
         }
     }
 }

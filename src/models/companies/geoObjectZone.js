@@ -9,9 +9,9 @@ const schema = new Schema({
     zoneName:{
         type:String,
     },
-    zonePoints:{
-        type:[{coordinates:{longitude:Number, latitude:Number}}],
-    },
+    zonePoints:[
+        {_id:false, identifier:String, coordinates:{longitude:Number, latitude:Number}}
+    ],
     // workId:{
     //     type:String,
     // },

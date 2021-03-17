@@ -1,4 +1,5 @@
 const {NotificationServices} = require("../service/notificationServices");
+const ApiError = require('../error/ApiError');
 
 class NotificationController{
     async createNewNotification(request, response, next){
@@ -10,8 +11,7 @@ class NotificationController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Notification Error: " + error.message);
         }
     }
 
@@ -24,8 +24,7 @@ class NotificationController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Notification Error: " + error.message);
         }
     }
 
@@ -38,8 +37,7 @@ class NotificationController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Notification Error: " + error.message);
         }
     }
 
@@ -48,12 +46,11 @@ class NotificationController{
             const notificationId = request.params.id;
 
             const notificationServices = new NotificationServices();
-            const result = await notificationServices.deleteNotificationById(notificationId);
+            const {statusCode, status} = await notificationServices.deleteNotificationById(notificationId);
             
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Notification Error: " + error.message);
         }
     }
 }

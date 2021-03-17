@@ -1,4 +1,5 @@
 const {WasteDumpServices} = require("../service/wasteDumpServices");
+const ApiError = require('../error/ApiError');
 
 class WasteDumpController{
     async createNewWasteDump(request, response, next){
@@ -10,8 +11,7 @@ class WasteDumpController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste dump object Error: " + error.message);
         }
     }
 
@@ -24,8 +24,7 @@ class WasteDumpController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste dump object Error: " + error.message);
         }
     }
 
@@ -38,8 +37,7 @@ class WasteDumpController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste dump object Error: " + error.message);
         }
     }
 
@@ -53,8 +51,7 @@ class WasteDumpController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste dump object Error: " + error.message);
         }
     }
 
@@ -64,12 +61,11 @@ class WasteDumpController{
             const {body} = request;
 
             const wasteDumpServices = new WasteDumpServices();
-            const result = await wasteDumpServices.deleteWasteDumpById(wasteDumpId, body);
+            const {statusCode, status} = await wasteDumpServices.deleteWasteDumpById(wasteDumpId, body);
             
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste dump object Error: " + error.message);
         }
     }
 }

@@ -1,4 +1,5 @@
 const {CustomerUsedGeoObjectServices} = require("../service/customerUsedGeoObjectServices");
+const ApiError = require('../error/ApiError');
 
 class CustomerUsedGeoObjectController{
 
@@ -11,8 +12,7 @@ class CustomerUsedGeoObjectController{
             
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer used geo object Error: " + error.message);
         }
     }
     
@@ -25,8 +25,7 @@ class CustomerUsedGeoObjectController{
             
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer used geo object Error: " + error.message);
         }
     }
 }

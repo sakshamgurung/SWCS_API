@@ -1,4 +1,5 @@
 const {CustomerServices} = require("../service/customerServices");
+const ApiError = require('../error/ApiError');
 
 class CustomerController{
     async newCustomerInfo(request, response, next){
@@ -10,8 +11,7 @@ class CustomerController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500}); 
+            throw ApiError.serverError("Customer Error: " + error.message); 
         }
     }
 
@@ -25,8 +25,7 @@ class CustomerController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer Error: " + error.message);
         }
     }
 
@@ -40,8 +39,7 @@ class CustomerController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer Error: " + error.message);
         }
     }
 
@@ -56,8 +54,7 @@ class CustomerController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer Error: " + error.message);
         }
     }
 
@@ -67,12 +64,11 @@ class CustomerController{
             const {body} = request;
 
             const customerServices = new CustomerServices();
-            const result = await customerServices.deleteCustomerById(customerId, body);
+            const {statusCode, status} = await customerServices.deleteCustomerById(customerId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer Error: " + error.message);
         }
     }
 }

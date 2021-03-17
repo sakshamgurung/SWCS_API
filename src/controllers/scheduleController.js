@@ -1,4 +1,5 @@
 const {ScheduleServices} = require("../service/scheduleServices");
+const ApiError = require('../error/ApiError');
 
 class ScheduleController{
 
@@ -11,8 +12,7 @@ class ScheduleController{
             
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Schedule Error: " + error.message);
         }
     }
 
@@ -25,8 +25,7 @@ class ScheduleController{
             
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Schedule Error: " + error.message);
         }
     }
 }

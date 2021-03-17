@@ -1,4 +1,5 @@
 const {CompanyServices} = require("../service/companyServices");
+const ApiError = require('../error/ApiError');
 
 class CompanyController{
     async newCompanyInfo(request, response, next){
@@ -10,8 +11,7 @@ class CompanyController{
             
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500}); 
+            throw ApiError.serverError("Company Error: " + error.message);
         }
     }
 
@@ -24,8 +24,7 @@ class CompanyController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("All Company Error: " + error.message);
         }
     }
 
@@ -33,14 +32,14 @@ class CompanyController{
         try{
             const companyInfoType = request.params.type;
             const companyId = request.params.id;
-
+            console.log("companyInfoType: ", companyInfoType);
+            console.log("companyId: ", companyId);
             const companyServices = new CompanyServices();
             const result = await companyServices.getCompanyById(companyInfoType, companyId);
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Company by id Error: " + error.message);
         }
     }
 
@@ -55,8 +54,7 @@ class CompanyController{
             
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Company Error: " + error.message);
         }
     }
 
@@ -65,12 +63,11 @@ class CompanyController{
             const companyId = request.params.id;
             
             const companyServices = new CompanyServices();
-            const result = await companyServices.deleteCompanyById(companyId);
+            const {statusCode, status} = await companyServices.deleteCompanyById(companyId);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Company Error: " + error.message);
         }
     }
 }

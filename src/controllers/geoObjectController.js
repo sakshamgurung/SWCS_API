@@ -1,4 +1,5 @@
 const {GeoObjectServices} = require('../service/geoObjectServices');
+const ApiError = require('../error/ApiError');
 
 class GeoObjectController{
     async createNewGeoObject(request, response, next){
@@ -11,8 +12,7 @@ class GeoObjectController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Geo object Error: " + error.message);
         }
     }
 
@@ -26,8 +26,7 @@ class GeoObjectController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Geo object Error: " + error.message);
         }
     }
 
@@ -41,8 +40,7 @@ class GeoObjectController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Geo object Error: " + error.message);
         }
     }
 
@@ -57,8 +55,7 @@ class GeoObjectController{
             
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Geo object Error: " + error.message);
         }
     }
 
@@ -68,11 +65,11 @@ class GeoObjectController{
             const geoObjectId = request.params.id;
             
             const geoObjectServices = new GeoObjectServices();
-            const result = await geoObjectServices.deleteGeoObjectById(geoObjectType, geoObjectId);
-            response.json(result);
+            const {statusCode, status} = await geoObjectServices.deleteGeoObjectById(geoObjectType, geoObjectId);
+            
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Geo object Error: " + error.message);
         }
     }
 }

@@ -1,4 +1,5 @@
 const {StaffGroupServices} = require("../service/staffGroupServices");
+const ApiError = require('../error/ApiError');
 
 class StaffGroupController{
     async createNewStaffGroup(request, response, next){
@@ -10,8 +11,7 @@ class StaffGroupController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Staff group Error: " + error.message);
         }
     }
 
@@ -24,8 +24,7 @@ class StaffGroupController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Staff group Error: " + error.message);
         }
     }
 
@@ -38,8 +37,7 @@ class StaffGroupController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Staff group Error: " + error.message);
         }
     }
 
@@ -53,8 +51,7 @@ class StaffGroupController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Staff group Error: " + error.message);
         }
     }
 
@@ -63,12 +60,11 @@ class StaffGroupController{
             const staffGroupId = request.params.id;
 
             const staffGroupServices = new StaffGroupServices();
-            const result = await staffGroupServices.deleteStaffGroupById(staffGroupId);
+            const {statusCode, status} = await staffGroupServices.deleteStaffGroupById(staffGroupId);
             
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Staff group Error: " + error.message);
         }
     }
 }

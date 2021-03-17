@@ -1,4 +1,5 @@
 const {WasteListServices} = require("../service/wasteListServices");
+const ApiError = require('../error/ApiError');
 
 class WasteListController{
     async createNewWasteList(request, response, next){
@@ -10,8 +11,7 @@ class WasteListController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste list Error: " + error.message);
         }
     }
 
@@ -24,8 +24,7 @@ class WasteListController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste list Error: " + error.message);
         }
     }
 
@@ -38,8 +37,7 @@ class WasteListController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste list Error: " + error.message);
         }
     }
 
@@ -53,8 +51,7 @@ class WasteListController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste list Error: " + error.message);
         }
     }
 
@@ -63,12 +60,11 @@ class WasteListController{
             const wasteListId = request.params.id;
 
             const wasteListServices = new WasteListServices();
-            const result = await wasteListServices.deleteWasteListById(wasteListId);
+            const {statusCode, status} = await wasteListServices.deleteWasteListById(wasteListId);
             
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Waste list Error: " + error.message);
         }
     }
 }

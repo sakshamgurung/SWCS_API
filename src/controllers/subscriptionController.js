@@ -1,4 +1,5 @@
 const {SubscriptionServices} = require("../service/subscriptionServices");
+const ApiError = require('../error/ApiError');
 
 class SubscriptionController{
     //for customer
@@ -11,8 +12,7 @@ class SubscriptionController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Subscription Error: " + error.message);
         }
     }
     //for customer
@@ -25,8 +25,7 @@ class SubscriptionController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Subscription Error: " + error.message);
         }
     }
     //for company
@@ -39,8 +38,7 @@ class SubscriptionController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Subscription Error: " + error.message);
         }
     }
     //for customer
@@ -50,12 +48,11 @@ class SubscriptionController{
             const {body} = request;
 
             const subscriptionServices = new SubscriptionServices();
-            const result = await subscriptionServices.deleteSubscriptionById(subscriptionId, body);
+            const {statusCode, status} = await subscriptionServices.deleteSubscriptionById(subscriptionId, body);
             
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Subscription Error: " + error.message);
         }
     }
 }

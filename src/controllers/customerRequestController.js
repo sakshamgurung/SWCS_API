@@ -1,4 +1,5 @@
 const {CustomerRequestServices} = require("../service/customerRequestServices");
+const ApiError = require('../error/ApiError');
 
 class CustomerRequestController{
     async createNewCustomerRequest(request, response, next){
@@ -10,8 +11,7 @@ class CustomerRequestController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer request Error: " + error.message);
         }
     }
 
@@ -24,8 +24,7 @@ class CustomerRequestController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer request Error: " + error.message);
         }
     }
 
@@ -38,8 +37,7 @@ class CustomerRequestController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer request Error: " + error.message);
         }
     }
 
@@ -53,8 +51,7 @@ class CustomerRequestController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer request Error: " + error.message);
         }
     }
 
@@ -64,12 +61,11 @@ class CustomerRequestController{
             const {body} = request;
 
             const customerRequestServices = new CustomerRequestServices();
-            const result = await customerRequestServices.deleteCustomerRequestById(customerRequestId, body);
+            const {statusCode, status} = await customerRequestServices.deleteCustomerRequestById(customerRequestId, body);
             
-            response.json(result);
+            response.status(statuscode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Customer request Error: " + error.message);
         }
     }
 }

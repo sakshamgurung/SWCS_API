@@ -16,6 +16,7 @@ class CustomerServices{
     constructor(){
         this.customerDetail = undefined;
         this.result = undefined;
+        this.transactionResults = undefined;
     }
     
     async newCustomerInfo(customerDetail){
@@ -34,6 +35,7 @@ class CustomerServices{
         }
         return this.result;
     }
+
     async getCustomerById(customerInfoType, id){
         if(customerInfoType == "customer"){
             this.result = await CustomerLogin.findCustomerById(id);
@@ -44,6 +46,7 @@ class CustomerServices{
         }
         return this.result;
     }
+
     async updateCustomerById(customerInfoType, id, updateData){
         if(customerInfoType == "customer"){
             this.result = await CustomerLogin.updateCustomerById(id, updateData);
@@ -52,41 +55,50 @@ class CustomerServices{
         }else{
             throw ApiError.badRequest("customerInfoType not found!!!");
         }
-        return this.result;
+                
+        if(!this.result.hasOwnProperty("writeErrors")){
+            return this.result;
+        }else{
+            throw ApiError.serverError("Customer update failed");
+        }
     }
 
     //delete the customer and its information and references
     async deleteCustomerById(id, updateData){
         const session = await mongoose.startSession();
         try {
-            await session.withTransaction(async() => {
-                this.result = { wasteDump:{ update:[], delete:[] } };
+            this.transactionResults = await session.withTransaction(async() => {
                 //should delete references to customerLogin and customerDetail from other collections too
                 const tempWasteDump = await WasteDump.findWasteDumpByRef("customerId", id, {}, session);
                 const archiveWasteDump = _.remove(tempWasteDump, o => o.isCollected == true);
                 archiveWasteDump.forEach(async wd => {
-                    const  result = await WasteDump.updateWasteDumpById( wd._id, { customerId:"" }, session );
-                    this.result.wasteDump.update.push(result);
+                    await WasteDump.updateWasteDumpById( wd._id, { customerId:"" }, session );
                 });
                 tempWasteDump.forEach(async wd => {
-                    const result = await WasteDump.deleteWasteDumpById( wd._id, session );
-                    this.result.wasteDump.delete.push(result);
+                    await WasteDump.deleteWasteDumpById( wd._id, session );
                 });
 
-                this.result.customerRequest = await CustomerRequest.deleteCustomerRequestByRef("customerId", id, session);
-                this.result.notification = await Notification.deleteNotificationByRole("customer", id, session);
-                this.result.subscription = await Subscription.deleteSubscriptionByRef("customerId", id, session);
+                await CustomerRequest.deleteCustomerRequestByRef("customerId", id, session);
+                await Notification.deleteNotificationByRole("customer", id, session);
+                await Subscription.deleteSubscriptionByRef("customerId", id, session);
                 
-                this.result.schedule = await Schedule.deleteScheduleByRef("customerId", id, session);
-                this.result.customerUsedGeoObject = await CustomerUsedGeoObject.deleteCustomerUsedGeoObjectByRef("customerId", id, session);
-                this.result.customerLogin = await CustomerLogin.deleteCustomerById(id, session);
-                this.result.customerDetail = await CustomerDetail.deleteCustomerDetailById(id, session);
-
+                await Schedule.deleteScheduleByRef("customerId", id, session);
+                await CustomerUsedGeoObject.deleteCustomerUsedGeoObjectByRef("customerId", id, session);
+                await CustomerLogin.deleteCustomerById(id, session);
+                await CustomerDetail.deleteCustomerDetailById(id, session);
             });
+            
+            if(this.transactionResults){
+                return {statusCode:"200", status:"Success"}
+            }else{
+                throw ApiError.serverError("Customer delete transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("Customer delete transaction abort due to error: " + e.message);
         }finally{
             session.endSession();
         }
-        return this.result;
     }
 }
 

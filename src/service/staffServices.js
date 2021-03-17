@@ -12,6 +12,7 @@ class StaffServices{
     constructor(){
         this.staffDetail = undefined;
         this.result = undefined;
+        this.transactionResults = undefined;
     }
     
     async newStaffInfo(staffDetail){
@@ -50,35 +51,47 @@ class StaffServices{
         }else{
             throw ApiError.badRequest("staffInfoType not found!!!");
         }
-        return this.result;
+                
+        if(!this.result.hasOwnProperty("writeErrors")){
+            return this.result;
+        }else{
+            throw ApiError.serverError("Staff update failed");
+        }
     }
 
     //delete the staff and its information and references
     async deleteStaffById(id, updateData){
         const session = await mongoose.startSession();
         try {
-            await session.withTransaction(async() => {
-                this.result = {};
+            this.transactionResults = await session.withTransaction(async() => {
 
                 //removing deleted staff from the staffGroup collection's staffId field
                 const tempStaffGroup = await StaffGroup.findStaffGroupByRef("staffId", id, {}, session);
                 _.remove(tempStaffGroup[0].staffId, o => o == id);
                 const staffGroupId = tempStaffGroup[0]._id;
                 const staffId = tempStaffGroup[0].staffId;
-                this.result.staffGroup = await StaffGroup.updateStaffGroupById(staffGroupId, {staffId}, session);
+                staffGroup = await StaffGroup.updateStaffGroupById(staffGroupId, {staffId}, session);
                 
                 //removing staff notification
                 Notification.deleteNotificationByRole('staff', id, session);
 
-                this.result.staffLogin = await StaffLogin.deleteStaffById(id, session);
-                this.result.staffDetail = await StaffDetail.deleteStaffDetailById(id, session);
+                await StaffLogin.deleteStaffById(id, session);
+                await StaffDetail.deleteStaffDetailById(id, session);
                 
                 //notify groupMember about removed staff
             });
+
+            if(this.transactionResults){
+                return {statusCode:"200", status:"Success"}
+            }else{
+                throw ApiError.serverError("Staff delete transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("Staff delete transaction abort due to error: " + e.message);
         } finally{
             session.endSession();
         }
-        return this.result;
     }
 }
 

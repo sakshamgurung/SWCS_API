@@ -1,4 +1,5 @@
 const {WorkServices} = require("../service/workServices");
+const ApiError = require('../error/ApiError');
 
 class WorkController{
     async createNewWork(request, response, next){
@@ -10,8 +11,7 @@ class WorkController{
             
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Work Error: " + error.message);
         }
     }
 
@@ -24,8 +24,7 @@ class WorkController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Work Error: " + error.message);
         }
     }
 
@@ -38,8 +37,7 @@ class WorkController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Work Error: " + error.message);
         }
     }
 
@@ -53,8 +51,7 @@ class WorkController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Work Error: " + error.message);
         }
     }
 
@@ -64,12 +61,11 @@ class WorkController{
             const {body} = request;
             
             const workServices = new WorkServices();
-            const result = await workServices.deleteWorkById(workId, body);
+            const {statusCode, status} = await workServices.deleteWorkById(workId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Work Error: " + error.message);
         }
     }
 }

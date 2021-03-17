@@ -13,34 +13,50 @@ class AccountServices{
     }
 
     async signUp(role, signUpData){
-        const {email} = signUpData;
+        const {email, mobileNo} = signUpData;
         if(role == "company"){
-            const tempCompanyLogin = await CompanyLogin.findCompanyByEmail(email);
-            if(tempCompanyLogin.length != 0){
+            const tempCompanyLoginWithEmail = await CompanyLogin.findCompanyByEmail(email, {email:1});
+            const tempCompanyLoginWithMobileNo = await CompanyLogin.findCompanyByMobileNo(mobileNo, {mobileNo:1});
+            
+            if(tempCompanyLoginWithEmail.length != 0){
                 throw ApiError.badRequest("Email already exist");
-            }else{
-                this.companyLogin = new CompanyLogin(signUpData);
-                this.result = await this.companyLogin.save();
+            }else if(tempCompanyLoginWithMobileNo.length != 0){
+                throw ApiError.badRequest("Mobile no already exist");
             }
+
+            this.companyLogin = new CompanyLogin(signUpData);
+            this.result = await this.companyLogin.save();
+            
         }else if(role == "staff"){
-            const tempStaffLogin = await StaffLogin.findStaffByEmail(email);
+            const tempStaffLogin = await StaffLogin.findStaffByEmail(email, {email:1});
+            const tempStaffLoginWithMobileNo = await StaffLogin.findStaffByMobileNo(mobileNo, {mobileNo:1});
+
             if(tempStaffLogin.length != 0){
                 throw ApiError.badRequest("Email already exist");
-            }else{
-                this.staffLogin = new StaffLogin(signUpData);
-                this.result = await this.staffLogin.save();
+            }else if(tempStaffLoginWithMobileNo.length != 0){
+                throw ApiError.badRequest("Mobile not already exist");
             }
+            
+            this.staffLogin = new StaffLogin(signUpData);
+            this.result = await this.staffLogin.save();
+            
         }else if(role == "customer"){
-            const tempCustomerLogin = await CustomerLogin.findCustomerByEmail(email);
+            const tempCustomerLogin = await CustomerLogin.findCustomerByEmail(email, {email:1});
+            const tempCustomerLoginWithMobileNo = await CustomerLogin.findCustomerByMobileNo(mobileNo, {mobileNo:1});
+
             if(tempCustomerLogin.length != 0){
                 throw ApiError.badRequest("Email already exist");
-            }else{
-                this.customerLogin = new CustomerLogin(signUpData);
-                this.result = await this.customerLogin.save();
+            }else if(tempCustomerLoginWithMobileNo != 0){
+                throw ApiError.badRequest("Mobile not already exist");
             }
+            
+            this.customerLogin = new CustomerLogin(signUpData);
+            this.result = await this.customerLogin.save();
+            
         }else{
             throw ApiError.badRequest("Role not found!!!");
         }
+        
         return this.result;
     }
 

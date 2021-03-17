@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const schema = new Schema({
-    uid:{
-        type:String,
-        required:true
-    },
     wasteType:{
         type:String,
         required:true,

@@ -8,11 +8,11 @@ class ApiError extends Error{
     }
 
     static badRequest(message){
-        return new ApiError(400, "fail", message);
+        return new ApiError(400, "client error", message);
     }
 
     static serverError(message){
-        return new ApiError(500, "error", message);
+        return new ApiError(500, "server error", message);
     }
 }
 

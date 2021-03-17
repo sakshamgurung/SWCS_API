@@ -7,14 +7,9 @@ const schema = new Schema({
         type:String,
         required:true,
     },
-    usedPoint:{
-        type:[{
-            companyId:String,
-            pointId:String
-        }],
-    },
     usedTrack:{
         type:[{
+            _id:false,
             companyId:String,
             trackId:String
         }],
@@ -52,14 +47,12 @@ class HelperClass{
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.find({customerId:id}, projection);
-                case "usedPoint.pointId": return this.find({ "usedPoint.pointId":id}, projection);
                 case "usedTrack.trackId": return this.find({ "usedTrack.trackId":id }, projection);
                 default: throw ApiError.badRequest("ref not defined");
             }
         }else{
             switch(ref){
                 case "customerId": return this.find({customerId:id}, projection, { session });
-                case "usedPoint.pointId": return this.find({ "usedPoint.pointId":id}, projection, { session });
                 case "usedTrack.trackId": return this.find({ "usedTrack.trackId":id }, projection, { session });
                 default: throw ApiError.badRequest("ref not defined");
             }
@@ -70,14 +63,12 @@ class HelperClass{
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.updateMany({customerId:id},this.translateAliases( updateData ));
-                case "usedPoint.pointId": return this.updateMany({ "usedPoint.pointId":id},this.translateAliases( updateData ));
                 case "usedTrack.trackId": return this.updateMany({ "usedTrack.trackId":id },this.translateAliases( updateData ));
                 default: throw ApiError.badRequest("ref not defined");
             }
         }else{
             switch(ref){
                 case "customerId": return this.updateMany({customerId:id},this.translateAliases( updateData ),{ session });
-                case "usedPoint.pointId": return this.updateMany({ "usedPoint.pointId":id},this.translateAliases( updateData ),{ session });
                 case "usedTrack.trackId": return this.updateMany({ "usedTrack.trackId":id },this.translateAliases( updateData ),{ session });
                 default: throw ApiError.badRequest("ref not defined");
             }
@@ -88,14 +79,12 @@ class HelperClass{
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.deleteMany({customerId:id});
-                case "usedPoint.pointId": return this.deleteMany({ "usedPoint.pointId":id});
                 case "usedTrack.trackId": return this.deleteMany({ "usedTrack.trackId":id });
                 default: throw ApiError.badRequest("ref not defined");
             } 
         }else{
             switch(ref){
                 case "customerId": return this.deleteMany({customerId:id},{ session });
-                case "usedPoint.pointId": return this.deleteMany({ "usedPoint.pointId":id},{ session });
                 case "usedTrack.trackId": return this.deleteMany({ "usedTrack.trackId":id },{ session });
                 default: throw ApiError.badRequest("ref not defined");
             }

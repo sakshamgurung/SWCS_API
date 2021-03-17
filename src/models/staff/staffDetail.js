@@ -12,10 +12,8 @@ const schema = new Schema({
         required:true,
     },
     personalId:{
-        type:{
-            idType:String,//citizenship, driver licence, passport
-            idNo:String
-        },
+        idType:String,//citizenship, driver licence, passport
+        idNo:String
     },
     name:{
         firstName:String,

@@ -1,4 +1,5 @@
 const {VehicleServices} = require("../service/vehicleServices");
+const ApiError = require('../error/ApiError');
 
 class VehicleController{
     async createNewVehicle(request, response, next){
@@ -10,8 +11,7 @@ class VehicleController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Vehicle Error: " + error.message);
         }
     }
 
@@ -24,8 +24,7 @@ class VehicleController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Vehicle Error: " + error.message);
         }
     }
 
@@ -38,8 +37,7 @@ class VehicleController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Vehicle Error: " + error.message);
         }
     }
 
@@ -53,8 +51,7 @@ class VehicleController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Vehicle Error: " + error.message);
         }
     }
 
@@ -63,12 +60,11 @@ class VehicleController{
             const vehicleId = request.params.id;
 
             const vehicleServices = new VehicleServices();
-            const result = await vehicleServices.deleteVehicleById(vehicleId);
+            const {statusCode, status} = await vehicleServices.deleteVehicleById(vehicleId);
             
-            response.json(result);
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Vehicle Error: " + error.message);
         }
     }
 }

@@ -10,6 +10,7 @@ class WasteCatalogServices{
     constructor(){
         this.wasteCatalog = undefined;
         this.result = undefined;
+        this.transactionResults = undefined;
     }
     
     async createNewWasteCatalog(wasteCatalogData){
@@ -19,7 +20,7 @@ class WasteCatalogServices{
     }
 
     async getAllWasteCatalog(){
-        this.result = await WasteCatalog.findAllWasteCatalog();
+        this.result = await WasteCatalog.findAllWasteCatalog({description:0});
         return this.result;
     }
 
@@ -30,34 +31,45 @@ class WasteCatalogServices{
 
     async updateWasteCatalogById(id, updateData){
         this.result = await WasteCatalog.updateWasteCatalogById(id, updateData);
-        return this.result;
+                
+        if(!this.result.hasOwnProperty("writeErrors")){
+            return this.result;
+        }else{
+            throw ApiError.serverError("Waste catalog update failed");
+        }
     }
 
     async deleteWasteCatalogById(id, updateData){
         const { wasteList } = updateData;
         const session = await mongoose.startSession();
         try{
-            await session.withTransaction(async() => {
-                this.result = { wasteList:[] };
+            this.transactionResults = await session.withTransaction(async() => {
                 const tempWasteList = await WasteList.findWasteListByRef("wasteCatalogId", id, {}, session);
                 
                 if(wasteList.remapping){
                     //remapping
                     const{ newWasteCatalogId } = wasteList;
                     tempWasteList.forEach(async wl => {
-                        const result = await WasteList.updateWasteListById( wl._id, { wasteCatalogId: newWasteCatalogId }, session );
-                        this.result.wasteList.push(result);
+                        await WasteList.updateWasteListById( wl._id, { wasteCatalogId: newWasteCatalogId }, session );
                     });
                 }else{
                     throw ApiError.badRequest("remapping is needed");
                 }
                 
-                this.result.wasteCatalog = await WasteCatalog.deleteWasteCatalogById(id);
+                await WasteCatalog.deleteWasteCatalogById(id);
             });
+            
+            if(this.transactionResults){
+                return {statusCode:"200", status:"Success"}
+            }else{
+                throw ApiError.serverError("Waste catalog delete transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("Waste catalog delete transaction abort due to error: " + e.message);
         }finally{
             session.endSession();
         }
-        return this.result;
     }
 }
 

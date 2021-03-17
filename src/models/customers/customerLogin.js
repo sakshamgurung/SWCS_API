@@ -12,6 +12,9 @@ const schema = new Schema({
         type:String,
         required:true
     },
+    firstTimeLogin:{
+        type:Boolean,
+    },
     uuid:[String],
     resetToken:{
         type:String,

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ApiError = require('../error/ApiError');
 
 const Vehicle = require('../models/companies/vehicle');
 const Work = require('../models/common/work');
@@ -9,6 +10,7 @@ class VehicleServices{
     constructor(){
         this.vehicle = undefined;
         this.result = undefined;
+        this.transactionResults = undefined;
     }
     
     async createNewVehicle(vehicleData){
@@ -29,28 +31,38 @@ class VehicleServices{
 
     async updateVehicleById(id, updateData){
         this.result = await Vehicle.updateVehicleById(id, updateData);
-        return this.result;
+                
+        if(!this.result.hasOwnProperty("writeErrors")){
+            return this.result;
+        }else{
+            throw ApiError.serverError("Vehicle update failed");
+        }
     }
 
     async deleteVehicleById(id, updateData){
         const session = await mongoose.startSession();
         try{
-            await session.withTransaction(async() => {
-                this.result = {};
-                
+            this.transactionResults = await session.withTransaction(async() => {
                 //removing delete vehicle from work collection's vehicleId
-                this.result.work = await Work.updateWorkByRef("vehicleId", id, { vehicleId:"" } ,session)
+                await Work.updateWorkByRef("vehicleId", id, { vehicleId:"" } ,session)
 
                 //removing delete vehicle from customerRequest collection's vehicleId
-                this.result.customerRequest = await CustomerRequest.updateCustomerRequestByRef("vehicleId", id, { vehicleId: "" }, session);
+                await CustomerRequest.updateCustomerRequestByRef("vehicleId", id, { vehicleId: "" }, session);
                 
-                this.result.vehicle = await Vehicle.deleteVehicleById(id, session);
+                await Vehicle.deleteVehicleById(id, session);
             });
-        }
-        finally{
+
+            if(this.transactionResults){
+                return {statusCode:"200", status:"Success"}
+            }else{
+                throw ApiError.serverError("Vehicle transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("Vehicle delete transaction abort due to error: " + e.message);
+        }finally{
             session.endSession();
         }
-        return this.result;
     }
 }
 

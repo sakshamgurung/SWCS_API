@@ -1,15 +1,18 @@
 const mongoose = require('mongoose');
 const _ = require("lodash");
+const ApiError = require('../error/ApiError');
 
 const WasteDump = require('../models/customers/wasteDump');
-const Point = require('../models/companies/geoObjectPoint')
 const Track = require('../models/companies/geoObjectTrack')
+const CustomerUsedGeoObject = require('../models/customers/customerUsedGeoObject');
 
 class WasteDumpServices{
 
     constructor(){
         this.wasteDump = undefined;
+        this.customerUsedGeoObject = undefined;
         this.result = undefined;
+        this.transactionResults = undefined;
     }
     
     async createNewWasteDump(wasteDumpData){
@@ -19,61 +22,97 @@ class WasteDumpServices{
         let currentAmount = 0;
         const wasteCondition = "none";
         try{
-            await session.withTransaction(async()=>{
-                const {geoObjectType, geoObjectId, amountUnit, amount} = wasteDumpData;
-
-                const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", geoObjectId, {}, session);
-                _.remove(tempWasteDump, o => o.isCollected == true);
-
-                tempWasteDump.forEach(wd => {
-                    if(wd.amountUnit == "kg" || wd.amountUnit == "litre"){
-                        currentAmount = currentAmount + wd.amount;
-                    }else if(wd.amountUnit == "bora"){
-                        currentAmount = currentAmount + ( wd.amount * 15);//conversion from bora to 15 kg
-                    }
-                });
+            this.transactionResults = await session.withTransaction(async()=>{
                 
-                if(amountUnit == "kg" || amountUnit == "litre"){
-                    currentAmount = currentAmount + amount;
-                }else if(amountUnit == "bora"){
-                    currentAmount = currentAmount + ( amount * 15);//conversion from bora to 15 kg
-                }
+                const {customerId, companyId, geoObjectType, geoObjectId, amountUnit, amount} = wasteDumpData;
+                
 
                 if(geoObjectType == "track"){
+                    const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, {}, session);
+                    
+                    //creating new customerUsedGeoObject
+                    if(_.isEmpty(tempCustomerUsedGeoObject)){
+                        this.wasteDump = new WasteDump(wasteDumpData);
+                        this.result.wasteDump = await this.wasteDump.save({session});
+                        
+                        const newCustomerUsedGeoObject = {
+                            customerId,
+                            usedTrack:[{ companyId, trackId:geoObjectId }]
+                        };
+
+                        this.customerUsedGeoObject = new CustomerUsedGeoObject({newCustomerUsedGeoObject});
+                        this.result.customerUsedGeoObject = await this.customerUsedGeoObject.save({session});
+                        
+                    }else{
+                        const {usedTrack} = tempCustomerUsedGeoObject[0].usedTrack;
+                        const customerUsedGeoObjectId = tempCustomerUsedGeoObject[0]._id;
+                        const isCompanyTrackInUse = _.remove(usedTrack, o => o.companyId == companyId);
+
+                        //first time using this company geoObject
+                        if(_.isEmpty(isCompanyTrackInUse)){
+                            usedTrack.push({companyId, trackId:geoObjectId});
+                            this.result.customerUsedGeoObject = await this.customerUsedGeoObject.updateCustomerUsedGeoObjectById(customerUsedGeoObjectId, { usedTrack }, session);
+                            
+                        //this company geoObject already in use
+                        }else{
+                            //making sure only one track of a company is used
+                            if(isCompanyTrackInUse[0].trackId == geoObjectId){
+                                const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", geoObjectId, 
+                                    {isCollected:1, amountUnit:1, amount:1}, session);
+                                _.remove(tempWasteDump, o => o.isCollected == true);
+    
+                                //calculating current amount of waste in given track
+                                tempWasteDump.forEach(wd => {
+                                    if(wd.amountUnit == "kg" || wd.amountUnit == "litre"){
+                                        currentAmount = currentAmount + wd.amount;
+                                    }else if(wd.amountUnit == "bora"){
+                                        currentAmount = currentAmount + ( wd.amount * 15);//conversion from bora to 15 kg
+                                    }
+                                });
+                            }else{
+                                ApiError.badRequest("Only one track of a company can be used");
+                            }
+                        }
+                    }
+
+                    if(amountUnit == "kg" || amountUnit == "litre"){
+                        currentAmount = currentAmount + amount;
+                    }else if(amountUnit == "bora"){
+                        currentAmount = currentAmount + ( amount * 15);//conversion from bora to 15 kg
+                    }
+
+                    //calculating waste condition for given track
                     const tempTrack = await Track.findGeoObjectById(geoObjectId, {}, session);
                     const {wasteLimit} = tempTrack[0];
-                    if(0<currentAmount && currentAmount<=(wasteLimit/3)){
+                    
+                    if(_.inRange(currentAmount, 1, wasteLimit/3)){
                         wasteCondition = "low";
-                    }else if((wasteLimit/3)<currentAmount && currentAmount<=((wasteLimit/3)*2)){
+                    }else if(_.inRange(currentAmount, wasteLimit/3, (wasteLimit/3)*2 )){
                         wasteCondition = "medium";
-                    }
-                    if(currentAmount>=wasteLimit){
+                    }else if(currentAmount >= wasteLimit){
                         wasteCondition = "high";
                     }
-                    this.result.track = await Track.updateGeoObjectById(geoObjectId, {wasteCondition}, session);
 
-                }else if(geoObjectType == "point"){
-                    const tempPoint = await Point.findGeoObjectById(geoObjectId, {}, session);
-                    const {wasteLimit} = tempPoint[0];
-                    if(0<currentAmount && currentAmount<=(wasteLimit/3)){
-                        wasteCondition = "low";
-                    }else if((wasteLimit/3)<currentAmount && currentAmount<=((wasteLimit/3)*2)){
-                        wasteCondition = "medium";
-                    }
-                    if(currentAmount>=wasteLimit){
-                        wasteCondition = "high";
-                    }
-                    this.result.point = await Point.updateGeoObjectById(geoObjectId, {wasteCondition}, session);
+                    //updating track waste condition
+                    this.result.track = await Track.updateGeoObjectById(geoObjectId, {wasteCondition}, session);
                 }
 
                 this.wasteDump = new WasteDump(wasteDumpData);
                 this.result.wasteDump = await this.wasteDump.save({session});
             });
+                        
+            if(this.transactionResults){
+                return this.result;
+            }else{
+                throw ApiError.serverError("New waste dump transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("New waste dump transaction abort due to error: " + e.message);
         }finally{
             session.endSession();
         }
         //send nontification to company if wasteCondition is high
-        return this.result;
     }
 
     async getAllWasteDump(ref, id){
@@ -88,12 +127,22 @@ class WasteDumpServices{
 
     async updateWasteDumpById(id, updateData){
         this.result = await WasteDump.updateWasteDumpById(id, updateData);
-        return this.result;
+                
+        if(!this.result.hasOwnProperty("writeErrors")){
+            return this.result;
+        }else{
+            throw ApiError.serverError("Waste dump update failed");
+        }
     }
 
     async deleteWasteDumpById(id, updateData){
         this.result = await WasteDump.deleteWasteDumpById(id);
-        return this.result;
+        if(!this.result.hasOwnProperty("writeErrors")){
+            return {statusCode:"200", status:"Success"}
+        }else{
+            throw ApiError.serverError("Waste dump delete failed");
+        }
+
     }
 }
 

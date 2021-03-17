@@ -1,4 +1,5 @@
 const {StaffServices} = require("../service/staffServices");
+const ApiError = require('../error/ApiError');
 
 class StaffController{
     async newStaffInfo(request, response, next){
@@ -10,8 +11,7 @@ class StaffController{
 
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500}); 
+            throw ApiError.serverError("Staff Error: " + error.message);
         }
     }
 
@@ -25,8 +25,7 @@ class StaffController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Staff Error: " + error.message);
         }
     }
 
@@ -40,8 +39,7 @@ class StaffController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Staff Error: " + error.message);
         }
     }
 
@@ -56,8 +54,7 @@ class StaffController{
 
             response.json(result);
         }catch(error){
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Staff Error: " + error.message);
         }
     }
 
@@ -67,11 +64,11 @@ class StaffController{
             const {body} = request;
 
             const staffServices = new StaffServices();
-            const result = await staffServices.deleteStaffById(staffId, body);
-            response.json(result);
+            const {statusCode, status} = await staffServices.deleteStaffById(staffId, body);
+            
+            response.status(statusCode).send(status);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500});
+            throw ApiError.serverError("Staff Error: " + error.message);
         }
     }
 }

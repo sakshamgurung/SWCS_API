@@ -3,7 +3,6 @@ const _ = require('lodash');
 const ApiError = require('../error/ApiError');
 
 const Zone = require('../models/companies/geoObjectZone');
-const Point = require('../models/companies/geoObjectPoint');
 const Track = require('../models/companies/geoObjectTrack');
 const Work = require('../models/common/work');
 const CustomerUsedGeoObject = require('../models/customers/customerUsedGeoObject');
@@ -14,14 +13,17 @@ class GeoObjectServices{
     constructor(){
         this.geoObject = undefined; 
         this.result = undefined;
+        this.transactionResults = undefined;
     }
     
     async createNewGeoObject(geoObjectType, data){
         if(geoObjectType == "zone"){
+            const tempZone = await Zone.findGeoObjectByRef("companyId", companyId, {_id:1}, session);
+            
+            if(tempZone.length != 0){
+                throw ApiError.badRequest("Zone already exist. Only one zone is allowed for a company.");
+            }
             this.geoObject = new Zone(data);
-            this.result = await this.geoObject.save();
-        }else if(geoObjectType == "point"){
-            this.geoObject = new Point(data);
             this.result = await this.geoObject.save();
         }else if(geoObjectType == "track"){
             this.geoObject = new Track(data);
@@ -35,8 +37,6 @@ class GeoObjectServices{
     async getAllGeoObject(geoObjectType, companyId){
         if(geoObjectType == "zone"){
             this.result = await Zone.findAllGeoObject(companyId);
-        }else if(geoObjectType == "point"){
-            this.result = await Point.findAllGeoObject(companyId);
         }else if(geoObjectType == "track"){
             this.result = await Track.findAllGeoObject(companyId);
         }else{
@@ -48,8 +48,6 @@ class GeoObjectServices{
     async getGeoOjectById(geoObjectType, id){
         if(geoObjectType == "zone"){
             this.result = await Zone.findGeoObjectById(id);
-        }else if(geoObjectType == "point"){
-            this.result = await Point.findGeoObjectById(id);
         }else if(geoObjectType == "track"){
             this.result = await Track.findGeoObjectById(id);
         }else{
@@ -62,12 +60,10 @@ class GeoObjectServices{
         const { updateType, geoObject, wasteDump } = updateData;
         const session  = await mongoose.startSession();
         try{
-            await session.withTransaction(async () => {
+            this.transactionResults = await session.withTransaction(async () => {
                 if(updateType == "default"){//update description, resize, reposition
                     if(geoObjectType == "zone"){
                         this.result  = await Zone.updateGeoObjectById(id, geoObject, session);
-                    }else if(geoObjectType == "point"){
-                        this.result  = await Point.updateGeoObjectById(id, geoObject, session);
                     }else if(geoObjectType == "track"){
                         this.result  = await Track.updateGeoObjectById(id, geoObject, session);
                     }else{
@@ -76,9 +72,7 @@ class GeoObjectServices{
                 }else if(updateType == "remapping"){
                     let tempWork;
                     if(geoObjectType == "track"){
-                        tempWork = await Work.findWorkByRef("geoObjectTrackId", id, {}, session);
-                    }else if(geoObjectType == "point"){
-                        tempWork = await Work.findWorkByRef("geoObjectPointId", id, {}, session);
+                        tempWork = await Work.findWorkByRef("geoObjectTrackId", id, {workStatus:1, geoObjectTrackId:1}, session);
                     }else{
                         throw ApiError.badRequest("geo object type not valid");
                     }
@@ -90,7 +84,7 @@ class GeoObjectServices{
                     if(blockFlag != -1){
                         _.remove( tempWork, w => { return w.workStatus == "finished" });
 
-                        const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", id, {}, session);
+                        const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", id, {isCollected:1, geoObjectId:1}, session);
                         _.remove( tempWasteDump, wd => { return wd.isCollected == true });
 
                         /** remapping
@@ -113,11 +107,6 @@ class GeoObjectServices{
                                 const index = _.indexOf(w.geoObjectTrackId, id );
                                 w.geoObjectTrackId[index] = geoObjectId.newGeoObjectId;
                             });
-                        }else if (geoObjectType == "point"){
-                            tempWork.forEach( w => {
-                                const index = _.indexOf(w.geoObjectPointId, id );
-                                w.geoObjectPointId[index] = geoObjectId.newGeoObjectId;
-                            });
                         }else{
                             throw ApiError.badRequest("geo object type not valid");
                         }
@@ -125,8 +114,6 @@ class GeoObjectServices{
                         tempWork.forEach(async w => {
                             if(geoObjectType == "track"){
                                 this.result.work = await Work.updateWorkById(w._id, { geoObjectTrackId:w.geoObjectTrackId }, session);
-                            }else if(geoObjectType == "point"){
-                                this.result.work = await Work.updateWorkById(w._id, { geoObjectPointId:w.geoObjectPointId }, session);
                             }else{
                                 throw ApiError.badRequest("geo object type not valid");
                             }
@@ -140,31 +127,37 @@ class GeoObjectServices{
                 }
     
             });
+
+            if(this.transactionResults){
+                return this.result;
+            }else{
+                throw ApiError.serverError("Geo object update transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("Geo object update transaction abort due to error: " + e.message);
         }finally{
             session.endSession();
         }
-        return this.result;
     }
 
     async deleteGeoObjectById(geoObjectType, id, updateData){
         const session = await mongoose.startSession();
         try{
-            await session.withTransaction(async() => {
-                this.result = { wasteDump:[], geoObject:[], work:[], customerUsedGeoObject:[] };
+            this.transactionResults = await session.withTransaction(async() => {
                 const work = [];
                 const customerUsedGeoObject = [];
 
                 //removing non collected wasteDump
-                const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", id, {}, session);
+                const tempWasteDump = await WasteDump.findWasteDumpByRef("geoObjectId", id, {isCollected:1}, session);
                 _.remove(tempWasteDump, o => o.isCollected == true );
                 tempWasteDump.forEach(async wd => {
-                    const result = await WasteDump.deleteWasteDumpById( wd._id, session );
-                    this.result.wasteDump.push(result);
+                    await WasteDump.deleteWasteDumpById( wd._id, session );
                 });
                 
                 if(geoObjectType == "track"){
                     //removing geoObject ref from work
-                    const tempWork = await Work.findWorkByRef("geoObjectTrackId", id, {}, session);
+                    const tempWork = await Work.findWorkByRef("geoObjectTrackId", id, {geoObjectTrackId}, session);
                     tempWork.forEach( w => {
                         _.remove(w.geoObjectTrackId, got => got == id);
                         work.push({workId:w._id, workUpdateData:{geoObjectTrackId:w.geoObjectTrackId}});
@@ -174,7 +167,7 @@ class GeoObjectServices{
                     tempCustomerUsedGeoObjects.forEach( cugo => {
                         _.remove(cugo.usedTrack, o => o.trackId == id );
                         let deleteCustomerUsedGeoObject = false;
-                        if(cugo.usedTrack.length == 0 && cugo.usedPoint.length == 0){
+                        if(cugo.usedTrack.length == 0){
                             deleteCustomerUsedGeoObject = true;
                         }
                         customerUsedGeoObject.push({customerUsedGeoObjectId:cugo._id, deleteCustomerUsedGeoObject, customerUsedGeoObjectUpdateData:{
@@ -182,54 +175,38 @@ class GeoObjectServices{
                         }});
                     });
                     //deleting geoObject
-                    this.result.geoObject  = await Track.deleteGeoObjectById(id, session);
+                    await Track.deleteGeoObjectById(id, session);
 
-                }else if(geoObjectType == "point"){
-                    //removing geoObject ref from work
-                    const tempWork = await Work.findWorkByRef("geoObjectPointId", id, {}, session);
-                    tempWork.forEach( w => {
-                        _.remove(w.geoObjectPointId, gop => gop == id);
-                        work.push({workId:w._id, workUpdateData:{geoObjectPointId:w.geoObjectPointId}});
-                    })
-                    //removing geoObject ref from customerUsedGeoObject
-                    const tempCustomerUsedGeoObjects = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedPoint.pointId", id, {}, session);
-                    tempCustomerUsedGeoObjects.forEach( cugo => {
-                        _.remove(cugo.usedPoint, o => o.pointId == id );
-                        let deleteCustomerUsedGeoObject = false;
-                        if(cugo.usedTrack.length == 0  && cugo.usedPoint.length == 0){
-                            deleteCustomerUsedGeoObject = true;
-                        }
-                        customerUsedGeoObject.push({customerUsedGeoObjectId:cugo._id, deleteCustomerUsedGeoObject, customerUsedGeoObjectUpdateData:{
-                            usedPoint:cugo.usedPoint
-                        }});
-                    });
-                    //deleting geoObject
-                    this.result.geoObject  = await Point.deleteGeoObjectById(id, session);
                 }else{
                     throw ApiError.badRequest("geo object type not valid");
                 }
                 work.forEach( async w => {
                     const { workId, workUpdateData } = w;
-                    const result =  await Work.updateWorkById(workId, workUpdateData, session);
-                    this.result.work.push(result);
+                    await Work.updateWorkById(workId, workUpdateData, session);
                 });
 
                 customerUsedGeoObject.forEach( async cugo => {
                     const {customerUsedGeoObjectId, deleteCustomerUsedGeoObject, customerUsedGeoObjectUpdateData } = cugo;
                     if(deleteCustomerUsedGeoObject){
-                        const result = await CustomerUsedGeoObject.deleteCustomerUsedGeoObjectById(customerUsedGeoObjectId, session);
-                        this.result.customerUsedGeoObject.push(result);
+                        await CustomerUsedGeoObject.deleteCustomerUsedGeoObjectById(customerUsedGeoObjectId, session);
                     }else{
-                        const result = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(customerUsedGeoObjectId, 
+                        await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(customerUsedGeoObjectId, 
                             customerUsedGeoObjectUpdateData, session);
-                        this.result.customerUsedGeoObject.push(result);
                     } 
                 });
             });
+
+            if(this.transactionResults){
+                return {statusCode:"200", status:"Success"}
+            }else{
+                throw ApiError.serverError("Geo object delete transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("Geo object delete transaction abort due to error: " + e.message);
         }finally{
             session.endSession();
         }
-        return this.result;
     }
 }
 

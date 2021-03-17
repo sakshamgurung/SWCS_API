@@ -1,17 +1,19 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
+const ApiError = require('../error/ApiError');
 
 const Subscription = require("../models/common/subscription");
 const CustomerRequest = require('../models/common/customerRequest');
 const Schedule = require('../models/customers/schedule');
-const GeoObjectPoint = require('../models/companies/geoObjectPoint');
-const CustomerUsedGeoObject = require('../models/customers/customerUsedGeoObject');
+const StaffGroup = require('../models/staff/staffGroup');
+const Vehicle = require('../models/companies/vehicle');
 
 class CustomerRequestServices{
 
     constructor(){
         this.customerRequest = undefined;
         this.result = undefined;
+        this.transactionResults = undefined;
     }
     
     async createNewCustomerRequest(customerRequestData){
@@ -33,110 +35,121 @@ class CustomerRequestServices{
     async updateCustomerRequestById(id, updateData){
         const session = await mongoose.startSession();
         try{
-            await session.withTransaction(async()=> {
+            this.transactionResults = await session.withTransaction(async()=> {
                 const prevCustomerRequest = await CustomerRequest.findCustomerRequestById(id, {}, session);
+                const { companyId, customerId, requestStatus, requestType, subscribedGeoObjectType, subscribedGeoObjectId, coordinates} = prevCustomerRequest[0];
 
-                if(prevCustomerRequest[0].requestStatus == "pending" && updateData.requestStatus == "denied"){
+                if(requestStatus == "pending" && updateData.requestStatus == "denied"){
                     //delete the request send notification
                     this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
                 
-                }else if(prevCustomerRequest[0].requestStatus == "pending" && updateData.requestStatus == "confirmed"){
-                    const companyId = prevCustomerRequest[0].companyId;
-                    const customerId = prevCustomerRequest[0].customerId;
-                    if(prevCustomerRequest[0].requestType == "subscription"){
+                }else if(requestStatus == "pending" && updateData.requestStatus == "accepted"){
+
+                    if(requestType == "subscription" || requestType == "subscription with location"){
                         
                         //create subscription
                         const newSubData = {companyId, customerId};
                         this.result.subscription = await Subscription.create([newSubData], {session});
                         
-                        //customer used geo object
-                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, {}, session);
-                        if(_.isEmpty(tempCustomerUsedGeoObject)){
-                            const newCustomerUsedGeoObjectData = {
-                                customerId,
-                                usedPoint:[],
-                                usedTrack:[{companyId, trackId:prevCustomerRequest[0].subscribedGeoObjectId}]
-                            }
-                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.create([newCustomerUsedGeoObjectData], {session});
-                        }else{
-                            const usedPoint = tempCustomerUsedGeoObject.usedPoint;
-                            const CustomerUsedGeoObjectId = tempCustomerUsedGeoObject._id;
-                            usedPoint.push({companyId, pointId:this.result.point.id});
-                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(CustomerUsedGeoObjectId, {usedPoint}, session);
-                        }
                         //delete customerRequest
                         this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
-                    }else if(prevCustomerRequest[0].requestType == "subscription with location"){
-                        const coordinates = prevCustomerRequest[0].requestCoordinate;
-                        const pointName = prevCustomerRequest[0].pointName;
-                        const pointDescription = prevCustomerRequest[0].pointDescription;
+
+                    }else if(requestType == "one time"){
+                        this.result.customerRequest = await CustomerRequest.updateCustomerRequestById(id, { requestStatus:"accepted" }, session);
+                    }
+                    
+                }else if(requestStatus == "accepted" && updateData.requestStatus == "assigned"){
+                    const {staffGroupId, vehicleId} = updateData;
+
+                    if(!_.isEmpty(staffGroupId) && !_.isEmpty(vehicleId)){
                         
-                        //create subscription
-                        const newSubData = {companyId, customerId};
-                        this.result.subscription = await Subscription.create([newSubData], {session});
+                        const tempStaffGroup = await StaffGroup.findStaffGroupById(staffGroupId, {isReserved:1}, session);
+                        const tempVehicle = await Vehicle.findVehicleById(vehicleId, {isReserved:1}, session);
                         
-                        //create new point
-                        const newPointData = {
-                            companyId, 
-                            pointName, 
-                            coordinates, wasteCondition:"none", 
-                            description:pointDescription
-                        };
-                        this.result.point = await GeoObjectPoint.create([newPointData], session);
-                        //test
-                        console.log(this.result.point._id);
-                        
-                        //customer used geo object
-                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("customerId", customerId, {}, session);
-                        if(_.isEmpty(tempCustomerUsedGeoObject)){
-                            const newCustomerUsedGeoObjectData = {
-                                customerId,
-                                usedPoint:[{companyId, pointId:this.result.point._id}],
-                                usedTrack:[]
-                            }
-                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.create([newCustomerUsedGeoObjectData], {session});
-                        }else{
-                            const usedPoint = tempCustomerUsedGeoObject.usedPoint;
-                            const CustomerUsedGeoObjectId = tempCustomerUsedGeoObject._id;
-                            usedPoint.push({companyId, pointId:this.result.point._id});
-                            this.result.CustomerUsedGeoObject = await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(CustomerUsedGeoObjectId, {usedPoint}, session);
+                        if(tempStaffGroup[0].isReserved){
+                            throw ApiError.badRequest("staff group is reserved.");
                         }
-                        //delete customerRequest
-                        this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
-                    }else if(prevCustomerRequest[0].requestType == "one time"){
-                        //send notification to driver
+                        
+                        if(tempVehicle[0].isReserved){
+                            throw ApiError.badRequest("vehicle is reserved.");
+                        }
+                        
+                        this.result.staffGroup = await StaffGroup.updateStaffGroupById(staffGroupId, {isReserved:true}, session);
+                        this.result.vehicle = await Vehicle.updateVehicleById(vehicleId, {isReserved:true}, session);
+                        
                         const newSchedule = {
                             customerId,
                             customerRequestId:id
                         };
+                        
                         this.result.schedule = await Schedule.create([newSchedule], {session});
-                        this.result.customerRequest = await CustomerRequest.updateCustomerRequestById(id, { requestStatus:"confirmed" }, session);
-                    
+                        this.result.customerRequest = await CustomerRequest.updateCustomerRequestById(id, updateData, session);
+                        
+                        //send notification to driver
+
+                    }else{
+                        throw ApiError.badRequest("staff group or vehicle not assigned for one-time task.");
                     }
-                    
-                }else if(prevCustomerRequest[0].requestStatus == "confirmed" && updateData.requestStatus == "finished"){
+                }
+                else if(requestStatus == "assigned" && updateData.requestStatus == "finished"){
+                    const {staffGroupId} = updateData;
+                    //delete schedule
                     this.result.schedule = await Schedule.deleteScheduleByRef("customerRequestId", id, session);
-                    this.result.customerRequest = await CustomerRequest.updateCustomerRequestById(id, { requestStatus:"finished" }, session);
+                    //free staffGroup
+                    this.result.staffGroup = await StaffGroup.updateStaffGroupById(staffGroupId, {isReserved:false}, session);
+                    //delete customerRequest
+                    this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
                 }
             });
+
+            if(this.transactionResults){
+                return this.result;
+            }else{
+                throw ApiError.serverError("Customer request update transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("Customer request update transaction abort due to error: " + e.message);
         }finally{
             session.endSession();
         }
-        return this.result;
     }
-
+    
     async deleteCustomerRequestById(id, updateData){
         const session = await mongoose.startSession();
         try{
-            await session.withTransaction(async() => {
-                this.result = {};
+            this.transactionResults = await session.withTransaction(async() => {
+                const tempCustomerRequestId = await CustomerRequest.findCustomerRequestById(id, {}, session);
+                const {requestStatus, requestType, customerId, companyId, staffGroupId} = tempCustomerRequestId[0];
 
-                this.result.customerRequest = await CustomerRequest.deleteCustomerRequestById(id, session);
+                if(requestStatus == "accepted"){
+                    if(requestType == "subscription" || requestType == "subscription with location"){
+                        //delete subscription
+                        const tempSubscription = await Subscription.findAllSubscription(customerId, {}, session);
+                        const deleteSubscription = _.remove(tempSubscription, s => s.companyId == companyId);
+                        await Subscription.deleteSubscriptionById(deleteSubscription[0]._id, session);
+                    }
+                }else if(requestStatus == "assigned"){
+                    //delete schedule
+                    await Schedule.deleteScheduleByRef("customerRequestId", id, session);
+                    //free staffGroup
+                    await StaffGroup.updateStaffGroupById(staffGroupId, {isReserved:false}, session);
+                }
+                //delete customerRequest
+                await CustomerRequest.deleteCustomerRequestById(id, session);
             });
+            
+            if(this.transactionResults){
+                return {statusCode:"200", status:"Success"}
+            }else{
+                throw ApiError.serverError("Customer request delete transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("Customer request delete transaction abort due to error: " + e.message);
         }finally{
             session.endSession();
         }
-        return this.result;
     }
 }
 

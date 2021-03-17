@@ -119,6 +119,34 @@ class HelperClass{
             return this.find({ resetToken }, projection, { session });
         }
     }
+
+    static findStaffByRef(ref, id, projection, session){
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.find({companyId:id}, projection);
+                default : throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.find({companyId:id}, projection, { session });
+                default : throw ApiError.badRequest("ref not defined");
+            }
+        }
+    }
+
+    static deleteStaffByRef(ref, id, session){
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.deleteMany({companyId:id});
+                default: throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.deleteMany({companyId:id},{ session });
+                default: throw ApiError.badRequest("ref not defined");
+            }
+        }
+    }
 }
 
 schema.loadClass(HelperClass);

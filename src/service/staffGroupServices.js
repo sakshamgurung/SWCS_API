@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ApiError = require('../error/ApiError');
 const _ = require('lodash');
 
 const StaffGroup = require('../models/staff/staffGroup');
@@ -11,6 +12,7 @@ class StaffGroupServices{
     constructor(){
         this.staffGroup = undefined;
         this.result = undefined;
+        this.transactionResults = undefined;
     }
     
     async createNewStaffGroup(staffGroupData){
@@ -32,7 +34,7 @@ class StaffGroupServices{
     async updateStaffGroupById(id, updateData){
         const session = await mongoose.startSession();
         try{
-            await session.withTransaction(async () => {
+            this.transactionResults = await session.withTransaction(async () => {
                 this.result = {staffDetail:[]};
                 const prevStaffGroupData = await StaffGroup.findStaffGroupById(id, {}, session);
         
@@ -54,40 +56,54 @@ class StaffGroupServices{
         
                 this.result.staffGroup = await StaffGroup.updateStaffGroupById(id, updateData);
             });
+
+            if(this.transactionResults){
+                return this.result;
+            }else{
+                throw ApiError.serverError("Staff group update transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("Staff group update transaction abort due to error: " + e.message);
         }finally{
             session.endSession();
         }
-        return this.result;
     }
 
     async deleteStaffGroupById(id, updateData){
         const session = await mongoose.startSession();
         try {
-            await session.withTransaction(async() => {
-                this.result = { staffDetail:[] };
+            this.transactionResults = await session.withTransaction(async() => {
                 
                 //removing deleted staffGroupId from the staffDetail collection
                 const tempStaffDetail = await StaffDetail.findStaffDetailByRef("staffGroupId", id, {}, session);
                 tempStaffDetail.forEach(async sd => {               
-                    const result = await StaffDetail.updateStaffDetailById(sd._id, {staffGroupId:""}, session);
-                    this.result.staffDetail.push(result);
+                    await StaffDetail.updateStaffDetailById(sd._id, {staffGroupId:""}, session);
                 });
                 
                 //removing deleted staffgroup from the work collection's staffGroupId field
-                this.result.work = await Work.updateWorkByRef("staffGroupId", id, {staffGroupId:""}, session);
+                await Work.updateWorkByRef("staffGroupId", id, {staffGroupId:""}, session);
                 
                 //removing deleted staffgroup from the customerRequest collection's staffGroupId field
-                this.result.customerRequest = await CustomerRequest.updateCustomerRequestByRef("staffGroupId", id, {staffGroupId:""}, session);
+                await CustomerRequest.updateCustomerRequestByRef("staffGroupId", id, {staffGroupId:""}, session);
 
-                this.result.staffGroup = await StaffGroup.deleteStaffGroupById(id, session);
+                await StaffGroup.deleteStaffGroupById(id, session);
 
                 //notify group member
 
             });
-        } finally{
+
+            if(this.transactionResults){
+                return {statusCode:"200", status:"Success"}
+            }else{
+                throw ApiError.serverError("Staff group delete transaction failed");
+            }
+
+        } catch(e){
+            throw ApiError.serverError("Staff group delete transaction abort due to error: " + e.message);
+        }finally{
             session.endSession();
         }
-        return this.result;
     }
 }
 

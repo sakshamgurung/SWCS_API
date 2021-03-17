@@ -1,4 +1,5 @@
 const Notification = require('../models/common/notification');
+const ApiError = require('../error/ApiError');
 
 class NotificationServices{
 
@@ -25,7 +26,12 @@ class NotificationServices{
 
     async deleteNotificationById(id, updateData){
         this.result = await Notification.deleteNotificationById(id);
-        return this.result;
+        
+        if(!this.result.hasOwnProperty("writeErrors")){
+            return {statusCode:"200", status:"Success"}
+        }else{
+            throw ApiError.serverError("Notification delete failed");
+        }
     }
 }
 

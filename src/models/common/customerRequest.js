@@ -16,14 +16,12 @@ const schema = new Schema({
         required:true,
         enum:["subscription", "subscription with location", "one time"]
     },
-    pointName:{
-        type:String,
-    },
-    pointDescription:{
-        type:String
-    },
     requestCoordinate:{
-        type:{latitude:Number, longitude:Number},
+        type:{identifier:String, coordinates:{latitude:Number, longitude:Number}},
+    },
+    subscribedGeoObjectType:{
+        type:String,
+        enum:["track"]
     },
     subscribedGeoObjectId:{
         type:String,
@@ -38,7 +36,7 @@ const schema = new Schema({
         type:Schema.Types.Date
     },
     wasteDescription:{
-        type:[ { wasteListId:String, amount:Number, amountUnit:String } ],//"litre", "kg","bora"
+        type:[ {_id:false, wasteListId:String, amount:Number, amountUnit:String } ],//"litre", "kg","bora"
     },
     staffGroupId:{
         type:String,
@@ -48,7 +46,7 @@ const schema = new Schema({
     },
     requestStatus:{
         type:String,
-        enum:["pending","confirmed","finished"]
+        enum:["pending","accepted","assigned","finished"]
     }
 },{
     collection:"customerRequests"
@@ -72,7 +70,7 @@ class HelperClass{
             }
         }
     }
-    
+
     static findCustomerRequestById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);

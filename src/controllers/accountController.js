@@ -1,4 +1,5 @@
 const {AccountServices} = require("../service/accountServices");
+const ApiError = require('../error/ApiError');
 
 class AccountController{
     async signUp(request, response, next){
@@ -10,8 +11,7 @@ class AccountController{
             const result = await accountServices.signUp(role, signUpData);
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500}); 
+            throw ApiError.serverError("Account Error: " + error.message);
         }
     }
     async login(request, response, next){
@@ -22,8 +22,7 @@ class AccountController{
             const result = {loginStatus:"success"};
             response.json(result);
         } catch (error) {
-            console.error(error.message);
-            response.json({error:500}); 
+            throw ApiError.serverError("Account Error: " + error.message);
         }
     }
 }
