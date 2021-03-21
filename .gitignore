@@ -63,3 +63,6 @@ buck-out/
 #MISC.
 ------------------
 --------------------
+workspace swcs api model.code-workspace
+workspace swcs api routes.code-workspace
+workspace swcs api service.code-workspace
