@@ -3,8 +3,9 @@ const config = require('../config');
 
 const connectDB = async ()=> {
   try{
-    console.log(config.databaseURL)
-    await mongoose.connect(config.databaseURL,{
+    //console.log(config.databaseURL);
+    console.log("Remote Database: \n", config.remoteDatabaseURL);
+    await mongoose.connect(config.remoteDatabaseURL,{
       useNewUrlParser:true,
       useUnifiedTopology: true,
       useCreateIndex: true,
