@@ -47,9 +47,9 @@ class WorkController{
             const {body} = request;
 
             const workServices = new WorkServices();
-            const result = await workServices.updateWorkById(workId, body);
+            const {statusCode, status} = await workServices.updateWorkById(workId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Work Error: " + error.message);
         }

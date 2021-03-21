@@ -33,7 +33,7 @@ const schema = new Schema({
         type:Schema.Types.Date
     },
     time:{
-        type:Schema.Types.Date
+        type:String
     },
     wasteDescription:{
         type:[ {_id:false, wasteListId:String, amount:Number, amountUnit:String } ],//"litre", "kg","bora"
@@ -53,7 +53,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllCustomerRequest(role, id, projection, session){
+    static findAll(role, id, projection, session){
         if(session == undefined){
             switch(role){
                 case "company": return this.find({companyId:id}, projection); 
@@ -71,7 +71,7 @@ class HelperClass{
         }
     }
 
-    static findCustomerRequestById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -79,7 +79,7 @@ class HelperClass{
         }
     }
 
-    static updateCustomerRequestById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -87,7 +87,7 @@ class HelperClass{
         }
     }
 
-    static deleteCustomerRequestById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -95,7 +95,7 @@ class HelperClass{
         }
     }
 
-    static findCustomerRequestByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.find({companyId:id}, projection);
@@ -115,7 +115,7 @@ class HelperClass{
         }
     }
 
-    static updateCustomerRequestByRef(ref, id, updateData, session){
+    static updateByRef(ref, id, updateData, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ));
@@ -135,7 +135,7 @@ class HelperClass{
         }
     }
 
-    static deleteCustomerRequestByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.deleteMany({companyId:id});

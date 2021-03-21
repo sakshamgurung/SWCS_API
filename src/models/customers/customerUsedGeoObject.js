@@ -19,7 +19,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static updateCustomerUsedGeoObjectById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -27,7 +27,7 @@ class HelperClass{
         }
     }
 
-    static deleteCustomerUsedGeoObjectById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -35,7 +35,7 @@ class HelperClass{
         }
     }
     
-    static findCustomerUsedGeoObjectById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -43,7 +43,7 @@ class HelperClass{
         }
     }
     
-    static findCustomerUsedGeoObjectByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.find({customerId:id}, projection);
@@ -59,7 +59,7 @@ class HelperClass{
         }
     }
     
-    static updateCustomerUsedGeoObjectByRef(ref, id, updateData, session){
+    static updateByRef(ref, id, updateData, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.updateMany({customerId:id},this.translateAliases( updateData ));
@@ -75,7 +75,7 @@ class HelperClass{
         }
     }
     
-    static deleteCustomerUsedGeoObjectByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.deleteMany({customerId:id});

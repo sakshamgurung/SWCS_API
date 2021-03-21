@@ -47,9 +47,9 @@ class StaffGroupController{
             const {body} = request.body;
 
             const staffGroupServices = new StaffGroupServices();
-            const result = await staffGroupServices.updateStaffGroupById(staffGroupId, body);
+            const {statusCode, status} = await staffGroupServices.updateStaffGroupById(staffGroupId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Staff group Error: " + error.message);
         }

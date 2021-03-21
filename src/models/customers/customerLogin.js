@@ -24,22 +24,22 @@ const schema = new Schema({
     },
     token:{
         type:String,
-        required:true
+        //required:true
     },
     refreshToken:{
         type:String,
-        required:true,
+        //required:true,
     },
     timeStamp:{
         type:Schema.Types.Date,
-        required:true,
+        //required:true,
     }
 },{
     collection:"customerLogins"
 });
 
 class HelperClass{
-    static findAllCustomerInIdArray(idArray, projection, session){
+    static findAllInIdArray(idArray, projection, session){
         if(session == undefined){
             return this.find({ _id:{ $in:idArray } }, projection); 
         }else{
@@ -47,7 +47,7 @@ class HelperClass{
         }
     }
     
-    static findCustomerById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -55,7 +55,7 @@ class HelperClass{
         }
     }
     
-    static updateCustomerById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -63,7 +63,7 @@ class HelperClass{
         }
     }
 
-    static deleteCustomerById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -71,7 +71,7 @@ class HelperClass{
         }
     }
 
-    static findCustomerByEmail(email, projection, session){
+    static findByEmail(email, projection, session){
         if(session == undefined){
             return this.find({ email}, projection);
         }else{
@@ -79,7 +79,7 @@ class HelperClass{
         }
     }
 
-    static findCustomerByMobileNo(mobileNo, projection, session){
+    static findByMobileNo(mobileNo, projection, session){
         if(session == undefined){
             return this.find({ mobileNo}, projection);
         }else{
@@ -87,7 +87,7 @@ class HelperClass{
         }
     }
 
-    static findCustomerByUUID(uuidArray, projection, session){
+    static findByUUID(uuidArray, projection, session){
         if(session == undefined){
             return this.find({ uuid:{ $in: uuidArray }  }, projection);
         }else{
@@ -95,7 +95,7 @@ class HelperClass{
         }
     }
 
-    static findCustomerByToken(token, projection, session){
+    static findByToken(token, projection, session){
         if(session == undefined){
             return this.find({ token }, projection);
         }else{
@@ -103,7 +103,7 @@ class HelperClass{
         }
     }
 
-    static findCustomerByRefreshToken(refreshToken, projection, session){
+    static findByRefreshToken(refreshToken, projection, session){
         if(session == undefined){
             return this.find({ refreshToken }, projection);
         }else{
@@ -111,7 +111,7 @@ class HelperClass{
         }
     }
 
-    static findCustomerByResetToken(resetToken, projection, session){
+    static findByResetToken(resetToken, projection, session){
         if(session == undefined){
             return this.find({ resetToken }, projection);
         }else{

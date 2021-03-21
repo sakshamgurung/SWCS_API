@@ -17,7 +17,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllWasteCatalog(projection, session){
+    static findAll(projection, session){
         if(session == undefined){
             return this.find({}, projection);
         }else{
@@ -25,7 +25,7 @@ class HelperClass{
         }
     }
 
-    static findWasteCatalogById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -33,7 +33,7 @@ class HelperClass{
         }
     }
 
-    static updateWasteCatalogById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -41,7 +41,7 @@ class HelperClass{
         }
     }
     
-    static deleteWasteCatalogById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{

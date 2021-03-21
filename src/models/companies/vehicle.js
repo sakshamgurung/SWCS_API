@@ -51,7 +51,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllVehicle(companyId, projection, session){
+    static findAll(companyId, projection, session){
         if(session == undefined){
             return this.find({ companyId }, projection);
         }else{
@@ -59,7 +59,7 @@ class HelperClass{
         }
     }
 
-    static findVehicleById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -67,7 +67,7 @@ class HelperClass{
         }
     }
 
-    static updateVehicleById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -75,7 +75,7 @@ class HelperClass{
         }
     }
 
-    static deleteVehicleById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -83,7 +83,7 @@ class HelperClass{
         }
     }
 
-    static deleteVehicleByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.deleteOne({companyId:id});

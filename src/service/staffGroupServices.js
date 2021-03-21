@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const ApiError = require('../error/ApiError');
 const _ = require('lodash');
+const {checkTransactionResults, checkForWriteErrors} = require('../utilities/errorUtil');
 
 const StaffGroup = require('../models/staff/staffGroup');
 const Work = require('../models/common/work');
@@ -22,12 +23,12 @@ class StaffGroupServices{
     }
 
     async getAllStaffGroup(companyId){
-        this.result = await StaffGroup.findAllStaffGroup(companyId);
+        this.result = await StaffGroup.findAll(companyId);
         return this.result;
     }
 
     async getStaffGroupById(id){
-        this.result = await StaffGroup.findStaffGroupById(id);
+        this.result = await StaffGroup.findById(id);
         return this.result;
     }
 
@@ -35,69 +36,65 @@ class StaffGroupServices{
         const session = await mongoose.startSession();
         try{
             this.transactionResults = await session.withTransaction(async () => {
-                this.result = {staffDetail:[]};
-                const prevStaffGroupData = await StaffGroup.findStaffGroupById(id, {}, session);
-        
-                const deletedGroupMember = _.difference(prevStaffGroupData[0].staffId, updateData.staffId);
-                const addedGroupMember = _.difference(updateData.staffId, prevStaffGroupData[0].staffId);
+                const prevStaffGroupData = await StaffGroup.findById(id, {}, session);
+                const {staffId} = prevStaffGroupData[0];
+                const deletedGroupMember = _.difference(staffId, updateData.staffId);
+                const addedGroupMember = _.difference(updateData.staffId, staffId);
                 
                 if(deletedGroupMember.length > 0){
-                    deletedGroupMember.forEach(async gm => {
-                        const result = await StaffDetail.updateStaffDetailById(gm, {staffGroupId:""}, session);
-                        this.result.staffDetail.push(result);
-                    });
+                    for(let gm of deletedGroupMember ){
+                        this.result = await StaffDetail.updateById(gm, {staffGroupId:""}, session);
+                        checkForWriteErrors(this.result, "none", "Staff group update failed");
+                    }
                 }
                 if(addedGroupMember.length > 0){
-                    addedGroupMember.forEach(async gm => {
-                        const result = await StaffDetail.updateStaffDetailById(gm, {staffGroupId:id}, session);
-                        this.result.staffDetail.push(result);
-                    });
+                    for(let gm of addedGroupMember ){
+                        this.result = await StaffDetail.updateById(gm, {staffGroupId:id}, session);
+                        checkForWriteErrors(this.result, "none", "Staff group update failed");
+                    }
                 }
         
-                this.result.staffGroup = await StaffGroup.updateStaffGroupById(id, updateData);
+                this.result = await StaffGroup.updateById(id, updateData);
+                checkForWriteErrors(this.result, "none", "Staff group update failed");
             });
-
-            if(this.transactionResults){
-                return this.result;
-            }else{
-                throw ApiError.serverError("Staff group update transaction failed");
-            }
-
+            
+            return checkTransactionResults(this.transactionResults, "status", "Staff group update transaction failed");
+            
         }catch(e){
             throw ApiError.serverError("Staff group update transaction abort due to error: " + e.message);
         }finally{
             session.endSession();
         }
     }
-
+    
     async deleteStaffGroupById(id, updateData){
         const session = await mongoose.startSession();
         try {
             this.transactionResults = await session.withTransaction(async() => {
                 
                 //removing deleted staffGroupId from the staffDetail collection
-                const tempStaffDetail = await StaffDetail.findStaffDetailByRef("staffGroupId", id, {}, session);
-                tempStaffDetail.forEach(async sd => {               
-                    await StaffDetail.updateStaffDetailById(sd._id, {staffGroupId:""}, session);
-                });
+                const tempStaffDetail = await StaffDetail.findByRef("staffGroupId", id, {}, session);
+                for(let sd of tempStaffDetail ){
+                    this.result = await StaffDetail.updateById(sd._id, {staffGroupId:""}, session);
+                    checkForWriteErrors(this.result, "none", "Staff group delete failed");    
+                }
                 
                 //removing deleted staffgroup from the work collection's staffGroupId field
-                await Work.updateWorkByRef("staffGroupId", id, {staffGroupId:""}, session);
+                this.result = await Work.updateByRef("staffGroupId", id, {staffGroupId:""}, session);
+                checkForWriteErrors(this.result, "none", "Staff group delete failed");
                 
                 //removing deleted staffgroup from the customerRequest collection's staffGroupId field
-                await CustomerRequest.updateCustomerRequestByRef("staffGroupId", id, {staffGroupId:""}, session);
-
-                await StaffGroup.deleteStaffGroupById(id, session);
+                this.result = await CustomerRequest.updateByRef("staffGroupId", id, {staffGroupId:""}, session);
+                checkForWriteErrors(this.result, "none", "Staff group delete failed");
+                
+                this.result = await StaffGroup.deleteById(id, session);
+                checkForWriteErrors(this.result, "none", "Staff group delete failed");
 
                 //notify group member
 
             });
 
-            if(this.transactionResults){
-                return {statusCode:"200", status:"Success"}
-            }else{
-                throw ApiError.serverError("Staff group delete transaction failed");
-            }
+            return checkTransactionResults(this.transactionResults, "status", "Staff group delete transaction failed");
 
         } catch(e){
             throw ApiError.serverError("Staff group delete transaction abort due to error: " + e.message);

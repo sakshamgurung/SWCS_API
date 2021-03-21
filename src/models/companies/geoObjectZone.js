@@ -27,7 +27,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllGeoObject(companyId, projection, session){
+    static findAll(companyId, projection, session){
         if(session == undefined){
             return this.find({ companyId }, projection);
         }else{
@@ -35,7 +35,7 @@ class HelperClass{
         }
     }
 
-    static findGeoObjectById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -43,7 +43,7 @@ class HelperClass{
         }
     }
 
-    static updateGeoObjectById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -51,7 +51,7 @@ class HelperClass{
         }
     }
 
-    static deleteGeoObjectById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -59,7 +59,7 @@ class HelperClass{
         }
     }
 
-    static findGeoObjectByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.find({companyId:id}, projection);
@@ -75,7 +75,7 @@ class HelperClass{
         }
     }
 
-    static updateGeoObjectByRef(ref, id, updateData, session){
+    static updateByRef(ref, id, updateData, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ));
@@ -91,7 +91,7 @@ class HelperClass{
         }
     }
 
-    static deleteGeoObjectByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.deleteMany({companyId:id});

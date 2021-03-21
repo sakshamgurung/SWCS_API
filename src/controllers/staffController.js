@@ -50,9 +50,9 @@ class StaffController{
             const {body} = request;
 
             const staffServices = new StaffServices();
-            const result = await staffServices.updateStaffById(staffInfoType, staffId, body);
+            const {statusCode, status} = await staffServices.updateStaffById(staffInfoType, staffId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Staff Error: " + error.message);
         }

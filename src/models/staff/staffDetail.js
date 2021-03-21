@@ -40,7 +40,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllStaffDetail(companyId, projection, session){
+    static findAll(companyId, projection, session){
         if(session == undefined){
             return this.find({ companyId }, projection);
             
@@ -50,7 +50,7 @@ class HelperClass{
         }
     }
 
-    static findStaffDetailById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
             
@@ -60,7 +60,7 @@ class HelperClass{
         }
     }
 
-    static updateStaffDetailById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
             
@@ -70,7 +70,7 @@ class HelperClass{
         }
     }
     
-    static deleteStaffDetailById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
             
@@ -80,7 +80,7 @@ class HelperClass{
         }
     }
 
-    static findAllStaffDetailByStaffGroupIdArray(idArray, projection, session){
+    static findAllByStaffGroupIdArray(idArray, projection, session){
         if(session == undefined){
             return this.find({ staffGroupId:{ $in:idArray } }, projection);
             
@@ -90,7 +90,7 @@ class HelperClass{
         }
     }
 
-    static findStaffDetailByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.find({companyId:id}, projection);
@@ -110,7 +110,7 @@ class HelperClass{
         }
     }
 
-    static updateStaffDetailByRef(ref, id, updateData, session){
+    static updateByRef(ref, id, updateData, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ));
@@ -130,7 +130,7 @@ class HelperClass{
         }
     }
 
-    static deleteStaffDetailByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.deleteMany({companyId:id});

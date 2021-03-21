@@ -8,12 +8,12 @@ class ScheduleServices{
     }
 
     async getAllSchedule(customerId){
-        this.result = await Schedule.findAllSchedule(customerId);
+        this.result = await Schedule.findAll(customerId);
         return this.result;
     }
 
     async getScheduleById(id){
-        this.result = await Schedule.findScheduleById(id);
+        this.result = await Schedule.findById(id);
         return this.result;
     }
 

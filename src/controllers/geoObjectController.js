@@ -1,15 +1,17 @@
 const {GeoObjectServices} = require('../service/geoObjectServices');
 const ApiError = require('../error/ApiError');
+const {geoObjectClientToServer} = require('../utilities/geoObjectUtil');
+
+const _ = require('lodash');
 
 class GeoObjectController{
     async createNewGeoObject(request, response, next){
         try {
             const geoObjectType = request.params.type;
-            const {body} = request;
-            
+            let {body} = request;
+            body = geoObjectClientToServer(body);
             const geoObjectServices = new GeoObjectServices();
             const result = await geoObjectServices.createNewGeoObject(geoObjectType, body);
-
             response.json(result);
         } catch (error) {
             throw ApiError.serverError("Geo object Error: " + error.message);
@@ -48,12 +50,13 @@ class GeoObjectController{
         try{
             const geoObjectType = request.params.type;
             const geoObjectId = request.params.id;
-            const {body} = request;
+            let {body} = request;
+            body.geoObject = geoObjectClientToServer(body.geoObject);
 
             const geoObjectServices = new GeoObjectServices();
-            const result = await geoObjectServices.updateGeoObjectById(geoObjectType, geoObjectId, body);
+            const {statusCode, status} = await geoObjectServices.updateGeoObjectById(geoObjectType, geoObjectId, body);
             
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Geo object Error: " + error.message);
         }

@@ -1,11 +1,13 @@
 const {CustomerRequestServices} = require("../service/customerRequestServices");
 const ApiError = require('../error/ApiError');
+const {customerRequestClientToServer} = require('../utilities/geoObjectUtil');
 
 class CustomerRequestController{
     async createNewCustomerRequest(request, response, next){
         try {
-            const { body } = request;
-            
+            let { body } = request;
+            body = customerRequestClientToServer(body);
+
             const customerRequestServices = new CustomerRequestServices();
             const result =  await customerRequestServices.createNewCustomerRequest(body);
 
@@ -21,7 +23,7 @@ class CustomerRequestController{
 
             const customerRequestServices = new CustomerRequestServices();
             const result = await customerRequestServices.getAllCustomerRequest(role, id);
-
+            
             response.json(result);
         }catch(error){
             throw ApiError.serverError("Customer request Error: " + error.message);
@@ -47,9 +49,9 @@ class CustomerRequestController{
             const {body} = request;
 
             const customerRequestServices = new CustomerRequestServices();
-            const result = await customerRequestServices.updateCustomerRequestById(customerRequestId, body);
+            const {statusCode, status} = await customerRequestServices.updateCustomerRequestById(customerRequestId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Customer request Error: " + error.message);
         }

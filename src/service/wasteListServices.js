@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const ApiError = require('../error/ApiError');
 const _ = require('lodash');
+const {checkTransactionResults, checkForWriteErrors} = require('../utilities/errorUtil');
 
 const WasteList = require('../models/companies/wasteList');
 const WasteDump = require('../models/customers/wasteDump');
@@ -20,54 +21,48 @@ class WasteListServices{
     }
 
     async getAllWasteList(companyId){
-        this.result = await WasteList.findAllWasteList(companyId);
+        this.result = await WasteList.findAll(companyId);
         return this.result;
     }
 
     async getWasteListById(id){
-        this.result = await WasteList.findWasteListById(id);
+        this.result = await WasteList.findById(id);
         return this.result;
     }
 
     async updateWasteListById(id, updateData){
-        this.result = await WasteList.updateWasteListById(id, updateData);
-                
-        if(!this.result.hasOwnProperty("writeErrors")){
-            return this.result;
-        }else{
-            throw ApiError.serverError("Waste list update failed");
-        }
+        this.result = await WasteList.updateById(id, updateData);
+        return checkForWriteErrors(this.result, "status", "Waste list update failed");       
     }
-
+    
     async deleteWasteListById(id, updateData){
         const { wasteDump } = updateData;
         const session = await mongoose.startSession();
         try {
             this.transactionResults = session.withTransaction(async() => {
-                const tempWasteDump = WasteDump.findWasteDumpByRef("wasteListId", id, {}, session);
+                const tempWasteDump = WasteDump.findByRef("wasteListId", id, {}, session);
                 _.remove(tempWasteDump, wd => wd.is_collected == true );
                 
                 if(wasteDump.remapping){
                     //remapping
                     const{ newWasteListId } = wasteDump;
-                    tempWasteDump.forEach(async wd => {
-                        await WasteDump.updateWasteDumpById( wd._id, { wasteListId: newWasteListId }, session );
-                    });
+                    for(let wd of tempWasteDump ){
+                        this.result = await WasteDump.updateById( wd._id, { wasteListId: newWasteListId }, session );
+                        checkForWriteErrors(this.result, "none", "Waste list delete failed");       
+                    }
                 }else{
                     //removing
-                    tempWasteDump.forEach(async wd => {
-                        await WasteDump.deleteWasteDumpById( wd._id, session );
-                    });
+                    for(let wd of tempWasteDump ){
+                        this.result = await WasteDump.deleteById( wd._id, session );
+                        checkForWriteErrors(this.result, "none", "Waste list delete failed");       
+                    }
                 }
-
-                await WasteList.deleteWasteListById(id);
+                
+                this.result = await WasteList.deleteById(id);
+                checkForWriteErrors(this.result, "none", "Waste list delete failed");       
             });
 
-            if(this.transactionResults){
-                return {statusCode:"200", status:"Success"}
-            }else{
-                throw ApiError.serverError("Waste list delete transaction failed");
-            }
+            return checkTransactionResults(this.transactionResults, "status", "Waste list delete transaction failed");
 
         }catch(e){
             throw ApiError.serverError("Waste list delete transaction abort due to error: " + e.message);

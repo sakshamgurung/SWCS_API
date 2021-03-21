@@ -9,7 +9,6 @@ const schema = new Schema({
     },
     workId:{
         type:String,
-        required:true,
     },
     customerRequestId:{
         type:String,
@@ -19,7 +18,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllSchedule(customerId, projection, session){
+    static findAll(customerId, projection, session){
         if(session == undefined){
             return this.find({ customerId }, projection);
         }else{
@@ -27,7 +26,7 @@ class HelperClass{
         }
     }
 
-    static findScheduleById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -35,7 +34,7 @@ class HelperClass{
         }
     }
 
-    static updateScheduleById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -43,7 +42,7 @@ class HelperClass{
         }
     }
 
-    static deleteScheduleById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -51,7 +50,7 @@ class HelperClass{
         }
     }
 
-    static findScheduleByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.find({ customerId:id}, projection);
@@ -69,7 +68,7 @@ class HelperClass{
         }
     }
 
-    static updateScheduleByRef(ref, id, updateData, session){
+    static updateByRef(ref, id, updateData, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.updateMany({ customerId:id},this.translateAliases( updateData ));
@@ -87,7 +86,7 @@ class HelperClass{
         }
     }
 
-    static deleteScheduleByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.deleteMany({ customerId:id});

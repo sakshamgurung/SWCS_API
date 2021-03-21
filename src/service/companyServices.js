@@ -1,6 +1,8 @@
 const mongoose  = require('mongoose');
 const ApiError = require('../error/ApiError');
 
+const {checkTransactionResults, checkForWriteErrors} = require('../utilities/errorUtil');
+
 const CompanyLogin = require('../models/companies/companyLogin');
 const CompanyDetail = require('../models/companies/companyDetail');
 const CompanyServiceDetail = require('../models/companies/companyServiceDetail');
@@ -37,6 +39,7 @@ class CompanyServices{
         try {
             this.transactionResults = await session.withTransaction(async() => {
                 this.result = {};
+                const {companyId} = companyDetail;
 
                 this.companyDetail = new CompanyDetail(companyDetail);
                 this.result.companyDetail = await this.companyDetail.save({session});
@@ -44,8 +47,8 @@ class CompanyServices{
                 this.companyServiceDetail = new CompanyServiceDetail(companyServiceDetail);
                 this.result.companyServiceDetail = await this.companyServiceDetail.save({session});
 
-                const {companyId} = this.result.companyServiceDetail;
-                this.result.companyLogin = await CompanyLogin.updateCompanyById(companyId, {firstTimeLogin:false}, session);
+                let result = await CompanyLogin.updateById(companyId, {firstTimeLogin:false}, session);
+                checkForWriteErrors(result, "none", "New company info failed");
             });
             
             if(this.transactionResults){
@@ -63,11 +66,11 @@ class CompanyServices{
 
     async getAllCompany(companyInfoType){
         if(companyInfoType == "company"){
-            this.result = await CompanyLogin.findAllCompany();
+            this.result = await CompanyLogin.findAll();
         }else if(companyInfoType == "company-detail"){
-            this.result = await CompanyDetail.findAllCompanyDetail();
+            this.result = await CompanyDetail.findAll();
         }else if(companyInfoType == "company-service-detail"){
-            this.result = await CompanyServiceDetail.findAllCompanyServiceDetail();
+            this.result = await CompanyServiceDetail.findAll();
         }else{
             throw ApiError.badRequest("companyInfoType not found!!!");
         }
@@ -75,11 +78,11 @@ class CompanyServices{
     }
     async getCompanyById(companyInfoType, id){
         if(companyInfoType == "company"){
-            this.result = await CompanyLogin.findCompanyById(id);
+            this.result = await CompanyLogin.findById(id);
         }else if(companyInfoType == "company-detail"){
-            this.result = await CompanyDetail.findCompanyDetailById(id);
+            this.result = await CompanyDetail.findById(id);
         }else if(companyInfoType == "company-service-detail"){
-            this.result = await CompanyServiceDetail.findCompanyServiceDetailById(id);
+            this.result = await CompanyServiceDetail.findById(id);
         }else{
             throw ApiError.badRequest("companyInfoType not found!!!");
         }
@@ -88,93 +91,109 @@ class CompanyServices{
 
     async updateCompanyById(companyInfoType, id, updateData){
         if(companyInfoType == "company"){
-            this.result = await CompanyLogin.updateCompanyById(id, updateData);
+            this.result = await CompanyLogin.updateById(id, updateData);
         }else if(companyInfoType == "company-detail"){
-            this.result = await CompanyDetail.updateCompanyDetailById(id, updateData);
+            this.result = await CompanyDetail.updateById(id, updateData);
         }else if(companyInfoType == "company-service-detail"){
-            this.result = await CompanyServiceDetail.updateCompanyServiceDetailById(id, updateData);
+            this.result = await CompanyServiceDetail.updateById(id, updateData);
         }else{
             throw ApiError.badRequest("companyInfoType not found!!!");
         }
-
-        if(!this.result.hasOwnProperty("writeErrors")){
-            return this.result;
-        }else{
-            throw ApiError.serverError("Company update failed");
-        }
+        return checkForWriteErrors(this.result, "status", "Company update failed");
     }
-
+    
     async deleteCompanyById(id, updateData){
         const session = await mongoose.startSession();
         try {
             this.transactionResults = await session.withTransaction(async() => {
                 //deleting uncollected waste dump of company
-                const tempWasteDump = await WasteDump.findWasteDumpByRef("companyId", id, {isCollected:1}, session);
+                const tempWasteDump = await WasteDump.findByRef("companyId", id, {isCollected:1}, session);
                 const archiveWasteDump = _.remove(tempWasteDump, o => o.isCollected == true);
-                archiveWasteDump.forEach(async wd => {
-                    await WasteDump.updateWasteDumpById( wd._id, { customerId:"", companyId:"" }, session );
-                });
-                tempWasteDump.forEach(async wd => {
-                    await WasteDump.deleteWasteDumpById( wd._id, session );
-                });
+                
+                for(let wd of archiveWasteDump){
+                    this.result = await WasteDump.updateById( wd._id, { customerId:"", companyId:"" }, session );
+                    checkForWriteErrors(this.result, "none", "Company delete failed");
+                }
 
+                for(let wd of tempWasteDump){
+                    this.result = await WasteDump.deleteById( wd._id, session );
+                    checkForWriteErrors(this.result, "none", "Company delete failed");
+                }
+                
                 //deleting notification
                 const tempSubscription = await Subscription.findAllSubscriber(id, {customerId:1}, session);
-                tempSubscription.forEach(async s => {
-                    await Notification.deleteNotificationByRole("customer", s.customerId, session);
-                });
+                for(let s of tempSubscription){
+                    this.result = await Notification.deleteByRole("customer", s.customerId, session);
+                    checkForWriteErrors(this.result, "none", "Company delete failed");
+                    
+                }
                 
-                const tempStaffLogin = await StaffLogin.findStaffByRef("companyId", id, {_id:1}, session);
-                tempStaffLogin.forEach(async sl => {
-                    await Notification.deleteNotificationByRole("staff", sl._id, session);
-                });
+                const tempStaffLogin = await StaffLogin.findByRef("companyId", id, {_id:1}, session);
+                for(let sl of tempStaffLogin){
+                    this.result = await Notification.deleteByRole("staff", sl._id, session);
+                    checkForWriteErrors(this.result, "none", "Company delete failed");
+                }
                 
-                await Notification.deleteNotificationByRole("company", id, session);
+                this.result = await Notification.deleteByRole("company", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
                 
                 //deleting schedule
-                const tempWork = await Work.findWorkByRef("companyId", id, {_id}, session);
-                tempWork.forEach(async w => {
-                    await Schedule.deleteScheduleByRef("workId", w._id, session);
-                });
+                const tempWork = await Work.findByRef("companyId", id, {_id:1}, session);
+                for(let w of tempWork){
+                    this.result = await Schedule.deleteByRef("workId", w._id, session);
+                    checkForWriteErrors(this.result, "none", "Company delete failed");
+                }
                 
-                const tempCustomerRequest = await CustomerRequest.findCustomerRequestByRef("companyId", id, {_id}, session);
-                tempCustomerRequest.forEach(async cr => {
-                    await Schedule.deleteScheduleByRef("customerRequestId", cr._id, session);
-                });
+                const tempCustomerRequest = await CustomerRequest.findByRef("companyId", id, {_id}, session);
+                for(let cr of tempCustomerRequest){
+                    this.result = await Schedule.deleteByRef("customerRequestId", cr._id, session);
+                    checkForWriteErrors(this.result, "none", "Company delete failed");
+                }
                 
                 //updating customer used geoObject
-                const tempTrack = await Track.findGeoObjectByRef("companyId", id, {_id}, session);
-                tempTrack.forEach(async t => {
-                    const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findCustomerUsedGeoObjectByRef("usedTrack.trackId", t._id, {}, session);
-                    tempCustomerUsedGeoObject.forEach(async cugo => {
+                const tempTrack = await Track.findByRef("companyId", id, {_id:1}, session);
+                for(let t of tempTrack){
+                    const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, session);
+                    for(let cugo of tempCustomerUsedGeoObject ){
                         _.remove(cugo.usedTrack, o => o.trackId == t._id);
-                        await CustomerUsedGeoObject.updateCustomerUsedGeoObjectById(cugo._id, {usedTrack}, session);
-                    });
-                });
-
-                await Subscription.deleteSubscriptionByRef("companyId", id, session);
-                await CustomerRequest.deleteCustomerRequestByRef("companyId", id, session);
-                await Work.deleteWorkByRef("companyId", id, session);
+                        this.result = await CustomerUsedGeoObject.updateById(cugo._id, {usedTrack}, session);
+                        checkForWriteErrors(this.result, "none", "Company delete failed");
+                        
+                    }
+                }
                 
-                await Vehicle.deleteVehicleByRef("companyId", id, session);
-                await Track.deleteGeoObjectByRef("companyId", id, session);
-                await Zone.deleteGeoObjectByRef("companyId", id, session);
-                await WasteList.deleteWasteListByRef("companyId", id, session);
-
-                await StaffLogin.deleteStaffByRef("companyId", id, session);
-                await StaffDetail.deleteStaffDetailByRef("companyId", id, session);
-                await StaffGroup.deleteStaffGroupByRef("companyId", id, session);
-
-                await CompanyDetail.deleteCompanyDetailByRef("companyId", id, session);
-                await CompanyServiceDetail.deleteCompanyServiceDetailByRef("companyId", id, session);
-                await CompanyLogin.deleteCompanyById(id);
+                this.result = await Subscription.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                this.result = await CustomerRequest.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                this.result = await Work.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                
+                this.result = await Vehicle.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                this.result = await Track.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                this.result = await Zone.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                this.result = await WasteList.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                
+                this.result = await StaffLogin.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                this.result = await StaffDetail.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                this.result = await StaffGroup.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                
+                this.result = await CompanyDetail.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                this.result = await CompanyServiceDetail.deleteByRef("companyId", id, session);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
+                this.result = await CompanyLogin.deleteById(id);
+                checkForWriteErrors(this.result, "none", "Company delete failed");
             });
 
-            if(this.transactionResults){
-                return {statusCode:"200", status:"Success"}
-            }else{
-                throw ApiError.serverError("Company delete transaction failed");
-            }
+            return checkTransactionResults(this.transactionResults, "status", "Company delete transaction failed");
 
         }catch(e){
             throw ApiError.serverError("Company delete transaction abort due to error: " + e.message);

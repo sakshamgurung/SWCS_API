@@ -42,7 +42,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllNotification(role, id, projection, session){
+    static findAll(role, id, projection, session){
         if(session == undefined){
             return this.find({ $and: [{'to.role':role},{'to.id':id}] }, projection);
         }else{
@@ -50,7 +50,7 @@ class HelperClass{
         }
     }
 
-    static findNotificationById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -58,7 +58,7 @@ class HelperClass{
         }
     }
 
-    static deleteNotificationById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -66,7 +66,7 @@ class HelperClass{
         }
     }
     
-    static deleteNotificationByRole(role, id, session){
+    static deleteByRole(role, id, session){
         if(session == undefined){
             return this.deleteMany({ $and: [{'to.role':role},{'to.id':id}] });
         }else{

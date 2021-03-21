@@ -42,7 +42,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllCompany( projection, session){
+    static findAll( projection, session){
         if(session == undefined){
             return this.find({}, projection);
         }else{
@@ -50,7 +50,7 @@ class HelperClass{
         }
     }
 
-    static findCompanyById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -58,7 +58,7 @@ class HelperClass{
         }
     }
 
-    static updateCompanyById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -66,7 +66,7 @@ class HelperClass{
         }
     }
 
-    static deleteCompanyById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -74,7 +74,7 @@ class HelperClass{
         }
     }
     
-    static findCompanyByEmail(email, projection, session){
+    static findByEmail(email, projection, session){
         if(session == undefined){
             return this.find({ email}, projection);
         }else{
@@ -82,7 +82,7 @@ class HelperClass{
         }
     }
 
-    static findCompanyByMobileNo(mobileNo, projection, session){
+    static findByMobileNo(mobileNo, projection, session){
         if(session == undefined){
             return this.find({ mobileNo}, projection);
         }else{
@@ -90,7 +90,7 @@ class HelperClass{
         }
     }
 
-    static findCompanyByUUID(uuidArray, projection, session){
+    static findByUUID(uuidArray, projection, session){
         if(session == undefined){
             return this.find({ uuid:{ $in: uuidArray }}, projection);
         }else{
@@ -98,7 +98,7 @@ class HelperClass{
         }
     }
 
-    static findCompanyByToken(token, projection, session){
+    static findByToken(token, projection, session){
         if(session == undefined){
             return this.find({ token }, projection); 
         }else{
@@ -106,7 +106,7 @@ class HelperClass{
         }
     }
      
-    static findCompanyByRefreshToken(refreshToken, projection, session){
+    static findByRefreshToken(refreshToken, projection, session){
         if(session == undefined){
             return this.find({ refreshToken }, projection);        
         }else{
@@ -114,7 +114,7 @@ class HelperClass{
         }
     }
      
-    static findCompanyByResetToken(resetToken, projection, session){
+    static findByResetToken(resetToken, projection, session){
         if(session == undefined){
             return this.find({ resetToken }, projection);
         }else{

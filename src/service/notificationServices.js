@@ -1,5 +1,6 @@
 const Notification = require('../models/common/notification');
 const ApiError = require('../error/ApiError');
+const {checkForWriteErrors } = require('../utilities/errorUtil');
 
 class NotificationServices{
 
@@ -15,23 +16,18 @@ class NotificationServices{
     }
 
     async getAllNotification(role, id){
-        this.result = await Notification.findAllNotification(role, id);
+        this.result = await Notification.findAll(role, id);
         return this.result;
     }
 
     async getNotificationById(id){
-        this.result = await Notification.findNotificationById(id);
+        this.result = await Notification.findById(id);
         return this.result;
     }
 
     async deleteNotificationById(id, updateData){
-        this.result = await Notification.deleteNotificationById(id);
-        
-        if(!this.result.hasOwnProperty("writeErrors")){
-            return {statusCode:"200", status:"Success"}
-        }else{
-            throw ApiError.serverError("Notification delete failed");
-        }
+        this.result = await Notification.deleteById(id);
+        return checkForWriteErrors(this.result, "status", "Notification delete failed");
     }
 }
 

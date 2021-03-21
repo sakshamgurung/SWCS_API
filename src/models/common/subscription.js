@@ -35,7 +35,7 @@ class HelperClass{
     }
     
     //for customer
-    static deleteSubscriptionById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -43,7 +43,7 @@ class HelperClass{
         }
     }
 
-    static deleteSubscriptionByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.deleteMany({ customerId:id });

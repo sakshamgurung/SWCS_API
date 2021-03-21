@@ -19,7 +19,7 @@ class CustomerController{
         try{
             const { idArray } = request.body;
             const customerInfoType = request.params.type;
-            
+
             const customerServices = new CustomerServices();
             const result = await customerServices.getAllCustomerInIdArray(customerInfoType, idArray);
 
@@ -50,9 +50,9 @@ class CustomerController{
             const {body} = request;
             
             const customerServices = new CustomerServices();
-            const result = await customerServices.updateCustomerById(customerInfoType, customerId, body);
+            const {statusCode, status} = await customerServices.updateCustomerById(customerInfoType, customerId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Customer Error: " + error.message);
         }

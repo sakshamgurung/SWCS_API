@@ -47,9 +47,9 @@ class VehicleController{
             const {body} = request;
 
             const vehicleServices = new VehicleServices();
-            const result = await vehicleServices.updateVehicleById(vehicleId, body);
+            const {statusCode, status} = await vehicleServices.updateVehicleById(vehicleId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Vehicle Error: " + error.message);
         }

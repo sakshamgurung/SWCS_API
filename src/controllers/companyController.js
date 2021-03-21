@@ -50,9 +50,9 @@ class CompanyController{
             const { body } = request;
 
             const companyServices = new CompanyServices();
-            const result = await companyServices.updateCompanyById(companyInfoType, companyId, body);
+            const {statusCode, status} = await companyServices.updateCompanyById(companyInfoType, companyId, body);
             
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Company Error: " + error.message);
         }

@@ -18,7 +18,7 @@ const schema = new Schema({
     },
     period:{
         type:String,
-        enum:["1 month","3 month", "6 month", "1 year"]
+        enum:["","1 month","3 month", "6 month", "1 year"],
     },
     periodicPrice:{
         type:Number,
@@ -31,14 +31,14 @@ const schema = new Schema({
     },
     unit:{
         type:String,
-        enum:["kg", "litre", "bora"]
+        enum:["","kg", "litre", "bora"]
     }
 },{
     collection:"wasteLists"
 });
 
 class HelperClass{
-    static findAllWasteList(companyId, projection, session){
+    static findAll(companyId, projection, session){
         if(session == undefined){
             return this.find({ companyId }, projection);
         }else{
@@ -46,7 +46,7 @@ class HelperClass{
         }
     }
 
-    static findWasteListById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -54,7 +54,7 @@ class HelperClass{
         }
     }
 
-    static updateWasteListById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -62,7 +62,7 @@ class HelperClass{
         }
     }
 
-    static deleteWasteListById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -70,7 +70,7 @@ class HelperClass{
         }
     }
 
-    static findWasteListByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.find({companyId:id}, projection);
@@ -86,7 +86,7 @@ class HelperClass{
         }
     }
 
-    static updateWasteListByRef(ref, id, updateData, session){
+    static updateByRef(ref, id, updateData, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ));
@@ -102,7 +102,7 @@ class HelperClass{
         }
     }
 
-    static deleteWasteListByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.deleteMany({companyId:id});

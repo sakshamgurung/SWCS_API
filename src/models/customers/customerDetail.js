@@ -34,17 +34,17 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllCustomerDetailInIdArray(idArray, projection, session){
+    static findAllInIdArray(idArray, projection, session){
         if(session == undefined){
-            return this.find({ _id:{ $in:idArray } }, projection);
+            return this.find({ customerId:{ $in:idArray } }, projection);
             
         }else{
-            return this.find({ _id:{ $in:idArray } }, projection, { session });
+            return this.find({ customerId:{ $in:idArray } }, projection, { session });
          
         }
     }
 
-    static findCustomerDetailById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
             
@@ -54,7 +54,7 @@ class HelperClass{
         }
     }
 
-    static updateCustomerDetailById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
             
@@ -64,7 +64,7 @@ class HelperClass{
         }
     }
 
-    static deleteCustomerDetailById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
             
@@ -74,7 +74,7 @@ class HelperClass{
         }
     }
 
-    static findCustomerDetailByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.find({customerId:id}, projection);

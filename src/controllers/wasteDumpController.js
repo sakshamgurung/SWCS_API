@@ -47,9 +47,9 @@ class WasteDumpController{
             const {body} = request;
 
             const wasteDumpServices = new WasteDumpServices();
-            const result = await wasteDumpServices.updateWasteDumpById(wasteDumpId, body);
+            const {statusCode, status} = await wasteDumpServices.updateWasteDumpById(wasteDumpId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Waste dump object Error: " + error.message);
         }

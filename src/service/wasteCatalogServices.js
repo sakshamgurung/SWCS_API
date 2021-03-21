@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const mongoose = require('mongoose');
+const {checkTransactionResults, checkForWriteErrors} = require('../utilities/errorUtil');
 
 const ApiError = require('../error/ApiError');
 const WasteCatalog = require('../models/common/wasteCatalog');
@@ -20,50 +21,43 @@ class WasteCatalogServices{
     }
 
     async getAllWasteCatalog(){
-        this.result = await WasteCatalog.findAllWasteCatalog({description:0});
+        this.result = await WasteCatalog.findAll({description:0});
         return this.result;
     }
 
     async getWasteCatalogById(id){
-        this.result = await WasteCatalog.findWasteCatalogById(id);
+        this.result = await WasteCatalog.findById(id);
         return this.result;
     }
 
     async updateWasteCatalogById(id, updateData){
-        this.result = await WasteCatalog.updateWasteCatalogById(id, updateData);
-                
-        if(!this.result.hasOwnProperty("writeErrors")){
-            return this.result;
-        }else{
-            throw ApiError.serverError("Waste catalog update failed");
-        }
+        this.result = await WasteCatalog.updateById(id, updateData);
+        return checkForWriteErrors(this.result, "status", "Waste catalog update failed");
     }
-
+    
     async deleteWasteCatalogById(id, updateData){
         const { wasteList } = updateData;
         const session = await mongoose.startSession();
         try{
             this.transactionResults = await session.withTransaction(async() => {
-                const tempWasteList = await WasteList.findWasteListByRef("wasteCatalogId", id, {}, session);
+                const tempWasteList = await WasteList.findByRef("wasteCatalogId", id, {}, session);
                 
                 if(wasteList.remapping){
                     //remapping
                     const{ newWasteCatalogId } = wasteList;
-                    tempWasteList.forEach(async wl => {
-                        await WasteList.updateWasteListById( wl._id, { wasteCatalogId: newWasteCatalogId }, session );
-                    });
+                    for(let wl of tempWasteList ){
+                        this.result = await WasteList.updateById( wl._id, { wasteCatalogId: newWasteCatalogId }, session );
+                        checkForWriteErrors(this.result, "none", "Waste catalog delete failed");
+                    }
                 }else{
                     throw ApiError.badRequest("remapping is needed");
                 }
                 
-                await WasteCatalog.deleteWasteCatalogById(id);
+                this.result = await WasteCatalog.deleteById(id);
+                checkForWriteErrors(this.result, "none", "Waste catalog delete failed");
             });
-            
-            if(this.transactionResults){
-                return {statusCode:"200", status:"Success"}
-            }else{
-                throw ApiError.serverError("Waste catalog delete transaction failed");
-            }
+
+            return checkTransactionResults(this.transactionResults, "status", "Waste catalog delete transaction failed");
 
         }catch(e){
             throw ApiError.serverError("Waste catalog delete transaction abort due to error: " + e.message);

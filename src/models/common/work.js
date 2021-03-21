@@ -11,10 +11,10 @@ const schema = new Schema({
         type:[Boolean],//7 for 7 days of a week
     },
     startTime:{
-        type:Schema.Types.Date,
+        type:String,
     },
     endTime:{
-        type:Schema.Types.Date,
+        type:String,
     },
     isDateRange:{
         type:Boolean,
@@ -59,7 +59,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAllWork(role, id, projection, session){
+    static findAll(role, id, projection, session){
         if(session == undefined){
             switch(role){
                 case "company": return this.find({companyId:id}, projection);
@@ -77,7 +77,7 @@ class HelperClass{
         }
     }
 
-    static findWorkById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
             
@@ -87,7 +87,7 @@ class HelperClass{
         }
     }
 
-    static updateWorkById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ) );
             
@@ -97,7 +97,7 @@ class HelperClass{
         }
     }
 
-    static deleteWorkById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
             
@@ -107,7 +107,7 @@ class HelperClass{
         }
     }
 
-    static findWorkByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.find({companyId:id}, projection);
@@ -129,7 +129,7 @@ class HelperClass{
         }
     }
 
-    static updateWorkByRef(ref, id, updateData, session){
+    static updateByRef(ref, id, updateData, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.updateMany({companyId:id},this.translateAliases( updateData ));
@@ -151,7 +151,7 @@ class HelperClass{
         }
     }
     
-    static deleteWorkByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.deleteMany({companyId:id});

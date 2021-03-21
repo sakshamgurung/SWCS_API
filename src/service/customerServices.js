@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const mongoose  = require('mongoose');
 const ApiError = require('../error/ApiError');
+const {checkTransactionResults, checkForWriteErrors} = require('../utilities/errorUtil');
 
 const CustomerLogin = require('../models/customers/customerLogin');
 const CustomerDetail = require('../models/customers/customerDetail');
@@ -20,16 +21,37 @@ class CustomerServices{
     }
     
     async newCustomerInfo(customerDetail){
-        this.customerDetail = new CustomerDetail(customerDetail);
-        this.result = await this.customerDetail.save();
-        return this.result;
+        const session = await mongoose.startSession();
+        try{
+            this.transactionResults = await session.withTransaction(async() => {
+                this.result = {};
+                const {customerId} = customerDetail;
+                
+                this.customerDetail = new CustomerDetail(customerDetail);
+                this.result.customerDetail = await this.customerDetail.save({session});
+                
+                let result = await CustomerLogin.updateById(customerId, {firstTimeLogin:false}, session);
+                checkForWriteErrors(result, "none", "New company info failed");
+            });
+            
+            if(this.transactionResults){
+                return this.result;
+            }else{
+                throw ApiError.serverError("New customer info transaction failed");
+            }
+
+        }catch(e){
+            throw ApiError.serverError("New customer info transaction failed");
+        }finally{
+            session.endSession();
+        }
     }
 
     async getAllCustomerInIdArray(customerInfoType, idArray){
         if(customerInfoType == "customer"){
-            this.result = await CustomerLogin.findAllCustomerInIdArray(idArray);
+            this.result = await CustomerLogin.findAllInIdArray(idArray);
         }else if(customerInfoType == "customer-detail"){
-            this.result = await CustomerDetail.findAllCustomerDetailInIdArray(idArray);
+            this.result = await CustomerDetail.findAllInIdArray(idArray);
         }else{
             throw ApiError.badRequest("customerInfoType not found!!!");
         }
@@ -38,9 +60,9 @@ class CustomerServices{
 
     async getCustomerById(customerInfoType, id){
         if(customerInfoType == "customer"){
-            this.result = await CustomerLogin.findCustomerById(id);
+            this.result = await CustomerLogin.findById(id);
         }else if(customerInfoType == "customer-detail"){
-            this.result = await CustomerDetail.findCustomerDetailById(id);
+            this.result = await CustomerDetail.findById(id);
         }else{
             throw ApiError.badRequest("customerInfoType not found!!!");
         }
@@ -49,50 +71,50 @@ class CustomerServices{
 
     async updateCustomerById(customerInfoType, id, updateData){
         if(customerInfoType == "customer"){
-            this.result = await CustomerLogin.updateCustomerById(id, updateData);
+            this.result = await CustomerLogin.updateById(id, updateData);
         }else if(customerInfoType == "customer-detail"){
-            this.result = await CustomerDetail.updateCustomerDetailById(id, updateData);
+            this.result = await CustomerDetail.updateById(id, updateData);
         }else{
             throw ApiError.badRequest("customerInfoType not found!!!");
         }
-                
-        if(!this.result.hasOwnProperty("writeErrors")){
-            return this.result;
-        }else{
-            throw ApiError.serverError("Customer update failed");
-        }
+        return checkForWriteErrors(this.result, "status", "Customer update failed");
     }
-
+    
     //delete the customer and its information and references
     async deleteCustomerById(id, updateData){
         const session = await mongoose.startSession();
         try {
             this.transactionResults = await session.withTransaction(async() => {
                 //should delete references to customerLogin and customerDetail from other collections too
-                const tempWasteDump = await WasteDump.findWasteDumpByRef("customerId", id, {}, session);
+                const tempWasteDump = await WasteDump.findByRef("customerId", id, {}, session);
                 const archiveWasteDump = _.remove(tempWasteDump, o => o.isCollected == true);
-                archiveWasteDump.forEach(async wd => {
-                    await WasteDump.updateWasteDumpById( wd._id, { customerId:"" }, session );
-                });
-                tempWasteDump.forEach(async wd => {
-                    await WasteDump.deleteWasteDumpById( wd._id, session );
-                });
-
-                await CustomerRequest.deleteCustomerRequestByRef("customerId", id, session);
-                await Notification.deleteNotificationByRole("customer", id, session);
-                await Subscription.deleteSubscriptionByRef("customerId", id, session);
+                for(let wd of archiveWasteDump ){
+                    this.result = await WasteDump.updateById( wd._id, { customerId:"" }, session );
+                    checkForWriteErrors(this.result, "none", "Customer delete failed");    
+                }
+                for(let wd of tempWasteDump ){
+                    this.result = await WasteDump.deleteById( wd._id, session );
+                    checkForWriteErrors(this.result, "none", "Customer delete failed");
+                }
                 
-                await Schedule.deleteScheduleByRef("customerId", id, session);
-                await CustomerUsedGeoObject.deleteCustomerUsedGeoObjectByRef("customerId", id, session);
-                await CustomerLogin.deleteCustomerById(id, session);
-                await CustomerDetail.deleteCustomerDetailById(id, session);
+                this.result = await CustomerRequest.deleteByRef("customerId", id, session);
+                checkForWriteErrors(this.result, "none", "Customer delete failed");
+                this.result = await Notification.deleteByRole("customer", id, session);
+                checkForWriteErrors(this.result, "none", "Customer delete failed");
+                this.result = await Subscription.deleteByRef("customerId", id, session);
+                checkForWriteErrors(this.result, "none", "Customer delete failed");
+                
+                this.result = await Schedule.deleteByRef("customerId", id, session);
+                checkForWriteErrors(this.result, "none", "Customer delete failed");
+                this.result = await CustomerUsedGeoObject.deleteByRef("customerId", id, session);
+                checkForWriteErrors(this.result, "none", "Customer delete failed");
+                this.result = await CustomerLogin.deleteById(id, session);
+                checkForWriteErrors(this.result, "none", "Customer delete failed");
+                this.result = await CustomerDetail.deleteById(id, session);
+                checkForWriteErrors(this.result, "none", "Customer delete failed");
             });
-            
-            if(this.transactionResults){
-                return {statusCode:"200", status:"Success"}
-            }else{
-                throw ApiError.serverError("Customer delete transaction failed");
-            }
+
+            return checkTransactionResults(this.transactionResults, "status", "Customer delete transaction failed");
 
         }catch(e){
             throw ApiError.serverError("Customer delete transaction abort due to error: " + e.message);

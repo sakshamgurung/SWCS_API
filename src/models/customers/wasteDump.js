@@ -62,7 +62,7 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findWasteDumpById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
             
@@ -72,7 +72,7 @@ class HelperClass{
         }
     }
 
-    static updateWasteDumpById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
             
@@ -82,7 +82,7 @@ class HelperClass{
         }
     }
 
-    static deleteWasteDumpById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
             
@@ -92,7 +92,7 @@ class HelperClass{
         }
     }
 
-    static findWasteDumpByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.find({ customerId:id }, projection);
@@ -114,7 +114,7 @@ class HelperClass{
         }
     }
 
-    static updateWasteDumpByRef(ref, id, updateData, session){
+    static updateByRef(ref, id, updateData, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.updateMany({ customerId:id },this.translateAliases( updateData ));
@@ -136,7 +136,7 @@ class HelperClass{
         }
     }
 
-    static deleteWasteDumpByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "customerId": return this.deleteMany({ customerId:id });

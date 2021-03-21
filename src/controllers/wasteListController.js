@@ -47,9 +47,9 @@ class WasteListController{
             const {body} = request;
 
             const wasteListServices = new WasteListServices();
-            const result = await wasteListServices.updateWasteListById(wasteListId, body);
+            const {statusCode, status} = await wasteListServices.updateWasteListById(wasteListId, body);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Waste list Error: " + error.message);
         }

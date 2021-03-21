@@ -45,9 +45,9 @@ class WasteCatalogController{
             const updateData = request.body;
 
             const wasteCatalogServices = new WasteCatalogServices();
-            const result = await wasteCatalogServices.updateWasteCatalogById(id, updateData);
+            const {statusCode, status} = await wasteCatalogServices.updateWasteCatalogById(id, updateData);
 
-            response.json(result);
+            response.status(statusCode).send(status);
         }catch(error){
             throw ApiError.serverError("Waste catalog Error: " + error.message);
         }

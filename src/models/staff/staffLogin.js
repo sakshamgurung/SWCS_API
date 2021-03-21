@@ -17,6 +17,9 @@ const schema = new Schema({
         required:true
     },
     uuid:[String],
+    firstTimeLogin:{
+        type:Boolean,
+    },
     resetToken:{
         type:String,
     },
@@ -25,22 +28,22 @@ const schema = new Schema({
     },
     token:{
         type:String,
-        required:true
+        //required:true
     },
     refreshToken:{
         type:String,
-        required:true,
+        //required:true,
     },
     timeStamp:{
         type:Schema.Types.Date,
-        required:true,
+        //required:true,
     }
 },{
     collection:"staffLogins"
 });
 
 class HelperClass{
-    static findAllStaff(companyId, projection, session){
+    static findAll(companyId, projection, session){
         if(session == undefined){
             return this.find({ companyId }, projection);
         }else{
@@ -48,7 +51,7 @@ class HelperClass{
         }
     }
 
-    static findStaffById(id, projection, session){
+    static findById(id, projection, session){
         if(session == undefined){
             return this.find({ _id:id }, projection);
         }else{
@@ -56,7 +59,7 @@ class HelperClass{
         }
     }
 
-    static updateStaffById(id, updateData, session){
+    static updateById(id, updateData, session){
         if(session == undefined){
             return this.updateOne({ _id:id }, this.translateAliases( updateData ));
         }else{
@@ -64,7 +67,7 @@ class HelperClass{
         }
     }
 
-    static deleteStaffById(id, session){
+    static deleteById(id, session){
         if(session == undefined){
             return this.deleteOne({ _id:id });
         }else{
@@ -72,7 +75,7 @@ class HelperClass{
         }
     }
 
-    static findStaffByEmail(email, projection, session){
+    static findByEmail(email, projection, session){
         if(session == undefined){
             return this.find({ email}, projection);
         }else{
@@ -80,7 +83,7 @@ class HelperClass{
         }
     }
 
-    static findStaffByMobileNo(mobileNo, projection, session){
+    static findByMobileNo(mobileNo, projection, session){
         if(session == undefined){
             return this.find({ mobileNo}, projection);
         }else{
@@ -88,7 +91,7 @@ class HelperClass{
         }
     }
     
-    static findStaffByUUID(uuidArray, projection, session){
+    static findByUUID(uuidArray, projection, session){
         if(session == undefined){
             return this.find({ uuid:{ $in: uuidArray } }, projection);
         }else{
@@ -96,7 +99,7 @@ class HelperClass{
         }
     }
     
-    static findStaffByToken(token, projection, session){
+    static findByToken(token, projection, session){
         if(session == undefined){
             return this.find({ token }, projection);
         }else{
@@ -104,7 +107,7 @@ class HelperClass{
         }
     }
      
-    static findStaffByRefreshToken(refreshToken, projection, session){
+    static findByRefreshToken(refreshToken, projection, session){
         if(session == undefined){
             return this.find({ refreshToken }, projection);
         }else{
@@ -112,7 +115,7 @@ class HelperClass{
         }
     }
      
-    static findStaffByResetToken(resetToken, projection, session){
+    static findByResetToken(resetToken, projection, session){
         if(session == undefined){
             return this.find({ resetToken }, projection);
         }else{
@@ -120,7 +123,7 @@ class HelperClass{
         }
     }
 
-    static findStaffByRef(ref, id, projection, session){
+    static findByRef(ref, id, projection, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.find({companyId:id}, projection);
@@ -134,7 +137,7 @@ class HelperClass{
         }
     }
 
-    static deleteStaffByRef(ref, id, session){
+    static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){
                 case "companyId": return this.deleteMany({companyId:id});
