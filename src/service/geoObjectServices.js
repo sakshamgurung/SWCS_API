@@ -65,75 +65,18 @@ class GeoObjectServices{
     }
 
     async updateGeoObjectById(geoObjectType, id, updateData){
-        const { updateType, geoObject, wasteDump } = updateData;
-        const session  = await mongoose.startSession();
-        try{
-            this.transactionResults = await session.withTransaction(async () => {
-                //update description, resize, reposition
-                if(updateType == "default"){
-                    if(geoObjectType == "zone"){
-                        this.result  = await Zone.updateById(id, geoObject, session);
-                    }else if(geoObjectType == "track"){
-                        this.result  = await Track.updateById(id, geoObject, session);
-                    }else{
-                        throw ApiError.badRequest("geo object type not valid");
-                    }
-                    checkForWriteErrors(this.result, "none", "Geo object updated failed");
-
-                }else if(updateType == "remapping"){
-                    let tempWork;
-                    if(geoObjectType == "track"){
-                        tempWork = await Work.findByRef("geoObjectTrackId", id, {workStatus:1, geoObjectTrackId:1}, session);
-                    }else{
-                        throw ApiError.badRequest("geo object type not valid");
-                    }
-                    const blockFlag = _.findIndex(tempWork, w => {
-                        return (w.workStatus == "confirmed" || w.workStatus == "on progress");
-                    });
-
-                    //checking if any work referring this geoObject is confirmed or under progress
-                    if(blockFlag != -1){
-                        _.remove( tempWork, w => { return w.workStatus == "finished" });
-
-                        const tempWasteDump = await WasteDump.findByRef("geoObjectId", id, {isCollected:1, geoObjectId:1}, session);
-                        _.remove( tempWasteDump, wd => { return wd.isCollected == true });
-
-                        /** remapping
-                         * remappingData:{
-                         *  geoObjectId:{prevGeoObjectId:"", newGeoObjectId:""},
-                         * }
-                        */
-                        const { newGeoObjectId } = wasteDump.remappingData.geoObjectId;
-                        for(let wd of tempWasteDump ){
-                            this.result = await WasteDump.updateById(wd._id, { geoObjectId:newGeoObjectId }, session);
-                            checkForWriteErrors(this.result, "none", "Geo object updated failed");
-                        }
-
-                        if (geoObjectType == "track"){
-                            for(let w of tempWork ){
-                                const index = _.indexOf(w.geoObjectTrackId, id );
-                                w.geoObjectTrackId[index] = newGeoObjectId;
-                                this.result = await Work.updateById(w._id, { geoObjectTrackId:w.geoObjectTrackId }, session);
-                                checkForWriteErrors(this.result, "none", "Geo object updated failed");
-                            }
-                        }
-                        
-                    }else{
-                        throw ApiError.badRequest("Work is confirmed or under progress");
-                    }
-                }else{
-                    throw ApiError.badRequest("update type not valid");
-                }
-                
-            });
-
-            return checkTransactionResults(this.transactionResults, "status", "Geo object update transaction failed");
-            
-        }catch(e){
-            throw ApiError.serverError("Geo object update transaction abort due to error: " + e.message);
-        }finally{
-            session.endSession();
+        if(updateData.hasOwnProperty("workId") || updateData.hasOwnProperty("wasteCondition")){
+            throw ApiError.badRequest("work id and waste condition are not allowed to update from here.");
         }
+        if(geoObjectType == "zone"){
+            this.result  = await Zone.updateById(id, updateData, session);
+        }else if(geoObjectType == "track"){
+            this.result  = await Track.updateById(id, updateData, session);
+        }else{
+            throw ApiError.badRequest("geo object type not valid");
+        }
+
+        return checkForWriteErrors(this.result, "status", "Geo object updated failed");
     }
 
     async deleteGeoObjectById(geoObjectType, id, updateData){
@@ -170,6 +113,7 @@ class GeoObjectServices{
                             checkForWriteErrors(this.result, "none", "Geo object delete failed");
                         }
                     });
+                    
                     //deleting geoObject
                     this.result = await Track.deleteById(id, session);
                     checkForWriteErrors(this.result, "none", "Geo object delete failed");

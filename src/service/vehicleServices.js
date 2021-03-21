@@ -31,6 +31,9 @@ class VehicleServices{
     }
 
     async updateVehicleById(id, updateData){
+        if(updateData.hasOwnProperty("isReserved")){
+            throw ApiError.badRequest("isReserved can't be modified from here");
+        }
         this.result = await Vehicle.updateById(id, updateData);
         return checkForWriteErrors(this.result, "status", "Vehicle update failed");
     }

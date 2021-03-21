@@ -33,6 +33,9 @@ class StaffGroupServices{
     }
 
     async updateStaffGroupById(id, updateData){
+        if(updateData.hasOwnProperty("isReserved")){
+            throw ApiError.badRequest("isReserved can't be modified from here");
+        }
         const session = await mongoose.startSession();
         try{
             this.transactionResults = await session.withTransaction(async () => {

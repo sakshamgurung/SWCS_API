@@ -18,7 +18,7 @@ const schema = new Schema({
     },
     period:{
         type:String,
-        enum:["","1 month","3 month", "6 month", "1 year"],
+        enum:["1 month","3 month", "6 month", "1 year"],
     },
     periodicPrice:{
         type:Number,
@@ -31,7 +31,7 @@ const schema = new Schema({
     },
     unit:{
         type:String,
-        enum:["","kg", "litre", "bora"]
+        enum:["kg", "litre", "bora"]
     }
 },{
     collection:"wasteLists"

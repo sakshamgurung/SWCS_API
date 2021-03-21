@@ -15,10 +15,6 @@ const schema = new Schema({
         type:[String],//["subscription", "subscription with location", "one time"]
         required:true,
     },
-    // pickUp:{
-    //     type:[String],//"door to door, "pre-definded location and region"
-    //     required:true,
-    // }
 },{
     collection:"companyServiceDetails"
 });
