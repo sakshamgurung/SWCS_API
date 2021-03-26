@@ -3,9 +3,13 @@ const router = express.Router();
 const {WasteListController} = require('../controllers/wasteListController');
 const catchAsync = require('../error/catchAsync');
 
-router.post('/companies/waste-list',catchAsync( new WasteListController().createNewWasteList ));
-router.get('/companies/:id/waste-list',catchAsync( new WasteListController().getAllWasteList));
-router.get('/waste-list/:id',catchAsync( new WasteListController().getWasteListById));
-router.put('/waste-list/:id',catchAsync( new WasteListController().updateWasteListById));
-router.delete('/waste-list/:id',catchAsync( new WasteListController().deleteWasteListById));
+const wasteListController = new WasteListController();
+
+router.post('/companies/waste-list',catchAsync( wasteListController.createNewWasteList ));
+router.get('/companies/:id/waste-list',catchAsync( wasteListController.getAllWasteList));
+router.get('/waste-list/:id',catchAsync( wasteListController.getWasteListById));
+//ref: companyId, wasteCatalogId
+router.get('/waste-list/:ref/:id',catchAsync( wasteListController.getWasteListByRef));
+router.put('/waste-list/:id',catchAsync( wasteListController.updateWasteListById));
+router.delete('/waste-list/:id',catchAsync( wasteListController.deleteWasteListById));
 module.exports = router;

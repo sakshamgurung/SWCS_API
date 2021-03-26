@@ -30,6 +30,11 @@ class VehicleServices{
         return this.result;
     }
 
+    async getVehicleByRef(ref, id){
+        this.result = await Vehicle.findByRef(ref, id);
+        return this.result;
+    }
+
     async updateVehicleById(id, updateData){
         if(updateData.hasOwnProperty("isReserved")){
             throw ApiError.badRequest("isReserved can't be modified from here");

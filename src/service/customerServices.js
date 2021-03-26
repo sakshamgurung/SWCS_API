@@ -68,6 +68,15 @@ class CustomerServices{
         }
         return this.result;
     }
+    
+    async getCustomerByRef(customerInfoType, ref, id){
+        if(customerInfoType == "customer-detail"){
+            this.result = await CustomerDetail.findByRef(ref, id);
+        }else{
+            throw ApiError.badRequest("customerInfoType not found!!!");
+        }
+        return this.result;
+    }
 
     async updateCustomerById(customerInfoType, id, updateData){
         if(customerInfoType == "customer"){

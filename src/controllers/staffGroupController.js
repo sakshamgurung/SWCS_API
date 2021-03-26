@@ -41,6 +41,19 @@ class StaffGroupController{
         }
     }
 
+    async getStaffGroupByRef(request, response, next){
+        try {
+            const {ref, id} = request.params;
+
+            const staffGroupServices = new StaffGroupServices();
+            const result = await staffGroupServices.getStaffGroupByRef(ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Staff group by ref Error: " + error.message);
+        }
+    }
+
     async updateStaffGroupById(request, response, next){
         try{
             const staffGroupId = request.params.id;

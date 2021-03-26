@@ -83,6 +83,20 @@ class HelperClass{
         }
     }
 
+    static findByRef(ref, id, projection, session){
+        if(session == undefined){
+            switch(ref){
+                case "companyId": return this.find({companyId:id}, projection);
+                default : throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "companyId": return this.find({companyId:id}, projection, { session });
+                default : throw ApiError.badRequest("ref not defined");
+            }
+        }
+    }
+
     static deleteByRef(ref, id, session){
         if(session == undefined){
             switch(ref){

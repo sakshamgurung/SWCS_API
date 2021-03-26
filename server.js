@@ -36,9 +36,9 @@ app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 
 app.get('/', (req, res)=>{
-  res.send("hello world");
+  res.send("Welcome to swcs-api");
 })
-const apiVersion = "/api/v1/"
+const apiVersion = "/api/v1"
 app.use(apiVersion, wasteCatalogsUrl);
 app.use(apiVersion, accountUrl);
 app.use(apiVersion, notificationsUrl);

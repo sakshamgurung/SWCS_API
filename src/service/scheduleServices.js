@@ -17,6 +17,11 @@ class ScheduleServices{
         return this.result;
     }
 
+    async getScheduleByRef(ref, id){
+        this.result = await Schedule.findByRef(ref, id);
+        return this.result;
+    }
+
 }
 
 exports.ScheduleServices = ScheduleServices;

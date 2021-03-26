@@ -41,6 +41,19 @@ class VehicleController{
         }
     }
 
+    async getVehicleByRef(request, response, next){
+        try {
+            const {ref, id} = request.params;
+
+            const vehicleServices = new VehicleServices();
+            const result = await vehicleServices.getVehicleByRef(ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Vehicle by ref Error: " + error.message);
+        }
+    }
+
     async updateVehicleById(request, response, next){
         try{
             const vehicleId = request.params.id;

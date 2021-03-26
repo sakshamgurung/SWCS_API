@@ -64,6 +64,18 @@ class GeoObjectServices{
         return this.result;
     }
 
+    async getGeoOjectByRef(geoObjectType, ref, id){
+        if(geoObjectType == "zone"){
+            this.result = await Zone.findByRef(ref, id);
+        }else if(geoObjectType == "track"){
+            this.result = await Track.findByRef(ref, id);
+        }else{
+            throw ApiError.badRequest("geo object type not valid");
+        }
+        this.result = geoObjectArrayServerToClient(this.result);
+        return this.result;
+    }
+
     async updateGeoObjectById(geoObjectType, id, updateData){
         if(updateData.hasOwnProperty("workId") || updateData.hasOwnProperty("wasteCondition")){
             throw ApiError.badRequest("work id and waste condition are not allowed to update from here.");

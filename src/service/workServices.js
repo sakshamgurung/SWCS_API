@@ -81,6 +81,11 @@ class WorkServices{
         return this.result;
     }
 
+    async getWorkByRef(ref, id){
+        this.result = await Work.findByRef(ref, id);
+        return this.result;
+    }
+
     async updateWorkById(id, updateData){
         const session = await mongoose.startSession();
         try{

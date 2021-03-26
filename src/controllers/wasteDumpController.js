@@ -15,19 +15,6 @@ class WasteDumpController{
         }
     }
 
-    async getAllWasteDump(request, response, next){
-        try{
-            const {ref, id} = request.params;
-
-            const wasteDumpServices = new WasteDumpServices();
-            const result = await wasteDumpServices.getAllWasteDump(ref, id);
-
-            response.json(result);
-        }catch(error){
-            throw ApiError.serverError("Waste dump object Error: " + error.message);
-        }
-    }
-
     async getWasteDumpById(request, response, next){
         try{
             const wasteDumpId = request.params.id;
@@ -38,6 +25,19 @@ class WasteDumpController{
             response.json(result);
         }catch(error){
             throw ApiError.serverError("Waste dump object Error: " + error.message);
+        }
+    }
+
+    async getWasteDumpByRef(request, response, next){
+        try {
+            const {ref, id} = request.params;
+
+            const wasteDumpServices = new WasteDumpServices();
+            const result = await wasteDumpServices.getWasteDumpByRef(ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Waste dump by ref Error: " + error.message);
         }
     }
 

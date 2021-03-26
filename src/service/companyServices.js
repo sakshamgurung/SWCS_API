@@ -76,6 +76,7 @@ class CompanyServices{
         }
         return this.result;
     }
+    
     async getCompanyById(companyInfoType, id){
         if(companyInfoType == "company"){
             this.result = await CompanyLogin.findById(id);
@@ -83,6 +84,17 @@ class CompanyServices{
             this.result = await CompanyDetail.findById(id);
         }else if(companyInfoType == "company-service-detail"){
             this.result = await CompanyServiceDetail.findById(id);
+        }else{
+            throw ApiError.badRequest("companyInfoType not found!!!");
+        }
+        return this.result;
+    }
+
+    async getCompanyByRef(companyInfoType, ref, id){
+        if(companyInfoType == "company-detail"){
+            this.result = await CompanyDetail.findByRef(ref, id);
+        }else if(companyInfoType == "company-service-detail"){
+            this.result = await CompanyServiceDetail.findByRef(ref, id);
         }else{
             throw ApiError.badRequest("companyInfoType not found!!!");
         }

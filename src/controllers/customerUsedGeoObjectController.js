@@ -28,6 +28,19 @@ class CustomerUsedGeoObjectController{
             throw ApiError.serverError("Customer used geo object Error: " + error.message);
         }
     }
+
+    async getCustomerUsedGeoObjectByRef(request, response, next){
+        try {
+            const {ref, id} = request.params;
+
+            const customerUsedGeoObjectServices = new CustomerUsedGeoObjectServices();
+            const result = await customerUsedGeoObjectServices.getCustomerUsedGeoObjectByRef(ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Customer used geoObject by ref Error: " + error.message);
+        }
+    }
 }
 
 exports.CustomerUsedGeoObjectController = CustomerUsedGeoObjectController;

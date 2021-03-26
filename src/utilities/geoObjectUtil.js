@@ -36,7 +36,6 @@ function geoObjectClientToServer(body){
 function geoObjectServerToClient(result){
     //result is a complex mongoose object so change it to simple object to modify
     const fResult = result.toObject();
-    console.log("after toObject() in geoObject\n");
     const fPoints= [];
     
     if(fResult.hasOwnProperty("trackPoints")){

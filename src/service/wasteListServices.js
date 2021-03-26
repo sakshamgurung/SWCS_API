@@ -30,6 +30,11 @@ class WasteListServices{
         return this.result;
     }
 
+    async getWasteListByRef(ref, id){
+        this.result = await WasteList.findByRef(ref, id);
+        return this.result;
+    }
+
     async updateWasteListById(id, updateData){
         this.result = await WasteList.updateById(id, updateData);
         return checkForWriteErrors(this.result, "status", "Waste list update failed");       

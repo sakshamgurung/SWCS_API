@@ -32,6 +32,11 @@ class StaffGroupServices{
         return this.result;
     }
 
+    async getStaffGroupByRef(ref, id){
+        this.result = await StaffGroup.findByRef(ref, id);
+        return this.result;
+    }
+
     async updateStaffGroupById(id, updateData){
         if(updateData.hasOwnProperty("isReserved")){
             throw ApiError.badRequest("isReserved can't be modified from here");

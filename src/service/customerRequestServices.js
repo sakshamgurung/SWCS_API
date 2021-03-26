@@ -36,6 +36,12 @@ class CustomerRequestServices{
         return this.result;
     }
 
+    async getCustomerRequestByRef(ref, id){
+        this.result = await CustomerRequest.findByRef(ref, id);
+        this.result = customerRequestArrayServerToClient(this.result);
+        return this.result;
+    }
+
     async updateCustomerRequestById(id, updateData){
         const session = await mongoose.startSession();
         try{

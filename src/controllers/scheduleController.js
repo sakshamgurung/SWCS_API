@@ -28,6 +28,19 @@ class ScheduleController{
             throw ApiError.serverError("Schedule Error: " + error.message);
         }
     }
+
+    async getScheduleByRef(request, response, next){
+        try {
+            const {ref, id} = request.params;
+
+            const scheduleServices = new ScheduleServices();
+            const result = await scheduleServices.getScheduleByRef(ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Schedule by ref Error: " + error.message);
+        }
+    }
 }
 
 exports.ScheduleController = ScheduleController;

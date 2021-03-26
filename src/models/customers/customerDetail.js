@@ -89,6 +89,20 @@ class HelperClass{
          
         }
     }
+    
+    static deleteByRef(ref, id, session){
+        if(session == undefined){
+            switch(ref){
+                case "customerId": return this.deleteOne({customerId:id});
+                default : throw ApiError.badRequest("ref not defined");
+            }
+        }else{
+            switch(ref){
+                case "customerId": return this.deleteOne({customerId:id}, { session });
+                default : throw ApiError.badRequest("ref not defined");
+            }
+        }
+    }
 }
 
 schema.loadClass(HelperClass);

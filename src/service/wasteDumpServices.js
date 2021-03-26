@@ -105,13 +105,13 @@ class WasteDumpServices{
         //send nontification to company if wasteCondition is high
     }
 
-    async getAllWasteDump(ref, id){
-        this.result = await WasteDump.findByRef(ref, id);
+    async getWasteDumpById(id){
+        this.result = await WasteDump.findById(id);
         return this.result;
     }
 
-    async getWasteDumpById(id){
-        this.result = await WasteDump.findById(id);
+    async getWasteDumpByRef(ref, id){
+        this.result = await WasteDump.findByRef(ref, id);
         return this.result;
     }
 

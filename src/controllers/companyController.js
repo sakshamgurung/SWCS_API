@@ -32,14 +32,27 @@ class CompanyController{
         try{
             const companyInfoType = request.params.type;
             const companyId = request.params.id;
-            console.log("companyInfoType: ", companyInfoType);
-            console.log("companyId: ", companyId);
+
             const companyServices = new CompanyServices();
             const result = await companyServices.getCompanyById(companyInfoType, companyId);
 
             response.json(result);
         }catch(error){
             throw ApiError.serverError("Company by id Error: " + error.message);
+        }
+    }
+    
+    async getCompanyByRef(request, response, next){
+        try {
+            const companyInfoType = request.params.type;
+            const {ref, id} = request.params;
+
+            const companyServices = new CompanyServices();
+            const result = await companyServices.getCompanyByRef(companyInfoType, ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Company by ref Error: " + error.message);
         }
     }
 

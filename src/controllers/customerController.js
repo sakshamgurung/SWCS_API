@@ -43,6 +43,20 @@ class CustomerController{
         }
     }
 
+    async getCustomerByRef(request, response, next){
+        try {
+            const customerInfoType = request.params.type;
+            const {ref, id} = request.params;
+
+            const customerServices = new CustomerServices();
+            const result = await customerServices.getCustomerByRef(customerInfoType, ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Customer by ref Error: " + error.message);
+        }
+    }
+
     async updateCustomerById(request, response, next){
         try{
             const customerInfoType = request.params.type;

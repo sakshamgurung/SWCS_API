@@ -17,6 +17,11 @@ class CustomerUsedGeoObjectServices{
         return this.result;
     }
 
+    async getCustomerUsedGeoObjectByRef(ref, id){
+        this.result = await CustomerUsedGeoObject.findByRef(ref, id);
+        return this.result;
+    }
+
 }
 
 exports.CustomerUsedGeoObjectServices = CustomerUsedGeoObjectServices;

@@ -3,8 +3,12 @@ const router = express.Router();
 const {ScheduleController} = require('../controllers/scheduleController');
 const catchAsync = require('../error/catchAsync');
 
-router.get('/customers/:id/schedules',catchAsync( new ScheduleController().getAllSchedule));
-router.get('/schedules/:id',catchAsync( new ScheduleController().getScheduleById));
+const scheduleController = new ScheduleController();
+
+router.get('/customers/:id/schedules',catchAsync( scheduleController.getAllSchedule));
+router.get('/schedules/:id',catchAsync( scheduleController.getScheduleById));
+//ref:customerId, workId, customerRequestId
+router.get('/schedules/:ref/:id',catchAsync( scheduleController.getScheduleByRef));
 module.exports = router;
 /** 
  * auto created when 

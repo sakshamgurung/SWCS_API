@@ -41,6 +41,18 @@ class WorkController{
         }
     }
 
+    async getWorkByRef(request, response, next){
+        try {
+            const {ref, id} = request.params;
+            const workServices = new WorkServices();
+            const result = await workServices.getWorkByRef(ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Work by ref Error: " + error.message);
+        }
+    }
+
     async updateWorkById(request, response, next){
         try{
             const workId = request.params.id;

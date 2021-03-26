@@ -64,6 +64,17 @@ class StaffServices{
         return this.result;
     }
 
+    async getStaffByRef(staffInfoType, ref, id){
+        if(staffInfoType == "staff"){
+            this.result = await StaffLogin.findByRef(ref, id);
+        }else if(staffInfoType == "staff-detail"){
+            this.result =await StaffDetail.findByRef(ref, id);
+        }else{
+            throw ApiError.badRequest("staffInfoType not found!!!");
+        }
+        return this.result;
+    }
+
     async updateStaffById(staffInfoType, id, updateData){
         if(staffInfoType == "staff"){
             this.result = await StaffLogin.updateById(id, updateData);

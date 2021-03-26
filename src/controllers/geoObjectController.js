@@ -46,6 +46,20 @@ class GeoObjectController{
         }
     }
 
+    async getGeoObjectByRef(request, response, next){
+        try {
+            const geoObjectType = request.params.type;
+            const {ref, id} = request.params;
+
+            const geoObjectServices = new GeoObjectServices();
+            const result = await geoObjectServices.getGeoObjectByRef(geoObjectType, ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Geo object by ref Error: " + error.message);
+        }
+    }
+
     async updateGeoObjectById(request, response, next){
         try{
             const geoObjectType = request.params.type;

@@ -43,6 +43,20 @@ class StaffController{
         }
     }
 
+    async getStaffByRef(request, response, next){
+        try {
+            const staffInfoType = request.params.type;
+            const {ref, id} = request.params;
+
+            const staffServices = new StaffServices();
+            const result = await staffServices.getStaffByRef(staffInfoType, ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Staff by ref Error: " + error.message);
+        }
+    }
+
     async updateStaffById(request, response, next){
         try{
             const staffInfoType = request.params.type;

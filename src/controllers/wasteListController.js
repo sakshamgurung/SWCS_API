@@ -41,6 +41,19 @@ class WasteListController{
         }
     }
 
+    async getWasteListByRef(request, response, next){
+        try {
+            const {ref, id} = request.params;
+
+            const wasteListServices = new WasteListServices();
+            const result = await wasteListServices.getWasteListByRef(ref, id);
+            
+            response.json(result);
+        } catch (error) {
+            throw ApiError.serverError("Waste list by ref Error: " + error.message);
+        }
+    }
+
     async updateWasteListById(request, response, next){
         try{
             const wasteListId = request.params.id;
