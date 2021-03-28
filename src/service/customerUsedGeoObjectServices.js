@@ -7,18 +7,13 @@ class CustomerUsedGeoObjectServices{
         this.result = undefined;
     }
 
-    async getCustomerUsedGeoObjectByRef(ref, id){
-        this.result = await CustomerUsedGeoObject.findByRef(ref, id);
+    async getCustomerUsedGeoObjectByRef(ref, id, query){
+        this.result = await CustomerUsedGeoObject.findByRef(ref, id, query);
         return this.result;
     }
 
     async getCustomerUsedGeoObjectById(id){
         this.result = await CustomerUsedGeoObject.findById(id);
-        return this.result;
-    }
-
-    async getCustomerUsedGeoObjectByRef(ref, id){
-        this.result = await CustomerUsedGeoObject.findByRef(ref, id);
         return this.result;
     }
 

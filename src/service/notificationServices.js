@@ -15,8 +15,8 @@ class NotificationServices{
         return this.result;
     }
 
-    async getAllNotification(role, id){
-        this.result = await Notification.findAll(role, id);
+    async getAllNotification(role, id, query){
+        this.result = await Notification.findAll(role, id, query);
         return this.result;
     }
 
@@ -26,7 +26,7 @@ class NotificationServices{
     }
 
     async deleteNotificationById(id, updateData){
-        this.result = await Notification.deleteById(id);
+        this.result = await Notification.findByIdAndDelete(id);
         return checkForWriteErrors(this.result, "status", "Notification delete failed");
     }
 }

@@ -7,8 +7,8 @@ class ScheduleServices{
         this.result = undefined;
     }
 
-    async getAllSchedule(customerId){
-        this.result = await Schedule.findAll(customerId);
+    async getAllSchedule(customerId, query){
+        this.result = await Schedule.find({ $and:[{customerId}, query]});
         return this.result;
     }
 
@@ -17,8 +17,8 @@ class ScheduleServices{
         return this.result;
     }
 
-    async getScheduleByRef(ref, id){
-        this.result = await Schedule.findByRef(ref, id);
+    async getScheduleByRef(ref, id, query){
+        this.result = await Schedule.findByRef(ref, id, query);
         return this.result;
     }
 

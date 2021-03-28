@@ -59,70 +59,40 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAll(role, id, projection, session){
+    static findAll(role, id, query, projection, session){
         if(session == undefined){
             switch(role){
-                case "company": return this.find({companyId:id}, projection);
-                case "staff":return this.find({staffGroupId:id}, projection);
+                case "company": return this.find( {$and:[{companyId:id}, query]}, projection);
+                case "staff":return this.find( {$and:[{staffGroupId:id}, query]}, projection);
                 default : throw ApiError.badRequest("role not defined");
             }
             
         }else{
             switch(role){
-                case "company": return this.find({companyId:id}, projection, { session });
-                case "staff":return this.find({staffGroupId:id}, projection, { session });
+                case "company": return this.find( {$and:[{companyId:id}, query]}, projection, { session });
+                case "staff":return this.find( {$and:[{staffGroupId:id}, query]}, projection, { session });
                 default : throw ApiError.badRequest("role not defined");
             }
             
         }
     }
 
-    static findById(id, projection, session){
-        if(session == undefined){
-            return this.find({ _id:id }, projection);
-            
-        }else{
-            return this.find({ _id:id }, projection, { session });
-            
-        }
-    }
-
-    static updateById(id, updateData, session){
-        if(session == undefined){
-            return this.updateOne({ _id:id }, this.translateAliases( updateData ) );
-            
-        }else{
-            return this.updateOne({ _id:id }, this.translateAliases( updateData ), { session } );
-            
-        }
-    }
-
-    static deleteById(id, session){
-        if(session == undefined){
-            return this.deleteOne({ _id:id });
-            
-        }else{
-            return this.deleteOne({ _id:id }, { session });
-            
-        }
-    }
-
-    static findByRef(ref, id, projection, session){
+    static findByRef(ref, id, query, projection, session){
         if(session == undefined){
             switch(ref){
-                case "companyId": return this.find({companyId:id}, projection);
-                case "staffGroupId": return this.find({staffGroupId:id}, projection);
-                case "vehicleId": return this.find({vehicleId:id}, projection);
-                case "geoObjectTrackId": return this.find({geoObjectTrackId:id}, projection);
+                case "companyId": return this.find( {$and:[ {companyId:id}, query ]}, projection);
+                case "staffGroupId": return this.find( {$and:[{staffGroupId:id}, query]}, projection);
+                case "vehicleId": return this.find( {$and:[{vehicleId:id}, query]}, projection);
+                case "geoObjectTrackId": return this.find( {$and:[{geoObjectTrackId:id}, query]}, projection);
                 default: throw ApiError.badRequest("ref not defined");
             }
             
         }else{
             switch(ref){
-                case "companyId": return this.find({companyId:id}, projection,{ session });
-                case "staffGroupId": return this.find({staffGroupId:id}, projection,{ session });
-                case "vehicleId": return this.find({vehicleId:id}, projection,{ session });
-                case "geoObjectTrackId": return this.find({geoObjectTrackId:id}, projection,{ session });
+                case "companyId": return this.find( {$and:[{companyId:id}, query]}, projection,{ session });
+                case "staffGroupId": return this.find( {$and:[{staffGroupId:id}, query]}, projection,{ session });
+                case "vehicleId": return this.find( {$and:[{vehicleId:id}, query]}, projection,{ session });
+                case "geoObjectTrackId": return this.find( {$and:[{geoObjectTrackId:id}, query]}, projection,{ session });
                 default: throw ApiError.badRequest("ref not defined");
             }
             

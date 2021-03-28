@@ -20,8 +20,8 @@ class WasteListServices{
         return this.result;
     }
 
-    async getAllWasteList(companyId){
-        this.result = await WasteList.findAll(companyId);
+    async getAllWasteList(companyId, query){
+        this.result = await WasteList.find( {$and:[{companyId}, query]} );
         return this.result;
     }
 
@@ -30,13 +30,13 @@ class WasteListServices{
         return this.result;
     }
 
-    async getWasteListByRef(ref, id){
-        this.result = await WasteList.findByRef(ref, id);
+    async getWasteListByRef(ref, id, query){
+        this.result = await WasteList.findByRef(ref, id, query);
         return this.result;
     }
 
     async updateWasteListById(id, updateData){
-        this.result = await WasteList.updateById(id, updateData);
+        this.result = await WasteList.findByIdAndUpdate(id, updateData);
         return checkForWriteErrors(this.result, "status", "Waste list update failed");       
     }
     
@@ -45,25 +45,25 @@ class WasteListServices{
         const session = await mongoose.startSession();
         try {
             this.transactionResults = session.withTransaction(async() => {
-                const tempWasteDump = WasteDump.findByRef("wasteListId", id, {}, session);
+                const tempWasteDump = WasteDump.findByRef("wasteListId", id, {}, {}, session);
                 _.remove(tempWasteDump, wd => wd.is_collected == true );
                 
                 if(wasteDump.remapping){
                     //remapping
                     const{ newWasteListId } = wasteDump;
                     for(let wd of tempWasteDump ){
-                        this.result = await WasteDump.updateById( wd._id, { wasteListId: newWasteListId }, session );
+                        this.result = await WasteDump.findByIdAndUpdate( wd._id, { wasteListId: newWasteListId }, {session} );
                         checkForWriteErrors(this.result, "none", "Waste list delete failed");       
                     }
                 }else{
                     //removing
                     for(let wd of tempWasteDump ){
-                        this.result = await WasteDump.deleteById( wd._id, session );
+                        this.result = await WasteDump.findByIdAndDelete( wd._id, {session} );
                         checkForWriteErrors(this.result, "none", "Waste list delete failed");       
                     }
                 }
                 
-                this.result = await WasteList.deleteById(id);
+                this.result = await WasteList.findByIdAndDelete(id, {session});
                 checkForWriteErrors(this.result, "none", "Waste list delete failed");       
             });
 

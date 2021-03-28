@@ -35,6 +35,11 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 
+// app.use((req, res, next)=>{
+//   console.log("req:\n",req.url);
+//   next();
+// })
+
 app.get('/', (req, res)=>{
   res.send("Welcome to swcs-api");
 })

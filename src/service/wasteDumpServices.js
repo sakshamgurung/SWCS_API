@@ -27,17 +27,12 @@ class WasteDumpServices{
             this.transactionResults = await session.withTransaction(async()=>{
                 
                 const {customerId, companyId, geoObjectType, geoObjectId, amountUnit, amount} = wasteDumpData;
-                
 
                 if(geoObjectType == "track"){
-                    const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("customerId", customerId, {}, session);
+                    const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("customerId", customerId, {}, {}, session);
                     
                     //creating new customerUsedGeoObject
                     if(_.isEmpty(tempCustomerUsedGeoObject)){
-                        console.log("new cugo \n");
-                        this.wasteDump = new WasteDump(wasteDumpData);
-                        this.result.wasteDump = await this.wasteDump.save({session});
-                        
                         const newCustomerUsedGeoObject = {
                             customerId,
                             usedTrack:[{ companyId, trackId:geoObjectId }]
@@ -55,14 +50,14 @@ class WasteDumpServices{
                         if(_.isEmpty(isCompanyTrackInUse)){
                             console.log("first time using company geoObject cugo \n");
                             usedTrack.push({companyId, trackId:geoObjectId});
-                            const result = await CustomerUsedGeoObject.updateById(cugoId, { usedTrack }, session);
+                            const result = await CustomerUsedGeoObject.findByIdAndUpdate(cugoId, { usedTrack }, {session});
                             checkForWriteErrors(result, "none", "New waste dump failed");
                             
                         //this company geoObject already in use
                         }else{
                             //making sure only one track of a company is used
                             if(isCompanyTrackInUse[0].trackId == geoObjectId){
-                                const tempWasteDump = await WasteDump.findByRef("geoObjectId", geoObjectId, 
+                                const tempWasteDump = await WasteDump.findByRef("geoObjectId", geoObjectId, {},
                                     {isCollected:1, amountUnit:1, amount:1}, session);
                                 _.remove(tempWasteDump, o => o.isCollected == true);
     
@@ -78,12 +73,12 @@ class WasteDumpServices{
                     currentAmount = calCurrentAmtInKg(currentAmount, amountUnit, amount);
 
                     //calculating waste condition for given track
-                    const tempTrack = await Track.findById(geoObjectId, {wasteLimit:1}, session);
+                    const tempTrack = await Track.findById(geoObjectId, {wasteLimit:1}, {session});
                     const {wasteLimit} = tempTrack[0];
                     let wasteCondition = calWasteCondition(currentAmount, wasteLimit);
 
                     //updating track waste condition
-                    let result = await Track.updateById(geoObjectId, {wasteCondition}, session);
+                    let result = await Track.findByIdAndUpdate(geoObjectId, {wasteCondition}, {session});
                     checkForWriteErrors(result, "none", "New waste dump failed");
                 }
 
@@ -110,18 +105,18 @@ class WasteDumpServices{
         return this.result;
     }
 
-    async getWasteDumpByRef(ref, id){
-        this.result = await WasteDump.findByRef(ref, id);
+    async getWasteDumpByRef(ref, id, query){
+        this.result = await WasteDump.findByRef(ref, id, query);
         return this.result;
     }
 
     async updateWasteDumpById(id, updateData){
-        this.result = await WasteDump.updateById(id, updateData);
+        this.result = await WasteDump.findByIdAndUpdate(id, updateData);
         return checkForWriteErrors(this.result, "status", "Waste dump update failed");
     }
 
     async deleteWasteDumpById(id, updateData){
-        this.result = await WasteDump.deleteById(id);
+        this.result = await WasteDump.findByIdAndDelete(id);
         return checkForWriteErrors(this.result, "status", "Waste dump delete failed");
 
     }

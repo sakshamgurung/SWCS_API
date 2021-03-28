@@ -17,8 +17,10 @@ class WasteCatalogController{
 
     async getAllWasteCatalog(request, response, next){
         try{
+            const {query} = request;
+            
             const wasteCatalogServices = new WasteCatalogServices();
-            const result = await wasteCatalogServices.getAllWasteCatalog();
+            const result = await wasteCatalogServices.getAllWasteCatalog(query);
 
             response.json(result);
         }catch(error){

@@ -19,9 +19,10 @@ class SubscriptionController{
     async getAllSubscription(request, response, next){
         try{
             const customerId = request.params.id;
+            const {query} = request;
 
             const subscriptionServices = new SubscriptionServices();
-            const result = await subscriptionServices.getAllSubscription(customerId);
+            const result = await subscriptionServices.getAllSubscription(customerId, query);
 
             response.json(result);
         }catch(error){
@@ -32,9 +33,10 @@ class SubscriptionController{
     async getAllSubscriber(request, response, next){
         try{
             const companyId = request.params.id;
+            const {query} = request;
 
             const subscriptionServices = new SubscriptionServices();
-            const result = await subscriptionServices.getAllSubscriber(companyId);
+            const result = await subscriptionServices.getAllSubscriber(companyId, query);
 
             response.json(result);
         }catch(error){

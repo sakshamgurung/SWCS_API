@@ -42,35 +42,19 @@ const schema = new Schema({
 });
 
 class HelperClass{
-    static findAll(role, id, projection, session){
+    static findAll(role, id, query, projection, session){
         if(session == undefined){
-            return this.find({ $and: [{'to.role':role},{'to.id':id}] }, projection);
+            return this.find({ $and: [{'to.role':role},{'to.id':id}, query] }, projection);
         }else{
-            return this.find({ $and: [{'to.role':role},{'to.id':id}] }, projection,{ session });
+            return this.find({ $and: [{'to.role':role},{'to.id':id}, query] }, projection,{ session });
         }
     }
 
-    static findById(id, projection, session){
+    static deleteByRole(role, id, query, session){
         if(session == undefined){
-            return this.find({ _id:id }, projection);
+            return this.deleteMany({ $and: [{'to.role':role},{'to.id':id}, query] });
         }else{
-            return this.find({ _id:id }, projection,{ session });
-        }
-    }
-
-    static deleteById(id, session){
-        if(session == undefined){
-            return this.deleteOne({ _id:id });
-        }else{
-            return this.deleteOne({ _id:id }, { session });  
-        }
-    }
-    
-    static deleteByRole(role, id, session){
-        if(session == undefined){
-            return this.deleteMany({ $and: [{'to.role':role},{'to.id':id}] });
-        }else{
-            return this.deleteMany({ $and: [{'to.role':role},{'to.id':id}] },{ session });
+            return this.deleteMany({ $and: [{'to.role':role},{'to.id':id}, query] },{ session });
         }
     }
 }

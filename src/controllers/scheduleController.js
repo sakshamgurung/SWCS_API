@@ -6,9 +6,10 @@ class ScheduleController{
     async getAllSchedule(request, response, next){
         try{
             const customerId = request.params.id;
+            const {query} = request;
 
             const scheduleServices = new ScheduleServices();
-            const result = await scheduleServices.getAllSchedule(customerId);
+            const result = await scheduleServices.getAllSchedule(customerId, query);
             
             response.json(result);
         }catch(error){
@@ -32,9 +33,10 @@ class ScheduleController{
     async getScheduleByRef(request, response, next){
         try {
             const {ref, id} = request.params;
+            const {query} = request;
 
             const scheduleServices = new ScheduleServices();
-            const result = await scheduleServices.getScheduleByRef(ref, id);
+            const result = await scheduleServices.getScheduleByRef(ref, id, query);
             
             response.json(result);
         } catch (error) {

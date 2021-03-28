@@ -32,9 +32,10 @@ class CustomerUsedGeoObjectController{
     async getCustomerUsedGeoObjectByRef(request, response, next){
         try {
             const {ref, id} = request.params;
+            const {query} = request;
 
             const customerUsedGeoObjectServices = new CustomerUsedGeoObjectServices();
-            const result = await customerUsedGeoObjectServices.getCustomerUsedGeoObjectByRef(ref, id);
+            const result = await customerUsedGeoObjectServices.getCustomerUsedGeoObjectByRef(ref, id, query);
             
             response.json(result);
         } catch (error) {

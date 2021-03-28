@@ -25,7 +25,7 @@ class WorkServices{
             this.transactionResults = await session.withTransaction(async()=>{
                 const {geoObjectTrackId, staffGroupId, vehicleId} = workData;
                 
-                const tempStaffGroup = await StaffGroup.findById(staffGroupId, {isReserved:1}, session);
+                const tempStaffGroup = await StaffGroup.findById(staffGroupId, {isReserved:1}, {session});
                 const tempVehicle = await Vehicle.findById(vehicleId, {isReserved:1}, session);
                 
                 if(tempStaffGroup[0].isReserved){
@@ -36,7 +36,7 @@ class WorkServices{
                    throw ApiError.badRequest("vehicle already reserved.");
                 }
                 // reserving staffgroup and vehicle
-                let result  = await  StaffGroup.updateById(staffGroupId, {isReserved:true}, session);
+                let result  = await  StaffGroup.findByIdAndUpdate(staffGroupId, {isReserved:true}, {session});
                 checkForWriteErrors(result, "none", "New work failed");
                 
                 result = await  Vehicle.updateById(vehicleId, {isReserved:true}, session);
@@ -52,7 +52,7 @@ class WorkServices{
                  * use for...of rather than forEach because forEach will throw error inside from different context 
                  * */
                 for(let tid of geoObjectTrackId){
-                    result = await Track.updateById(tid, {workId}, session);
+                    result = await Track.findByIdAndUpdate(tid, {workId}, {session});
                     checkForWriteErrors(result, "none", "New work failed");
                 }
                 
@@ -71,8 +71,8 @@ class WorkServices{
         }
     }
 
-    async getAllWork(role, id){
-        this.result = await Work.findAll(role, id);
+    async getAllWork(role, id, query){
+        this.result = await Work.findAll(role, id, query);
         return this.result;
     }
 
@@ -81,8 +81,8 @@ class WorkServices{
         return this.result;
     }
 
-    async getWorkByRef(ref, id){
-        this.result = await Work.findByRef(ref, id);
+    async getWorkByRef(ref, id, query){
+        this.result = await Work.findByRef(ref, id, query);
         return this.result;
     }
 
@@ -90,39 +90,39 @@ class WorkServices{
         const session = await mongoose.startSession();
         try{
             this.transactionResults = await session.withTransaction(async()=> {
-                const prevWork = await Work.findById(id, {workStatus:1, geoObjectTrackId:1, staffGroupId, vehicleId}, session);
+                const prevWork = await Work.findById(id, {workStatus:1, geoObjectTrackId:1, staffGroupId, vehicleId}, {session});
                 const {workStatus, geoObjectTrackId, staffGroupId, vehicleId} = prevWork[0];
 
                 if(workStatus == "unconfirmed"){
                     if(staffGroupId != updateData.staffGroupId){
                         //reserving new staffgroup
-                        const tempStaffGroup = await StaffGroup.findById(updateData.staffGroupId, {isReserved:1}, session);
+                        const tempStaffGroup = await StaffGroup.findById(updateData.staffGroupId, {isReserved:1}, {session});
                         
                         if(tempStaffGroup[0].isReserved){
                             throw ApiError.badRequest("staff group already reserved.");
                         }
 
-                        this.result= await  StaffGroup.updateById(updateData.staffGroupId, {isReserved:true}, session);
+                        this.result= await  StaffGroup.findByIdAndUpdate(updateData.staffGroupId, {isReserved:true}, {session});
                         checkForWriteErrors(this.result, "none", "Work update failed");
                         
                         //free previous staffgroup
-                        this.result = await  StaffGroup.updateById(staffGroupId, {isReserved:false}, session);
+                        this.result = await  StaffGroup.findByIdAndUpdate(staffGroupId, {isReserved:false}, {session});
                         checkForWriteErrors(this.result, "none", "Work update failed");
                     }
 
                     if(vehicleId != updateData.vehicleId){
                         //reserving new vehicle
-                        const tempVehicle = await Vehicle.findById(updateData.vehicleId, {isReserved:1}, session);
+                        const tempVehicle = await Vehicle.findById(updateData.vehicleId, {isReserved:1}, {session});
                         
                         if(tempVehicle[0].isReserved){
                             throw ApiError.badRequest("staff group already reserved.");
                         }
                         
-                        this.result = await  Vehicle.updateById(updateData.vehicleId, {isReserved:true}, session);
+                        this.result = await  Vehicle.findByIdAndUpdate(updateData.vehicleId, {isReserved:true}, {session});
                         checkForWriteErrors(this.result, "none", "Work update failed");
                         
                         //free previous vehicle
-                        this.result = await  Vehicle.updateById(vehicleId, {isReserved:false}, session);
+                        this.result = await  Vehicle.findByIdAndUpdate(vehicleId, {isReserved:false}, {session});
                         checkForWriteErrors(this.result, "none", "Work update failed");
                     }
                     
@@ -131,25 +131,25 @@ class WorkServices{
                     
                     if(deletedTrackId.length > 0 ){
                         for(let t of deletedTrackId){
-                            this.result = await Track.updateById(t, {workId:""},  session);
+                            this.result = await Track.findByIdAndUpdate(t, {workId:""},  {session});
                             checkForWriteErrors(this.result, "none", "Work update failed");
                         }
                     }
                     if(addedTrackId.length > 0 ){
                         for(let t of addedTrackId){
-                            this.result = await Track.updateById(t, {workId:id},  session);
+                            this.result = await Track.findByIdAndUpdate(t, {workId:id},  {session});
                             checkForWriteErrors(this.result, "none", "Work update failed");
                         }
                     }
                     
-                    this.result = await Work.updateById(id, updateData, session);
+                    this.result = await Work.findByIdAndUpdate(id, updateData, {session});
                     checkForWriteErrors(this.result, "none", "Work update failed");
                     //notify staffGroupId after deleting work
                     
                 }else if(workStatus == "confirmed" && updateData.workStatus == "on progress"){
-                    const trackId = await Track.findByRef("workId", id, {_id:1}, session);
+                    const trackId = await Track.findByRef("workId", id, {}, {_id:1}, session);
                     for(let t of trackId){
-                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {customerId:1}, session);
+                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, {customerId:1}, session);
                         for(let cugo of tempCustomerUsedGeoObject){
                             const {customerId} = cugo;
                             const newSchedule = {
@@ -160,27 +160,27 @@ class WorkServices{
                         }
                     }
                     
-                    this.result = await Work.updateById(id, { workStatus:"on progress" }, session);
+                    this.result = await Work.findByIdAndUpdate(id, { workStatus:"on progress" }, {session});
                     checkForWriteErrors(this.result, "none", "Work update failed");
                     
                 }else if(workStatus == "on progress" && updateData.workStatus == "finished" ){
                     
-                    const trackId = await Track.findByRef("workId", id, {_id:1}, session);
+                    const trackId = await Track.findByRef("workId", id, {}, {_id:1}, session);
                     for(let t of trackId){
-                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, session);
+                        const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, {}, session);
                         for(let cugo of tempCustomerUsedGeoObject){
                             _.remove( cugo.usedTrack, o => { return o.trackId == t._id; });
                             const {customerId, usedTrack} = cugo;
                             this.result = await CustomerUsedGeoObject.updateByRef("customerId", customerId, { usedTrack }, session);
                             checkForWriteErrors(this.result, "none", "Work update failed");
                         }
-                        this.result = await Track.updateById(t._id, { workId:"" }, session);
+                        this.result = await Track.findByIdAndUpdate(t._id, { workId:"" }, {session});
                         checkForWriteErrors(this.result, "none", "Work update failed");
                     }
                     
                     this.result = await Schedule.deleteByRef("workId", id, session);
                     checkForWriteErrors(this.result, "none", "Work update failed");
-                    this.result = await Work.updateById(id, { workStatus:"finished" }, session);
+                    this.result = await Work.findByIdAndUpdate(id, { workStatus:"finished" }, {session});
                     checkForWriteErrors(this.result, "none", "Work update failed");
                     
                 }
@@ -199,7 +199,7 @@ class WorkServices{
         const session = await mongoose.startSession();
         try{
             this.transactionResults = await session.withTransaction(async() => {
-                const tempWork = await Work.findById(id, {}, session);
+                const tempWork = await Work.findById(id, {}, {session});
                 const {staffGroupId, vehicleId} = tempWork;
                 
                 //deleting work ref from schedule
@@ -207,21 +207,21 @@ class WorkServices{
                 checkForWriteErrors(this.result, "none", "Work delete failed");
                 
                 //deleting work ref from geoObjectTrack
-                const tempTrack = await Track.findByRef("workId", id, {_id:1}, session);
+                const tempTrack = await Track.findByRef("workId", id, {}, {_id:1}, session);
                 for(let t of tempTrack){
-                    this.result = await Track.updateById(t._id, { workId:"" }, session);
+                    this.result = await Track.findByIdAndUpdate(t._id, { workId:"" }, {session});
                     checkForWriteErrors(this.result, "none", "Work delete failed");
                 }
                 
                 //free vehicle
-                this.result = await  StaffGroup.updateById(staffGroupId, {isReserved:false}, session);
+                this.result = await  StaffGroup.findByIdAndUpdate(staffGroupId, {isReserved:false}, {session});
                 checkForWriteErrors(this.result, "none", "Work delete failed");
                 
                 //free staffgroup
                 this.result = await  Vehicle.updateeById(vehicleId, {isReserved:false}, session);
                 checkForWriteErrors(this.result, "none", "Work delete failed");
                 
-                this.result = await Work.deleteById(id, session);
+                this.result = await Work.findByIdAndDelete(id, {session});
                 checkForWriteErrors(this.result, "none", "Work delete failed");
             });
             

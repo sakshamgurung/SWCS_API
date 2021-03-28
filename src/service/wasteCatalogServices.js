@@ -20,8 +20,8 @@ class WasteCatalogServices{
         return this.result;
     }
 
-    async getAllWasteCatalog(){
-        this.result = await WasteCatalog.findAll({description:0});
+    async getAllWasteCatalog(query){
+        this.result = await WasteCatalog.find({$and:[{}, query]});
         return this.result;
     }
 
@@ -31,7 +31,7 @@ class WasteCatalogServices{
     }
 
     async updateWasteCatalogById(id, updateData){
-        this.result = await WasteCatalog.updateById(id, updateData);
+        this.result = await WasteCatalog.findByIdAndUpdate(id, updateData);
         return checkForWriteErrors(this.result, "status", "Waste catalog update failed");
     }
     
@@ -46,14 +46,14 @@ class WasteCatalogServices{
                     //remapping
                     const{ newWasteCatalogId } = wasteList;
                     for(let wl of tempWasteList ){
-                        this.result = await WasteList.updateById( wl._id, { wasteCatalogId: newWasteCatalogId }, session );
+                        this.result = await WasteList.findByIdAndUpdate( wl._id, { wasteCatalogId: newWasteCatalogId }, {session} );
                         checkForWriteErrors(this.result, "none", "Waste catalog delete failed");
                     }
                 }else{
                     throw ApiError.badRequest("remapping is needed");
                 }
                 
-                this.result = await WasteCatalog.deleteById(id);
+                this.result = await WasteCatalog.findByIdAndDelete(id, {sessions});
                 checkForWriteErrors(this.result, "none", "Waste catalog delete failed");
             });
 

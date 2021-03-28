@@ -20,9 +20,10 @@ class CustomerRequestController{
     async getAllCustomerRequest(request, response, next){
         try{
             const {role, id} = request.params;
+            const {query} = request;
 
             const customerRequestServices = new CustomerRequestServices();
-            const result = await customerRequestServices.getAllCustomerRequest(role, id);
+            const result = await customerRequestServices.getAllCustomerRequest(role, id, query);
             
             response.json(result);
         }catch(error){
@@ -46,9 +47,10 @@ class CustomerRequestController{
     async getCustomerRequestByRef(request, response, next){
         try {
             const {ref, id} = request.params;
+            const {query} = request;
 
             const customerRequestServices = new CustomerRequestServices();
-            const result = await customerRequestServices.getCustomerRequestByRef(ref, id);
+            const result = await customerRequestServices.getCustomerRequestByRef(ref, id, query);
             
             response.json(result);
         } catch (error) {

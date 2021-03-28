@@ -24,8 +24,8 @@ class CustomerRequestServices{
         return this.result;
     }
 
-    async getAllCustomerRequest(role, id){
-        this.result = await CustomerRequest.findAll(role, id);
+    async getAllCustomerRequest(role, id, query){
+        this.result = await CustomerRequest.findAll(role, id, query);
         this.result = customerRequestArrayServerToClient(this.result);
         return this.result;
     }
@@ -36,8 +36,8 @@ class CustomerRequestServices{
         return this.result;
     }
 
-    async getCustomerRequestByRef(ref, id){
-        this.result = await CustomerRequest.findByRef(ref, id);
+    async getCustomerRequestByRef(ref, id, query){
+        this.result = await CustomerRequest.findByRef(ref, id, query);
         this.result = customerRequestArrayServerToClient(this.result);
         return this.result;
     }
@@ -46,12 +46,12 @@ class CustomerRequestServices{
         const session = await mongoose.startSession();
         try{
             this.transactionResults = await session.withTransaction(async()=> {
-                const prevCustomerRequest = await CustomerRequest.findById(id, {}, session);
+                const prevCustomerRequest = await CustomerRequest.findById(id, {}, {session});
                 const { companyId, customerId, requestStatus, requestType} = prevCustomerRequest[0];
 
                 if(requestStatus == "pending" && updateData.requestStatus == "denied"){
                     //delete the request send notification
-                    this.result = await CustomerRequest.deleteById(id, session);
+                    this.result = await CustomerRequest.findByIdAndDelete(id, {session});
                     checkForWriteErrors(this.result, "none", "Customer request update error");
                     
                 }else if(requestStatus == "pending" && updateData.requestStatus == "accepted"){
@@ -63,11 +63,11 @@ class CustomerRequestServices{
                         await Subscription.create([newSubData], {session});
                         
                         //delete customerRequest
-                        this.result = await CustomerRequest.deleteById(id, session);
+                        this.result = await CustomerRequest.findByIdAndDelete(id, {session});
                         checkForWriteErrors(this.result, "none", "Customer request update error");
                         
                     }else if(requestType == "one time"){
-                        this.result = await CustomerRequest.updateById(id, { requestStatus:"accepted" }, session);
+                        this.result = await CustomerRequest.findByIdAndUpdate(id, { requestStatus:"accepted" }, {session});
                         checkForWriteErrors(this.result, "none", "Customer request update error");
                     }
                     
@@ -76,7 +76,7 @@ class CustomerRequestServices{
                     
                     if(!_.isEmpty(staffGroupId) && !_.isEmpty(vehicleId)){
                         
-                        const tempStaffGroup = await StaffGroup.findById(staffGroupId, {isReserved:1}, session);
+                        const tempStaffGroup = await StaffGroup.findById(staffGroupId, {isReserved:1}, {session});
                         const tempVehicle = await Vehicle.findById(vehicleId, {isReserved:1}, session);
                         
                         if(tempStaffGroup[0].isReserved){
@@ -87,7 +87,7 @@ class CustomerRequestServices{
                             throw ApiError.badRequest("vehicle is reserved.");
                         }
                         
-                        this.result = await StaffGroup.updateById(staffGroupId, {isReserved:true}, session);
+                        this.result = await StaffGroup.findByIdAndUpdate(staffGroupId, {isReserved:true}, {session});
                         checkForWriteErrors(this.result, "none", "Customer request update error");
                         this.result = await Vehicle.updateById(vehicleId, {isReserved:true}, session);
                         checkForWriteErrors(this.result, "none", "Customer request update error");
@@ -98,7 +98,7 @@ class CustomerRequestServices{
                         };
                         await Schedule.create([newSchedule], {session});
                         
-                        this.result = await CustomerRequest.updateById(id, updateData, session);
+                        this.result = await CustomerRequest.findByIdAndUpdate(id, updateData, {session});
                         checkForWriteErrors(this.result, "none", "Customer request update error");
                         
                         //send notification to driver
@@ -113,10 +113,10 @@ class CustomerRequestServices{
                     this.result = await Schedule.deleteByRef("customerRequestId", id, session);
                     checkForWriteErrors(this.result, "none", "Customer request update error");
                     //free staffGroup
-                    this.result = await StaffGroup.updateById(staffGroupId, {isReserved:false}, session);
+                    this.result = await StaffGroup.findByIdAndUpdate(staffGroupId, {isReserved:false}, {session});
                     checkForWriteErrors(this.result, "none", "Customer request update error");
                     //delete customerRequest
-                    this.result = await CustomerRequest.deleteById(id, session);
+                    this.result = await CustomerRequest.findByIdAndDelete(id, {session});
                     checkForWriteErrors(this.result, "none", "Customer request update error");
                 }
             });
@@ -134,7 +134,7 @@ class CustomerRequestServices{
         const session = await mongoose.startSession();
         try{
             this.transactionResults = await session.withTransaction(async() => {
-                const tempCustomerRequestId = await CustomerRequest.findById(id, {}, session);
+                const tempCustomerRequestId = await CustomerRequest.findById(id, {}, {session});
                 const {requestStatus, requestType, customerId, companyId, staffGroupId} = tempCustomerRequestId[0];
                 
                 if(requestStatus == "accepted"){
@@ -150,11 +150,11 @@ class CustomerRequestServices{
                     this.result = await Schedule.deleteByRef("customerRequestId", id, session);
                     checkForWriteErrors(this.result, "none", "Customer request delete error");
                     //free staffGroup
-                    this.result = await StaffGroup.updateById(staffGroupId, {isReserved:false}, session);
+                    this.result = await StaffGroup.findByIdAndUpdate(staffGroupId, {isReserved:false}, {session});
                     checkForWriteErrors(this.result, "none", "Customer request delete error");
                 }
                 //delete customerRequest
-                this.result = await CustomerRequest.deleteById(id, session);
+                this.result = await CustomerRequest.findByIdAndDelete(id, {session});
                 checkForWriteErrors(this.result, "none", "Customer request delete error");
             });
 

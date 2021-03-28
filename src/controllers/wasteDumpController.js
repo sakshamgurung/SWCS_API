@@ -31,9 +31,10 @@ class WasteDumpController{
     async getWasteDumpByRef(request, response, next){
         try {
             const {ref, id} = request.params;
+            const {query} = request;
 
             const wasteDumpServices = new WasteDumpServices();
-            const result = await wasteDumpServices.getWasteDumpByRef(ref, id);
+            const result = await wasteDumpServices.getWasteDumpByRef(ref, id, query);
             
             response.json(result);
         } catch (error) {

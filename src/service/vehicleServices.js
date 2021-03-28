@@ -20,8 +20,8 @@ class VehicleServices{
         return this.result;
     }
 
-    async getAllVehicle(companyId){
-        this.result = await Vehicle.findAll(companyId);
+    async getAllVehicle(companyId, query){
+        this.result = await Vehicle.find({$and:[{companyId}, query]});
         return this.result;
     }
 
@@ -30,8 +30,8 @@ class VehicleServices{
         return this.result;
     }
 
-    async getVehicleByRef(ref, id){
-        this.result = await Vehicle.findByRef(ref, id);
+    async getVehicleByRef(ref, id, query){
+        this.result = await Vehicle.findByRef(ref, id, query);
         return this.result;
     }
 
@@ -39,7 +39,7 @@ class VehicleServices{
         if(updateData.hasOwnProperty("isReserved")){
             throw ApiError.badRequest("isReserved can't be modified from here");
         }
-        this.result = await Vehicle.updateById(id, updateData);
+        this.result = await Vehicle.findByIdAndUpdate(id, updateData);
         return checkForWriteErrors(this.result, "status", "Vehicle update failed");
     }
     
@@ -55,7 +55,7 @@ class VehicleServices{
                 this.result = await CustomerRequest.updateByRef("vehicleId", id, { vehicleId: "" }, session);
                 checkForWriteErrors(this.result, "none", "Vehicle delete failed");
                 
-                this.result = await Vehicle.deleteById(id, session);
+                this.result = await Vehicle.findByIdAndDelete(id, {session});
                 checkForWriteErrors(this.result, "none", "Vehicle delete failed");
             });
 

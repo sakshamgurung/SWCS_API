@@ -18,9 +18,10 @@ class CompanyController{
     async getAllCompany(request, response, next){
         try{
             const companyInfoType = request.params.type;
-            
+            const {query} = request;
+
             const companyServices = new CompanyServices();
-            const result = await companyServices.getAllCompany(companyInfoType);
+            const result = await companyServices.getAllCompany(companyInfoType, query);
 
             response.json(result);
         }catch(error){
@@ -46,9 +47,10 @@ class CompanyController{
         try {
             const companyInfoType = request.params.type;
             const {ref, id} = request.params;
+            const {query} = request;
 
             const companyServices = new CompanyServices();
-            const result = await companyServices.getCompanyByRef(companyInfoType, ref, id);
+            const result = await companyServices.getCompanyByRef(companyInfoType, ref, id, query);
             
             response.json(result);
         } catch (error) {

@@ -47,7 +47,7 @@ class CompanyServices{
                 this.companyServiceDetail = new CompanyServiceDetail(companyServiceDetail);
                 this.result.companyServiceDetail = await this.companyServiceDetail.save({session});
 
-                let result = await CompanyLogin.updateById(companyId, {firstTimeLogin:false}, session);
+                let result = await CompanyLogin.findByIdAndUpdate(companyId, {firstTimeLogin:false}, {session});
                 checkForWriteErrors(result, "none", "New company info failed");
             });
             
@@ -64,13 +64,13 @@ class CompanyServices{
         }
     }
 
-    async getAllCompany(companyInfoType){
+    async getAllCompany(companyInfoType, query){
         if(companyInfoType == "company"){
-            this.result = await CompanyLogin.findAll();
+            this.result = await CompanyLogin.find( {$and:[{}, query]} );
         }else if(companyInfoType == "company-detail"){
-            this.result = await CompanyDetail.findAll();
+            this.result = await CompanyDetail.find( {$and:[{}, query]} );
         }else if(companyInfoType == "company-service-detail"){
-            this.result = await CompanyServiceDetail.findAll();
+            this.result = await CompanyServiceDetail.find( {$and:[{}, query]} );
         }else{
             throw ApiError.badRequest("companyInfoType not found!!!");
         }
@@ -90,11 +90,11 @@ class CompanyServices{
         return this.result;
     }
 
-    async getCompanyByRef(companyInfoType, ref, id){
+    async getCompanyByRef(companyInfoType, ref, id, query){
         if(companyInfoType == "company-detail"){
-            this.result = await CompanyDetail.findByRef(ref, id);
+            this.result = await CompanyDetail.findByRef(ref, id, query);
         }else if(companyInfoType == "company-service-detail"){
-            this.result = await CompanyServiceDetail.findByRef(ref, id);
+            this.result = await CompanyServiceDetail.findByRef(ref, id, query);
         }else{
             throw ApiError.badRequest("companyInfoType not found!!!");
         }
@@ -103,11 +103,11 @@ class CompanyServices{
 
     async updateCompanyById(companyInfoType, id, updateData){
         if(companyInfoType == "company"){
-            this.result = await CompanyLogin.updateById(id, updateData);
+            this.result = await CompanyLogin.findByIdAndUpdate(id, updateData);
         }else if(companyInfoType == "company-detail"){
-            this.result = await CompanyDetail.updateById(id, updateData);
+            this.result = await CompanyDetail.findByIdAndUpdate(id, updateData);
         }else if(companyInfoType == "company-service-detail"){
-            this.result = await CompanyServiceDetail.updateById(id, updateData);
+            this.result = await CompanyServiceDetail.findByIdAndUpdate(id, updateData);
         }else{
             throw ApiError.badRequest("companyInfoType not found!!!");
         }
@@ -119,56 +119,56 @@ class CompanyServices{
         try {
             this.transactionResults = await session.withTransaction(async() => {
                 //deleting uncollected waste dump of company
-                const tempWasteDump = await WasteDump.findByRef("companyId", id, {isCollected:1}, session);
+                const tempWasteDump = await WasteDump.findByRef("companyId", id, {},{isCollected:1}, session);
                 const archiveWasteDump = _.remove(tempWasteDump, o => o.isCollected == true);
                 
                 for(let wd of archiveWasteDump){
-                    this.result = await WasteDump.updateById( wd._id, { customerId:"", companyId:"" }, session );
+                    this.result = await WasteDump.findByIdAndUpdate( wd._id, { customerId:"", companyId:"" }, {session} );
                     checkForWriteErrors(this.result, "none", "Company delete failed");
                 }
 
                 for(let wd of tempWasteDump){
-                    this.result = await WasteDump.deleteById( wd._id, session );
+                    this.result = await WasteDump.findByIdAndDelete( wd._id, {session} );
                     checkForWriteErrors(this.result, "none", "Company delete failed");
                 }
                 
                 //deleting notification
                 const tempSubscription = await Subscription.findAllSubscriber(id, {customerId:1}, session);
                 for(let s of tempSubscription){
-                    this.result = await Notification.deleteByRole("customer", s.customerId, session);
+                    this.result = await Notification.deleteByRole("customer", s.customerId, {}, session);
                     checkForWriteErrors(this.result, "none", "Company delete failed");
                     
                 }
                 
-                const tempStaffLogin = await StaffLogin.findByRef("companyId", id, {_id:1}, session);
+                const tempStaffLogin = await StaffLogin.findByRef("companyId", id, {}, {_id:1}, session);
                 for(let sl of tempStaffLogin){
-                    this.result = await Notification.deleteByRole("staff", sl._id, session);
+                    this.result = await Notification.deleteByRole("staff", sl._id, {}, session);
                     checkForWriteErrors(this.result, "none", "Company delete failed");
                 }
                 
-                this.result = await Notification.deleteByRole("company", id, session);
+                this.result = await Notification.deleteByRole("company", id, {}, session);
                 checkForWriteErrors(this.result, "none", "Company delete failed");
                 
                 //deleting schedule
-                const tempWork = await Work.findByRef("companyId", id, {_id:1}, session);
+                const tempWork = await Work.findByRef("companyId", id, {}, {_id:1}, session);
                 for(let w of tempWork){
                     this.result = await Schedule.deleteByRef("workId", w._id, session);
                     checkForWriteErrors(this.result, "none", "Company delete failed");
                 }
                 
-                const tempCustomerRequest = await CustomerRequest.findByRef("companyId", id, {_id}, session);
+                const tempCustomerRequest = await CustomerRequest.findByRef("companyId", id, {}, {_id}, session);
                 for(let cr of tempCustomerRequest){
                     this.result = await Schedule.deleteByRef("customerRequestId", cr._id, session);
                     checkForWriteErrors(this.result, "none", "Company delete failed");
                 }
                 
                 //updating customer used geoObject
-                const tempTrack = await Track.findByRef("companyId", id, {_id:1}, session);
+                const tempTrack = await Track.findByRef("companyId", id, {}, {_id:1}, session);
                 for(let t of tempTrack){
-                    const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, session);
+                    const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, {}, session);
                     for(let cugo of tempCustomerUsedGeoObject ){
                         _.remove(cugo.usedTrack, o => o.trackId == t._id);
-                        this.result = await CustomerUsedGeoObject.updateById(cugo._id, {usedTrack}, session);
+                        this.result = await CustomerUsedGeoObject.findByIdAndUpdate(cugo._id, {usedTrack}, {session});
                         checkForWriteErrors(this.result, "none", "Company delete failed");
                         
                     }
@@ -201,7 +201,7 @@ class CompanyServices{
                 checkForWriteErrors(this.result, "none", "Company delete failed");
                 this.result = await CompanyServiceDetail.deleteByRef("companyId", id, session);
                 checkForWriteErrors(this.result, "none", "Company delete failed");
-                this.result = await CompanyLogin.deleteById(id);
+                this.result = await CompanyLogin.findByIdAndDelete(id, {session});
                 checkForWriteErrors(this.result, "none", "Company delete failed");
             });
 

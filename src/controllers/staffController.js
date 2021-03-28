@@ -19,9 +19,10 @@ class StaffController{
         try{
             const staffInfoType = request.params.type;
             const companyId = request.params.id;
-            
+            const {query} = request;
+
             const staffServices = new StaffServices();
-            const result = await staffServices.getAllStaff(staffInfoType, companyId);;
+            const result = await staffServices.getAllStaff(staffInfoType, companyId, query);
 
             response.json(result);
         }catch(error){
@@ -47,9 +48,10 @@ class StaffController{
         try {
             const staffInfoType = request.params.type;
             const {ref, id} = request.params;
+            const {query} = request;
 
             const staffServices = new StaffServices();
-            const result = await staffServices.getStaffByRef(staffInfoType, ref, id);
+            const result = await staffServices.getStaffByRef(staffInfoType, ref, id, query);
             
             response.json(result);
         } catch (error) {

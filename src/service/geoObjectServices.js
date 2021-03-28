@@ -21,7 +21,7 @@ class GeoObjectServices{
     async createNewGeoObject(geoObjectType, data){
         if(geoObjectType == "zone"){
             const {companyId} = data;
-            const tempZone = await Zone.findByRef("companyId", companyId, {_id:1});
+            const tempZone = await Zone.findByRef("companyId", companyId, {}, {_id:1});
             if(tempZone.length != 0){
                 throw ApiError.badRequest("Zone already exist. Only one zone is allowed for a company.");
             }
@@ -40,11 +40,11 @@ class GeoObjectServices{
         return this.result;
     }
     
-    async getAllGeoObject(geoObjectType, companyId){
+    async getAllGeoObject(geoObjectType, companyId, query){
         if(geoObjectType == "zone"){
-            this.result = await Zone.findAll(companyId);
+            this.result = await Zone.find({$and:[{companyId}, query]});
         }else if(geoObjectType == "track"){
-            this.result = await Track.findAll(companyId);
+            this.result = await Track.find({$and:[{companyId}, query]});
         }else{
             throw ApiError.badRequest("geo object type not valid");
         }
@@ -64,11 +64,11 @@ class GeoObjectServices{
         return this.result;
     }
 
-    async getGeoOjectByRef(geoObjectType, ref, id){
+    async getGeoOjectByRef(geoObjectType, ref, id, query){
         if(geoObjectType == "zone"){
-            this.result = await Zone.findByRef(ref, id);
+            this.result = await Zone.findByRef(ref, id, query);
         }else if(geoObjectType == "track"){
-            this.result = await Track.findByRef(ref, id);
+            this.result = await Track.findByRef(ref, id, query);
         }else{
             throw ApiError.badRequest("geo object type not valid");
         }
@@ -81,9 +81,9 @@ class GeoObjectServices{
             throw ApiError.badRequest("work id and waste condition are not allowed to update from here.");
         }
         if(geoObjectType == "zone"){
-            this.result  = await Zone.updateById(id, updateData, session);
+            this.result  = await Zone.findByIdAndUpdate(id, updateData);
         }else if(geoObjectType == "track"){
-            this.result  = await Track.updateById(id, updateData, session);
+            this.result  = await Track.findByIdAndUpdate(id, updateData);
         }else{
             throw ApiError.badRequest("geo object type not valid");
         }
@@ -97,37 +97,37 @@ class GeoObjectServices{
             this.transactionResults = await session.withTransaction(async() => {
                 
                 //removing non collected wasteDump
-                const tempWasteDump = await WasteDump.findByRef("geoObjectId", id, {isCollected:1}, session);
+                const tempWasteDump = await WasteDump.findByRef("geoObjectId", id, {}, {isCollected:1}, session);
                 _.remove(tempWasteDump, o => o.isCollected == true );
                 for(let wd of tempWasteDump ){
-                    this.result = await WasteDump.deleteById( wd._id, session ); 
+                    this.result = await WasteDump.findByIdAndDelete( wd._id, {session} ); 
                     checkForWriteErrors(this.result, "none", "Geo object delete failed");
                 }
                 
                 if(geoObjectType == "track"){
                     //removing geoObject ref from work
-                    const tempWork = await Work.findByRef("geoObjectTrackId", id, {geoObjectTrackId}, session);
+                    const tempWork = await Work.findByRef("geoObjectTrackId", id, {}, {geoObjectTrackId}, session);
                     for(let w of tempWork ){
                         _.remove(w.geoObjectTrackId, got => got == id);
-                        this.result = await Work.updateById(w._id, {geoObjectTrackId:w.geoObjectTrackId}, session);
+                        this.result = await Work.findByIdAndUpdate(w._id, {geoObjectTrackId:w.geoObjectTrackId}, {session});
                         checkForWriteErrors(this.result, "none", "Geo object delete failed");
                     }
                     
                     //removing geoObject ref from customerUsedGeoObject
-                    const tempCustomerUsedGeoObjects = await CustomerUsedGeoObject.findByRef("usedTrack.TrackId", id, {}, session);
+                    const tempCustomerUsedGeoObjects = await CustomerUsedGeoObject.findByRef("usedTrack.TrackId", id, {}, {}, session);
                     tempCustomerUsedGeoObjects.forEach(async cugo => {
                         _.remove(cugo.usedTrack, o => o.trackId == id );
                         if(cugo.usedTrack.length == 0){
-                            this.result = await CustomerUsedGeoObject.deleteById(cugoId, session);
+                            this.result = await CustomerUsedGeoObject.findByIdAndDelete(cugoId, {session});
                             checkForWriteErrors(this.result, "none", "Geo object delete failed");
                         }else{
-                            this.result = await CustomerUsedGeoObject.updateById(cugo._id, {usedTrack:cugo.usedTrack}, session);
+                            this.result = await CustomerUsedGeoObject.findByIdAndUpdate(cugo._id, {usedTrack:cugo.usedTrack}, {session});
                             checkForWriteErrors(this.result, "none", "Geo object delete failed");
                         }
                     });
                     
                     //deleting geoObject
-                    this.result = await Track.deleteById(id, session);
+                    this.result = await Track.findByIdAndDelete(id, {session});
                     checkForWriteErrors(this.result, "none", "Geo object delete failed");
                 }else{
                     throw ApiError.badRequest("geo object type not valid");

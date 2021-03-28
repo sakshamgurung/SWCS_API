@@ -18,9 +18,10 @@ class WasteListController{
     async getAllWasteList(request, response, next){
         try{
             const companyId = request.params.id;
+            const {query} = request;
 
             const wasteListServices = new WasteListServices();
-            const result = await wasteListServices.getAllWasteList(companyId);
+            const result = await wasteListServices.getAllWasteList(companyId, query);
 
             response.json(result);
         }catch(error){
@@ -44,9 +45,10 @@ class WasteListController{
     async getWasteListByRef(request, response, next){
         try {
             const {ref, id} = request.params;
+            const {query} = request;
 
             const wasteListServices = new WasteListServices();
-            const result = await wasteListServices.getWasteListByRef(ref, id);
+            const result = await wasteListServices.getWasteListByRef(ref, id, query);
             
             response.json(result);
         } catch (error) {

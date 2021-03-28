@@ -18,9 +18,10 @@ class NotificationController{
     async getAllNotification(request, response, next){
         try{
             const {role, id} = request.params;
+            const {query} = request;
 
             const notificationServices = new NotificationServices();
-            const result = await notificationServices.getAllNotification(role, id);
+            const result = await notificationServices.getAllNotification(role, id, query);
 
             response.json(result);
         }catch(error){

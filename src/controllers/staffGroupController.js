@@ -18,9 +18,10 @@ class StaffGroupController{
     async getAllStaffGroup(request, response, next){
         try{
             const companyId = request.params.id;
+            const {query} = request;
 
             const staffGroupServices = new StaffGroupServices();
-            const result = await staffGroupServices.getAllStaffGroup(companyId);
+            const result = await staffGroupServices.getAllStaffGroup(companyId, query);
 
             response.json(result);
         }catch(error){
@@ -44,9 +45,10 @@ class StaffGroupController{
     async getStaffGroupByRef(request, response, next){
         try {
             const {ref, id} = request.params;
-
+            let {query} = request;
+            
             const staffGroupServices = new StaffGroupServices();
-            const result = await staffGroupServices.getStaffGroupByRef(ref, id);
+            const result = await staffGroupServices.getStaffGroupByRef(ref, id, query);
             
             response.json(result);
         } catch (error) {

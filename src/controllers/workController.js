@@ -18,10 +18,11 @@ class WorkController{
     async getAllWork(request, response, next){
         try{
             const {role, id} = request.params;
+            const {query} = request;
 
             const workServices = new WorkServices();
-            const result = await workServices.getAllWork(role, id);
-
+            const result = await workServices.getAllWork(role, id, query);
+            
             response.json(result);
         }catch(error){
             throw ApiError.serverError("Work Error: " + error.message);
@@ -44,8 +45,10 @@ class WorkController{
     async getWorkByRef(request, response, next){
         try {
             const {ref, id} = request.params;
+            const {query} = request;
+            
             const workServices = new WorkServices();
-            const result = await workServices.getWorkByRef(ref, id);
+            const result = await workServices.getWorkByRef(ref, id, query);
             
             response.json(result);
         } catch (error) {

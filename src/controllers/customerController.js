@@ -19,9 +19,10 @@ class CustomerController{
         try{
             const { idArray } = request.body;
             const customerInfoType = request.params.type;
+            const {query} = request;
 
             const customerServices = new CustomerServices();
-            const result = await customerServices.getAllCustomerInIdArray(customerInfoType, idArray);
+            const result = await customerServices.getAllCustomerInIdArray(customerInfoType, idArray, query);
 
             response.json(result);
         }catch(error){
@@ -47,9 +48,10 @@ class CustomerController{
         try {
             const customerInfoType = request.params.type;
             const {ref, id} = request.params;
+            const {query} = request;
 
             const customerServices = new CustomerServices();
-            const result = await customerServices.getCustomerByRef(customerInfoType, ref, id);
+            const result = await customerServices.getCustomerByRef(customerInfoType, ref, id, query);
             
             response.json(result);
         } catch (error) {

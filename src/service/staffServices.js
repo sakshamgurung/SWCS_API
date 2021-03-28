@@ -26,7 +26,7 @@ class StaffServices{
                 this.staffDetail = new StaffDetail(staffDetail);
                 this.result.staffDetail = await this.staffDetail.save({session});
 
-                let result = await StaffLogin.updateById(staffId, {firstTimeLogin:false}, session);
+                let result = await StaffLogin.findByIdAndUpdate(staffId, {firstTimeLogin:false}, {session});
                 checkForWriteErrors(result, "none", "New staff info failed");
             });
             if(this.transactionResults){
@@ -42,11 +42,11 @@ class StaffServices{
         return this.result;
     }
 
-    async getAllStaff(staffInfoType, companyId){
+    async getAllStaff(staffInfoType, companyId, query){
         if(staffInfoType == "staff"){
-            this.result = await StaffLogin.findAll(companyId);
+            this.result = await StaffLogin.find({$and:[{companyId}, query]});
         }else if(staffInfoType == "staff-detail"){
-            this.result =  await StaffDetail.findAll(companyId);
+            this.result =  await StaffDetail.find({$and:[{companyId}, query]});
         }else{
             throw ApiError.badRequest("staffInfoType not found!!!");
         }
@@ -64,11 +64,11 @@ class StaffServices{
         return this.result;
     }
 
-    async getStaffByRef(staffInfoType, ref, id){
+    async getStaffByRef(staffInfoType, ref, id, query){
         if(staffInfoType == "staff"){
-            this.result = await StaffLogin.findByRef(ref, id);
+            this.result = await StaffLogin.findByRef(ref, id, query);
         }else if(staffInfoType == "staff-detail"){
-            this.result =await StaffDetail.findByRef(ref, id);
+            this.result =await StaffDetail.findByRef(ref, id, query);
         }else{
             throw ApiError.badRequest("staffInfoType not found!!!");
         }
@@ -77,9 +77,9 @@ class StaffServices{
 
     async updateStaffById(staffInfoType, id, updateData){
         if(staffInfoType == "staff"){
-            this.result = await StaffLogin.updateById(id, updateData);
+            this.result = await StaffLogin.findByIdAndUpdate(id, updateData);
         }else if(staffInfoType == "staff-detail"){
-            this.result = await StaffDetail.updateById(id, updateData);
+            this.result = await StaffDetail.findByIdAndUpdate(id, updateData);
         }else{
             throw ApiError.badRequest("staffInfoType not found!!!");
         }
@@ -98,16 +98,16 @@ class StaffServices{
                 _.remove(tempStaffGroup[0].staffId, o => o == id);
                 const staffGroupId = tempStaffGroup[0]._id;
                 const staffId = tempStaffGroup[0].staffId;
-                this.result = await StaffGroup.updateById(staffGroupId, {staffId}, session);
+                this.result = await StaffGroup.findByIdAndUpdate(staffGroupId, {staffId}, {session});
                 checkForWriteErrors(this.result, "none", "Staff delete failed");
                 
                 //removing staff notification
-                this.result = await Notification.deleteByRole('staff', id, session);
+                this.result = await Notification.deleteByRole('staff', id, {}, session);
                 checkForWriteErrors(this.result, "none", "Staff delete failed");
                 
-                this.result = await StaffLogin.deleteById(id, session);
+                this.result = await StaffLogin.findByIdAndDelete(id, {session});
                 checkForWriteErrors(this.result, "none", "Staff delete failed");
-                this.result = await StaffDetail.deleteById(id, session);
+                this.result = await StaffDetail.findByIdAndDelete(id, {session});
                 checkForWriteErrors(this.result, "none", "Staff delete failed");
                 
                 //notify groupMember about removed staff

@@ -22,8 +22,8 @@ class StaffGroupServices{
         return this.result;
     }
 
-    async getAllStaffGroup(companyId){
-        this.result = await StaffGroup.findAll(companyId);
+    async getAllStaffGroup(companyId, query){
+        this.result = await StaffGroup.find( {$and:[{ companyId }, query]} );
         return this.result;
     }
 
@@ -32,8 +32,8 @@ class StaffGroupServices{
         return this.result;
     }
 
-    async getStaffGroupByRef(ref, id){
-        this.result = await StaffGroup.findByRef(ref, id);
+    async getStaffGroupByRef(ref, id, query){
+        this.result = await StaffGroup.findByRef(ref, id, query);
         return this.result;
     }
 
@@ -44,25 +44,25 @@ class StaffGroupServices{
         const session = await mongoose.startSession();
         try{
             this.transactionResults = await session.withTransaction(async () => {
-                const prevStaffGroupData = await StaffGroup.findById(id, {}, session);
+                const prevStaffGroupData = await StaffGroup.findById(id, {}, {session});
                 const {staffId} = prevStaffGroupData[0];
                 const deletedGroupMember = _.difference(staffId, updateData.staffId);
                 const addedGroupMember = _.difference(updateData.staffId, staffId);
                 
                 if(deletedGroupMember.length > 0){
                     for(let gm of deletedGroupMember ){
-                        this.result = await StaffDetail.updateById(gm, {staffGroupId:""}, session);
+                        this.result = await StaffDetail.findByIdAndUpdate(gm, {staffGroupId:""}, {session});
                         checkForWriteErrors(this.result, "none", "Staff group update failed");
                     }
                 }
                 if(addedGroupMember.length > 0){
                     for(let gm of addedGroupMember ){
-                        this.result = await StaffDetail.updateById(gm, {staffGroupId:id}, session);
+                        this.result = await StaffDetail.findByIdAndUpdate(gm, {staffGroupId:id}, {session});
                         checkForWriteErrors(this.result, "none", "Staff group update failed");
                     }
                 }
         
-                this.result = await StaffGroup.updateById(id, updateData);
+                this.result = await StaffGroup.findByIdAndUpdate(id, updateData, {session});
                 checkForWriteErrors(this.result, "none", "Staff group update failed");
             });
             
@@ -83,7 +83,7 @@ class StaffGroupServices{
                 //removing deleted staffGroupId from the staffDetail collection
                 const tempStaffDetail = await StaffDetail.findByRef("staffGroupId", id, {}, session);
                 for(let sd of tempStaffDetail ){
-                    this.result = await StaffDetail.updateById(sd._id, {staffGroupId:""}, session);
+                    this.result = await StaffDetail.findByIdAndUpdate(sd._id, {staffGroupId:""}, {session});
                     checkForWriteErrors(this.result, "none", "Staff group delete failed");    
                 }
                 
@@ -95,7 +95,7 @@ class StaffGroupServices{
                 this.result = await CustomerRequest.updateByRef("staffGroupId", id, {staffGroupId:""}, session);
                 checkForWriteErrors(this.result, "none", "Staff group delete failed");
                 
-                this.result = await StaffGroup.deleteById(id, session);
+                this.result = await StaffGroup.findByIdAndDelete(id, {session});
                 checkForWriteErrors(this.result, "none", "Staff group delete failed");
 
                 //notify group member

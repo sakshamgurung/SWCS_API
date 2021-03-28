@@ -18,9 +18,10 @@ class VehicleController{
     async getAllVehicle(request, response, next){
         try{
             const companyId = request.params.id;
+            const {query} = request;
 
             const vehicleServices = new VehicleServices();
-            const result = await vehicleServices.getAllVehicle(companyId);
+            const result = await vehicleServices.getAllVehicle(companyId, query);
 
             response.json(result);
         }catch(error){
@@ -44,9 +45,10 @@ class VehicleController{
     async getVehicleByRef(request, response, next){
         try {
             const {ref, id} = request.params;
+            const {query} = request;
 
             const vehicleServices = new VehicleServices();
-            const result = await vehicleServices.getVehicleByRef(ref, id);
+            const result = await vehicleServices.getVehicleByRef(ref, id, query);
             
             response.json(result);
         } catch (error) {

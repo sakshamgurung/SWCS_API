@@ -22,9 +22,10 @@ class GeoObjectController{
         try{
             const geoObjectType = request.params.type;
             const companyId = request.params.id;
+            const {query} = request;
             
             const geoObjectServices = new GeoObjectServices();
-            const result = await geoObjectServices.getAllGeoObject(geoObjectType, companyId);
+            const result = await geoObjectServices.getAllGeoObject(geoObjectType, companyId, query);
 
             response.json(result);
         }catch(error){
@@ -50,9 +51,10 @@ class GeoObjectController{
         try {
             const geoObjectType = request.params.type;
             const {ref, id} = request.params;
+            const {query} = request;
 
             const geoObjectServices = new GeoObjectServices();
-            const result = await geoObjectServices.getGeoObjectByRef(geoObjectType, ref, id);
+            const result = await geoObjectServices.getGeoOjectByRef(geoObjectType, ref, id, query);
             
             response.json(result);
         } catch (error) {

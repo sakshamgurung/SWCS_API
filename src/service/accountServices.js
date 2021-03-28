@@ -15,8 +15,8 @@ class AccountServices{
     async signUp(role, signUpData){
         const {email, mobileNo} = signUpData;
         if(role == "company"){
-            const tempCompanyLoginWithEmail = await CompanyLogin.findByEmail(email, {email:1});
-            const tempCompanyLoginWithMobileNo = await CompanyLogin.findByMobileNo(mobileNo, {mobileNo:1});
+            const tempCompanyLoginWithEmail = await CompanyLogin.find({email}, {email:1});
+            const tempCompanyLoginWithMobileNo = await CompanyLogin.find({mobileNo}, {mobileNo:1});
             
             if(tempCompanyLoginWithEmail.length != 0){
                 throw ApiError.badRequest("Email already exist");
@@ -28,8 +28,8 @@ class AccountServices{
             this.result = await this.companyLogin.save();
             
         }else if(role == "staff"){
-            const tempStaffLogin = await StaffLogin.findByEmail(email, {email:1});
-            const tempStaffLoginWithMobileNo = await StaffLogin.findByMobileNo(mobileNo, {mobileNo:1});
+            const tempStaffLogin = await StaffLogin.find({email}, {email:1});
+            const tempStaffLoginWithMobileNo = await StaffLogin.find({mobileNo}, {mobileNo:1});
 
             if(tempStaffLogin.length != 0){
                 throw ApiError.badRequest("Email already exist");
@@ -41,8 +41,8 @@ class AccountServices{
             this.result = await this.staffLogin.save();
             
         }else if(role == "customer"){
-            const tempCustomerLogin = await CustomerLogin.findByEmail(email, {email:1});
-            const tempCustomerLoginWithMobileNo = await CustomerLogin.findByMobileNo(mobileNo, {mobileNo:1});
+            const tempCustomerLogin = await CustomerLogin.find({email}, {email:1});
+            const tempCustomerLoginWithMobileNo = await CustomerLogin.find({mobileNo}, {mobileNo:1});
 
             if(tempCustomerLogin.length != 0){
                 throw ApiError.badRequest("Email already exist");
