@@ -67,7 +67,7 @@ class GeoObjectController{
             const geoObjectType = request.params.type;
             const geoObjectId = request.params.id;
             let {body} = request;
-            body.geoObject = geoObjectClientToServer(body.geoObject);
+            body = geoObjectClientToServer(body);
 
             const geoObjectServices = new GeoObjectServices();
             const {statusCode, status} = await geoObjectServices.updateGeoObjectById(geoObjectType, geoObjectId, body);

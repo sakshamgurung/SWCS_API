@@ -95,7 +95,7 @@ class GeoObjectServices{
         const session = await mongoose.startSession();
         try{
             this.transactionResults = await session.withTransaction(async() => {
-                
+
                 //removing non collected wasteDump
                 const tempWasteDump = await WasteDump.findByRef("geoObjectId", id, {}, {isCollected:1}, session);
                 _.remove(tempWasteDump, o => o.isCollected == true );
@@ -106,16 +106,17 @@ class GeoObjectServices{
                 
                 if(geoObjectType == "track"){
                     //removing geoObject ref from work
-                    const tempWork = await Work.findByRef("geoObjectTrackId", id, {}, {geoObjectTrackId}, session);
+                    const tempWork = await Work.findByRef("geoObjectTrackId", id, {}, {geoObjectTrackId:1}, session);
                     for(let w of tempWork ){
                         _.remove(w.geoObjectTrackId, got => got == id);
                         this.result = await Work.findByIdAndUpdate(w._id, {geoObjectTrackId:w.geoObjectTrackId}, {session});
                         checkForWriteErrors(this.result, "none", "Geo object delete failed");
                     }
-                    
+
                     //removing geoObject ref from customerUsedGeoObject
-                    const tempCustomerUsedGeoObjects = await CustomerUsedGeoObject.findByRef("usedTrack.TrackId", id, {}, {}, session);
-                    tempCustomerUsedGeoObjects.forEach(async cugo => {
+                    const tempCustomerUsedGeoObjects = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", id, {}, {}, session);
+
+                    for(let cugo of tempCustomerUsedGeoObjects){
                         _.remove(cugo.usedTrack, o => o.trackId == id );
                         if(cugo.usedTrack.length == 0){
                             this.result = await CustomerUsedGeoObject.findByIdAndDelete(cugoId, {session});
@@ -124,7 +125,7 @@ class GeoObjectServices{
                             this.result = await CustomerUsedGeoObject.findByIdAndUpdate(cugo._id, {usedTrack:cugo.usedTrack}, {session});
                             checkForWriteErrors(this.result, "none", "Geo object delete failed");
                         }
-                    });
+                    }
                     
                     //deleting geoObject
                     this.result = await Track.findByIdAndDelete(id, {session});
