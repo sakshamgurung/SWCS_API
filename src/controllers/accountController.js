@@ -1,14 +1,27 @@
 const { AccountServices } = require("../service/accountServices");
 const ApiError = require("../error/ApiError");
+const vehicle = require("../models/companies/vehicle");
+const staff = require("../models/staff/staffLogin");
+const subscriber = require("../models/common/subscription");
 
 class AccountController {
 	async signUp(request, response, next) {
 		try {
+			console.log(" Here : ", request.body);
 			const { signUpData } = request.body;
 			const { role } = request.params;
 
 			const accountServices = new AccountServices();
 			const result = await accountServices.signUp(role, signUpData);
+
+			if (role === "staff") {
+				const totalVehicle = await vehicle.find({ companyId: signUpData.companyId }).count();
+				const totalStaff = await staff.find({ companyId: signUpData.companyId }).count();
+				const subs = await subscriber.find({ companyId: signUpData.companyId }).count();
+
+				console.log(" vehicles : staff : subs : From staff ", totalVehicle, totalStaff, subs);
+			}
+
 			response.json(result);
 		} catch (error) {
 			throw ApiError.serverError("Account Error:" + error.message);

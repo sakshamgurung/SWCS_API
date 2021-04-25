@@ -1,5 +1,6 @@
 const ApiError = require("../error/ApiError");
-
+const Vehicle = require("../models/companies/vehicle");
+const Subscription = require("../models/common/subscription");
 const CompanyLogin = require("../models/companies/companyLogin");
 const StaffLogin = require("../models/staff/staffLogin");
 const CustomerLogin = require("../models/customers/customerLogin");
@@ -7,6 +8,7 @@ const jwtToken = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { UpdateToken } = require("../utilities/updateToken");
 const SuperAdmin = require("../models/superadmin/superadmin");
+const graphData = require("../models/graph/graphData");
 
 class AccountServices {
 	constructor() {
@@ -22,14 +24,8 @@ class AccountServices {
 		const updatedData = await { ...signUpData, password: encryptedPass };
 
 		if (role == "company") {
-			const tempCompanyLoginWithEmail = await CompanyLogin.find(
-				{ email },
-				{ email: 1 }
-			);
-			const tempCompanyLoginWithMobileNo = await CompanyLogin.find(
-				{ mobileNo },
-				{ mobileNo: 1 }
-			);
+			const tempCompanyLoginWithEmail = await CompanyLogin.find({ email }, { email: 1 });
+			const tempCompanyLoginWithMobileNo = await CompanyLogin.find({ mobileNo }, { mobileNo: 1 });
 
 			if (tempCompanyLoginWithEmail.length != 0) {
 				throw ApiError.badRequest("Email already exist");
@@ -41,10 +37,7 @@ class AccountServices {
 			this.result = await this.companyLogin.save();
 		} else if (role == "staff") {
 			const tempStaffLogin = await StaffLogin.find({ email }, { email: 1 });
-			const tempStaffLoginWithMobileNo = await StaffLogin.find(
-				{ mobileNo },
-				{ mobileNo: 1 }
-			);
+			const tempStaffLoginWithMobileNo = await StaffLogin.find({ mobileNo }, { mobileNo: 1 });
 
 			if (tempStaffLogin.length != 0) {
 				throw ApiError.badRequest("Email already exist");
@@ -54,15 +47,19 @@ class AccountServices {
 
 			this.staffLogin = new StaffLogin(signUpData);
 			this.result = await this.staffLogin.save();
+
+			// logs
+			const totalVehicle = await Vehicle.find({ companyId: signUpData.companyId }).count();
+			const totalStaff = await StaffLogin.find({ companyId: signUpData.companyId }).count();
+			const subs = await Subscription.find({ companyId: signUpData.companyId }).count();
+			console.log(" Staff : Vehicle : Subs : From sub : ", totalStaff, totalVehicle, subs);
+			this.graph = new graphData({ companyId: signUpData.companyId, subscribers: subs, staff: totalStaff, vehicle: totalVehicle });
+
+			const logResult = await this.graph.save();
+			this.result = await { ...this.result, logResult };
 		} else if (role == "customer") {
-			const tempCustomerLogin = await CustomerLogin.find(
-				{ email },
-				{ email: 1 }
-			);
-			const tempCustomerLoginWithMobileNo = await CustomerLogin.find(
-				{ mobileNo },
-				{ mobileNo: 1 }
-			);
+			const tempCustomerLogin = await CustomerLogin.find({ email }, { email: 1 });
+			const tempCustomerLoginWithMobileNo = await CustomerLogin.find({ mobileNo }, { mobileNo: 1 });
 
 			if (tempCustomerLogin.length != 0) {
 				throw ApiError.badRequest("Email already exist");
@@ -93,26 +90,20 @@ class AccountServices {
 				});
 
 				// check password
-				const isPasswordCorrect = await bcrypt.compare(
-					password,
-					currentCompanyUser[0].password
-				);
+				const isPasswordCorrect = await bcrypt.compare(password, currentCompanyUser[0].password);
 
 				if (isPasswordCorrect) {
 					// return token
 					const authToken = await jwtToken.sign(
 						{
-							user: currentCompanyUser[0]._id
+							user: currentCompanyUser[0]._id,
+							email: currentCompanyUser[0].email
 						},
 						"qwertyuiopasdfghjklzxcvbnm"
 					);
 
 					//    save token to database
-					const saveToken = await UpdateToken(
-						currentCompanyUser[0]._id,
-						authToken,
-						MobileDeviceId
-					);
+					const saveToken = await UpdateToken(currentCompanyUser[0]._id, authToken, MobileDeviceId);
 
 					if (saveToken.length !== 0) {
 						this.result = await authToken;
@@ -135,15 +126,13 @@ class AccountServices {
 					// success
 					const authToken = await jwtToken.sign(
 						{
-							user: isAdminValid[0]._id
+							user: isAdminValid[0]._id,
+							email: isAdminValid[0].email
 						},
 						"qwertyuiopasdfghjklzxcvbnm"
 					);
 
-					const updateToken = await SuperAdmin.updateOne(
-						{ _id: isAdminValid[0]._id },
-						{ token: { webDevice: authToken } }
-					);
+					const updateToken = await SuperAdmin.updateOne({ _id: isAdminValid[0]._id }, { token: { webDevice: authToken } });
 					if (updateToken.length !== 0) {
 						this.result = await authToken;
 					} else {
