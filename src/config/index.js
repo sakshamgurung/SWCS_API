@@ -32,5 +32,5 @@ module.exports = {
   remoteDatabaseURL: process.env.MONGODB_ATLAS_URI,
   fcmURL: process.env.FCM_DATABASE_URL,
   fcmConfig: FCM_CONFIG,
-  jwtSecret: JWT_SECRET,
+  jwtSecret: process.env.JWT_SECRET,
 };
