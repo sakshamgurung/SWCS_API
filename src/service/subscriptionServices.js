@@ -38,7 +38,7 @@ class SubscriptionServices {
 	}
 
 	async getAllSubscriber(companyId, query) {
-		this.result = await Subscription.find({ $and: [{ companyId }, query] });
+		this.result = await Subscription.find({ $and: [{ companyId }, query] }).populate("customerId");
 		return this.result;
 	}
 	async getAllSubscription(customerId, query) {
