@@ -37,6 +37,9 @@ const schema = new Schema(
 		},
 		contactNo: {
 			type: String
+		},
+		desc: {
+			type: String
 		}
 	},
 	{
