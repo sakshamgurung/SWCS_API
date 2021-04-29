@@ -98,7 +98,8 @@ class AccountServices {
 					const authToken = await jwtToken.sign(
 						{
 							user: currentCompanyUser[0]._id,
-							email: currentCompanyUser[0].email
+							email: currentCompanyUser[0].email,
+							firstTimeLogin: currentCompanyUser[0].firstTimeLogin
 						},
 						config.jwtSecret
 					);
