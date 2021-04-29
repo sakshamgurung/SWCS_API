@@ -22,7 +22,7 @@ class AccountServices {
 	async signUp(role, signUpData) {
 		const { email, mobileNo, password } = signUpData;
 		const encryptedPass = await bcrypt.hash(password, 12);
-		const updatedData = await { ...signUpData, password: encryptedPass };
+		const updatedData = await { ...signUpData, password: encryptedPass, firstTimeLogin:true };
 
 		if (role == "company") {
 			const tempCompanyLoginWithEmail = await CompanyLogin.find({ email }, { email: 1 });
