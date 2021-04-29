@@ -5,6 +5,7 @@ const ApiError = require('../../error/ApiError');
 const schema = new Schema({
     companyId:{
         type:String,
+        ref:"CompanyLogin",
     },
     zoneName:{
         type:String,
@@ -12,13 +13,6 @@ const schema = new Schema({
     zonePoints:[
         {_id:false, identifier:String, coordinates:{longitude:Number, latitude:Number}}
     ],
-    // workId:{
-    //     type:String,
-    // },
-    // wasteCondition:{
-    //     type:String,
-    //     enum:["none", "low", "medium", "high"]
-    // },
     description:{
         type:String
     }

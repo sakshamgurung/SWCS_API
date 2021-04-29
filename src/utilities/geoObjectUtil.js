@@ -1,3 +1,4 @@
+const { isObject } = require("lodash");
 const _ = require("lodash");
 
 function geoObjectClientToServer(body){
@@ -90,12 +91,10 @@ function customerRequestClientToServer(body){
 function customerRequestServerToClient(result){
     //result is a complex mongoose object so change it to simple object to modify
     const fResult = result.toObject();
-    
-    fResult.forEach(o => {
-        let {identifier, coordinates} = o.requestCoordinate;
-        let {latitude, longitude} = coordinates;
-        o.requestCoordinate = {identifier, latitude, longitude};
-    });
+
+    let {identifier, coordinates} = fResult.requestCoordinate;
+    let {latitude, longitude} = coordinates;
+    fResult.requestCoordinate = {identifier, latitude, longitude};
     
     return fResult;    
 }
@@ -104,7 +103,7 @@ function customerRequestArrayServerToClient(arrayResult){
     const fResult = [];
     arrayResult.forEach(o => {
         if(o.hasOwnProperty("requestCoordinate")){
-            fResult.push(customerRequestArrayServerToClient(o));
+            fResult.push(customerRequestServerToClient(o));
         }else{
             fResult.push(o.toObject());
         }

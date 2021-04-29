@@ -5,6 +5,7 @@ const ApiError = require('../../error/ApiError');
 const schema = new Schema({
     companyId:{
         type:String,
+        ref:"CompanyLogin",
     },
     trackName:{
         type:String,
@@ -14,6 +15,7 @@ const schema = new Schema({
     ],
     workId:{
         type:String,
+        ref:"Work",
     },
     wasteLimit:{
         type:Number

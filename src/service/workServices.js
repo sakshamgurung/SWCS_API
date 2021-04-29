@@ -72,17 +72,26 @@ class WorkServices{
     }
 
     async getAllWork(role, id, query){
-        this.result = await Work.findAll(role, id, query);
+        this.result = await Work.findAll(role, id, query)
+        .populate("staffGroupId", "groupName")
+        .populate("vehicleId", "plateNo")
+        .populate("geoObjectTrackId", "trackName");
         return this.result;
     }
 
     async getWorkById(id){
-        this.result = await Work.findById(id);
+        this.result = await Work.findById(id)
+        .populate("staffGroupId", "groupName")
+        .populate("vehicleId", "plateNo")
+        .populate("geoObjectTrackId", "trackName");
         return this.result;
     }
 
     async getWorkByRef(ref, id, query){
-        this.result = await Work.findByRef(ref, id, query);
+        this.result = await Work.findByRef(ref, id, query)
+        .populate("staffGroupId", "groupName")
+        .populate("vehicleId", "plateNo")
+        .populate("geoObjectTrackId", "trackName");
         return this.result;
     }
 

@@ -5,7 +5,6 @@ const catchAsync = require('../error/catchAsync');
 
 const customerUsedGeoObjectController = new CustomerUsedGeoObjectController();
 
-router.get('/customers/:id/customer-used-geo-objects',catchAsync( customerUsedGeoObjectController.getCustomerUsedGeoObjectByRef));
 router.get('/customer-used-geo-objects/:id',catchAsync( customerUsedGeoObjectController.getCustomerUsedGeoObjectById));
 //ref:customerId, usedTrack.trackId
 router.get('/customer-used-geo-objects/:ref/:id',catchAsync( customerUsedGeoObjectController.getCustomerUsedGeoObjectByRef));

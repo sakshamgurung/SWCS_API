@@ -5,15 +5,19 @@ const ApiError = require('../../error/ApiError');
 const schema = new Schema({
     companyId:{
         type:String,
+        ref:"CompanyLogin",
         required:true,
     },
     groupName:{
         type:String,
         required:true,
     },
-    staffId:{
-        type:[String],
-    },
+    staffId:[
+        {
+            type:String, 
+            ref:"StaffLogin",
+        },
+    ],
     description:{
         type:String
     },

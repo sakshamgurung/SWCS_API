@@ -21,17 +21,20 @@ class WasteListServices{
     }
 
     async getAllWasteList(companyId, query){
-        this.result = await WasteList.find( {$and:[{companyId}, query]} );
+        this.result = await WasteList.find( {$and:[{companyId}, query]} )
+        .populate("wasteCatalogId");
         return this.result;
     }
-
+    
     async getWasteListById(id){
-        this.result = await WasteList.findById(id);
+        this.result = await WasteList.findById(id)
+        .populate("wasteCatalogId");
         return this.result;
     }
-
+    
     async getWasteListByRef(ref, id, query){
-        this.result = await WasteList.findByRef(ref, id, query);
+        this.result = await WasteList.findByRef(ref, id, query)
+        .populate("wasteCatalogId");
         return this.result;
     }
 

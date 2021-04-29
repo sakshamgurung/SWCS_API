@@ -8,12 +8,14 @@ class CustomerUsedGeoObjectServices{
     }
 
     async getCustomerUsedGeoObjectByRef(ref, id, query){
-        this.result = await CustomerUsedGeoObject.findByRef(ref, id, query);
+        this.result = await CustomerUsedGeoObject.findByRef(ref, id, query)
+        .populate("customerId", "email mobileNo");
         return this.result;
     }
 
     async getCustomerUsedGeoObjectById(id){
-        this.result = await CustomerUsedGeoObject.findById(id);
+        this.result = await CustomerUsedGeoObject.findById(id)
+        .populate("customerId", "email mobileNo");;
         return this.result;
     }
 

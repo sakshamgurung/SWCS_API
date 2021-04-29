@@ -5,10 +5,12 @@ const ApiError = require('../../error/ApiError');
 const schema = new Schema({
     companyId:{
         type:String,
+        ref:"CompanyLogin",
         required:true,
     },
     customerId:{
         type:String,
+        ref:"CustomerLogin",
         required:true,
     },
     geoObjectType:{
@@ -21,6 +23,7 @@ const schema = new Schema({
     },
     wasteListId:{
         type:String,
+        ref:"WasteList",
         required:true,
     },
     amount:{

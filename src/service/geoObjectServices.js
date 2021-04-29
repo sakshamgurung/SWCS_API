@@ -42,9 +42,12 @@ class GeoObjectServices{
     
     async getAllGeoObject(geoObjectType, companyId, query){
         if(geoObjectType == "zone"){
-            this.result = await Zone.find({$and:[{companyId}, query]});
+            this.result = await Zone.find({$and:[{companyId}, query]})
+            .populate("companyId", "email mobileNo");
         }else if(geoObjectType == "track"){
-            this.result = await Track.find({$and:[{companyId}, query]});
+            this.result = await Track.find({$and:[{companyId}, query]})
+            .populate("companyId", "email mobileNo")
+            .populate("workId");
         }else{
             throw ApiError.badRequest("geo object type not valid");
         }
@@ -54,21 +57,27 @@ class GeoObjectServices{
     
     async getGeoOjectById(geoObjectType, id){
         if(geoObjectType == "zone"){
-            this.result = await Zone.findById(id);
+            this.result = await Zone.findById(id)
+            .populate("companyId", "email mobileNo");;
         }else if(geoObjectType == "track"){
-            this.result = await Track.findById(id);
+            this.result = await Track.findById(id)
+            .populate("companyId", "email mobileNo")
+            .populate("workId");
         }else{
             throw ApiError.badRequest("geo object type not valid");
         }
-        this.result = geoObjectArrayServerToClient(this.result);
+        this.result = geoObjectServerToClient(this.result);
         return this.result;
     }
 
     async getGeoOjectByRef(geoObjectType, ref, id, query){
         if(geoObjectType == "zone"){
-            this.result = await Zone.findByRef(ref, id, query);
+            this.result = await Zone.findByRef(ref, id, query)
+            .populate("companyId", "email mobileNo");;
         }else if(geoObjectType == "track"){
-            this.result = await Track.findByRef(ref, id, query);
+            this.result = await Track.findByRef(ref, id, query)
+            .populate("companyId", "email mobileNo")
+            .populate("workId");
         }else{
             throw ApiError.badRequest("geo object type not valid");
         }

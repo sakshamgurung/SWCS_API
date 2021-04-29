@@ -48,10 +48,9 @@ class CustomerServices{
     }
 
     async getAllCustomerInIdArray(customerInfoType, idArray, query){
-        if(customerInfoType == "customer"){
-            this.result = await CustomerLogin.findAllInIdArray(idArray, query);
-        }else if(customerInfoType == "customer-detail"){
-            this.result = await CustomerDetail.findAllInIdArray(idArray, query);
+        if(customerInfoType == "customer-detail"){
+            this.result = await CustomerDetail.findAllInIdArray(idArray, query)
+            .populate("customerId", "email mobileNo");
         }else{
             throw ApiError.badRequest("customerInfoType not found!!!");
         }
@@ -59,10 +58,12 @@ class CustomerServices{
     }
 
     async getCustomerById(customerInfoType, id){
+        //type "customer" only for auth user
         if(customerInfoType == "customer"){
             this.result = await CustomerLogin.findById(id);
         }else if(customerInfoType == "customer-detail"){
-            this.result = await CustomerDetail.findById(id);
+            this.result = await CustomerDetail.find({ customerId:id })
+            .populate("customerId", "email mobileNo");
         }else{
             throw ApiError.badRequest("customerInfoType not found!!!");
         }
@@ -71,7 +72,8 @@ class CustomerServices{
     
     async getCustomerByRef(customerInfoType, ref, id, query){
         if(customerInfoType == "customer-detail"){
-            this.result = await CustomerDetail.findByRef(ref, id, query);
+            this.result = await CustomerDetail.findByRef(ref, id, query)
+            .populate("customerId", "email mobileNo");
         }else{
             throw ApiError.badRequest("customerInfoType not found!!!");
         }

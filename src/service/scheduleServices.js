@@ -8,17 +8,26 @@ class ScheduleServices{
     }
 
     async getAllSchedule(customerId, query){
-        this.result = await Schedule.find({ $and:[{customerId}, query]});
+        this.result = await Schedule.find({ $and:[{customerId}, query]})
+        .populate("customerId", "email mobileNo")
+        .populate("workId")
+        .populate("customerRequestId");
         return this.result;
     }
-
+    
     async getScheduleById(id){
-        this.result = await Schedule.findById(id);
+        this.result = await Schedule.findById(id)
+        .populate("customerId", "email mobileNo")
+        .populate("workId")
+        .populate("customerRequestId");
         return this.result;
     }
-
+    
     async getScheduleByRef(ref, id, query){
-        this.result = await Schedule.findByRef(ref, id, query);
+        this.result = await Schedule.findByRef(ref, id, query)
+        .populate("customerId", "email mobileNo")
+        .populate("workId")
+        .populate("customerRequestId");
         return this.result;
     }
 

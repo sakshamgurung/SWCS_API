@@ -5,6 +5,7 @@ const ApiError = require('../../error/ApiError');
 const schema = new Schema({
     companyId:{
         type:String,
+        ref:"CompanyLogin",
         required:true,
     },
     activeDays:{
@@ -27,6 +28,7 @@ const schema = new Schema({
     },
     staffGroupId:{
         type:String,
+        ref:"StaffGroup",
     },
     workTitle:{
         type:String,
@@ -50,10 +52,14 @@ const schema = new Schema({
     },
     vehicleId:{
         type:String,
+        ref:"Vehicle"
     },
-    geoObjectTrackId:{
-        type:[String],
-    }
+    geoObjectTrackId:[
+        {
+            type:[String],
+            ref:"Track"
+        }
+    ]
 },{
     collection:"works"
 });

@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const schema = new Schema({
     companyId:{
         type:String,
+        ref:"CompanyLogin",
         required:true,
     },
     email:{

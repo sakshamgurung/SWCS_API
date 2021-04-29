@@ -101,12 +101,14 @@ class WasteDumpServices{
     }
 
     async getWasteDumpById(id){
-        this.result = await WasteDump.findById(id);
+        this.result = await WasteDump.findById(id)
+        .populate("wasteListId");
         return this.result;
     }
-
+    
     async getWasteDumpByRef(ref, id, query){
-        this.result = await WasteDump.findByRef(ref, id, query);
+        this.result = await WasteDump.findByRef(ref, id, query)
+        .populate("wasteListId");
         return this.result;
     }
 

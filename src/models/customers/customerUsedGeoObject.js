@@ -5,13 +5,14 @@ const ApiError = require('../../error/ApiError');
 const schema = new Schema({
     customerId:{
         type:String,
+        ref:"CustomerLogin",
         required:true,
     },
     usedTrack:{
         type:[{
             _id:false,
             companyId:String,
-            trackId:String
+            trackId:String,
         }],
     }
 },{

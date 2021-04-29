@@ -43,32 +43,42 @@ class StaffServices{
     }
 
     async getAllStaff(staffInfoType, companyId, query){
+        //type "staff" only for auth user
         if(staffInfoType == "staff"){
             this.result = await StaffLogin.find({$and:[{companyId}, query]});
         }else if(staffInfoType == "staff-detail"){
-            this.result =  await StaffDetail.find({$and:[{companyId}, query]});
+            console.log("companyId", companyId);
+            this.result =  await StaffDetail.find({$and:[{companyId}, query]})
+            .populate("companyId", "email mobileNo")
+            .populate("staffId", "email mobileNo");
+            //staffGroupId gives error
         }else{
             throw ApiError.badRequest("staffInfoType not found!!!");
         }
         return this.result;
     }
-
+    
     async getStaffById(staffInfoType, id){
+        //type "staff" only for auth user
         if(staffInfoType == "staff"){
             this.result = await StaffLogin.findById(id);
         }else if(staffInfoType == "staff-detail"){
-            this.result =await StaffDetail.findById(id);
+            this.result =await StaffDetail.find({ staffId:id })
+            .populate("companyId", "email mobileNo")
+            .populate("staffId", "email mobileNo");
         }else{
             throw ApiError.badRequest("staffInfoType not found!!!");
         }
         return this.result;
     }
-
+    
     async getStaffByRef(staffInfoType, ref, id, query){
         if(staffInfoType == "staff"){
             this.result = await StaffLogin.findByRef(ref, id, query);
         }else if(staffInfoType == "staff-detail"){
-            this.result =await StaffDetail.findByRef(ref, id, query);
+            this.result =await StaffDetail.findByRef(ref, id, query)
+            .populate("companyId", "email mobileNo")
+            .populate("staffId", "email mobileNo");
         }else{
             throw ApiError.badRequest("staffInfoType not found!!!");
         }

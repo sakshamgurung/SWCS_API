@@ -5,10 +5,12 @@ const ApiError = require('../../error/ApiError');
 const schema = new Schema({
     companyId:{
         type:String,
+        ref:"CompanyLogin",
         required:true,
     },
     wasteCatalogId:{
         type:String,
+        ref:"WasteCatalog",
         required:true,
     },
     paymentType:{

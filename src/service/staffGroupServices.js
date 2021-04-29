@@ -23,17 +23,23 @@ class StaffGroupServices{
     }
 
     async getAllStaffGroup(companyId, query){
-        this.result = await StaffGroup.find( {$and:[{ companyId }, query]} );
+        this.result = await StaffGroup.find( {$and:[{ companyId }, query]} )
+        .populate("companyId", "email mobileNo")
+        .populate("staffId", "email mobileNo");
         return this.result;
     }
 
     async getStaffGroupById(id){
-        this.result = await StaffGroup.findById(id);
+        this.result = await StaffGroup.findById(id)
+        .populate("companyId", "email mobileNo")
+        .populate("staffId", "email mobileNo");
         return this.result;
     }
 
     async getStaffGroupByRef(ref, id, query){
-        this.result = await StaffGroup.findByRef(ref, id, query);
+        this.result = await StaffGroup.findByRef(ref, id, query)
+        .populate("companyId", "email mobileNo")
+        .populate("staffId", "email mobileNo");
         return this.result;
     }
 

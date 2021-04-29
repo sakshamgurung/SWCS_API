@@ -17,7 +17,6 @@ class VehicleServices {
 
 	async createNewVehicle(vehicleData) {
 		this.vehicle = new Vehicle(vehicleData);
-		console.log("New Vehicle Data : ", vehicleData);
 		this.result = await this.vehicle.save();
 
 		// logs

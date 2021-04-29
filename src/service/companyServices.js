@@ -69,13 +69,13 @@ class CompanyServices {
 		return this.result;
 	}
 
-	async getAllCompany(companyInfoType, query) {
-		if (companyInfoType == "company") {
-			this.result = await CompanyLogin.find({ $and: [{}, query] });
-		} else if (companyInfoType == "company-detail") {
-			this.result = await CompanyDetail.find({ $and: [{}, query] });
+	async getAllCompany(companyInfoType, query) { 
+		if (companyInfoType == "company-detail") {
+			this.result = await CompanyDetail.find({ $and: [{}, query] })
+			.populate("companyId", "email mobileNo");
 		} else if (companyInfoType == "company-service-detail") {
-			this.result = await CompanyServiceDetail.find({ $and: [{}, query] });
+			this.result = await CompanyServiceDetail.find({ $and: [{}, query] })
+			.populate("companyId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("companyInfoType not found!!!");
 		}
@@ -83,25 +83,28 @@ class CompanyServices {
 	}
 
 	async getCompanyById(companyInfoType, id) {
+		//type "company" only for auth user
 		if (companyInfoType == "company") {
 			this.result = await CompanyLogin.findById(id);
 		} else if (companyInfoType == "company-detail") {
-			this.result = await CompanyDetail.find({ companyId: id });
+			this.result = await CompanyDetail.find({ companyId: id })
+			.populate("companyId", "email mobileNo");
 		} else if (companyInfoType == "company-service-detail") {
-			this.result = await CompanyServiceDetail.find({ companyId: id });
+			this.result = await CompanyServiceDetail.find({ companyId: id })
+			.populate("companyId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("companyInfoType not found!!!");
 		}
-
-		// console.log(" res : ", this.result);
 		return this.result;
 	}
 
 	async getCompanyByRef(companyInfoType, ref, id, query) {
 		if (companyInfoType == "company-detail") {
-			this.result = await CompanyDetail.findByRef(ref, id, query);
+			this.result = await CompanyDetail.findByRef(ref, id, query)
+			.populate("companyId", "email mobileNo");
 		} else if (companyInfoType == "company-service-detail") {
-			this.result = await CompanyServiceDetail.findByRef(ref, id, query);
+			this.result = await CompanyServiceDetail.findByRef(ref, id, query)
+			.populate("companyId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("companyInfoType not found!!!");
 		}

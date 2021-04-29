@@ -6,7 +6,7 @@ const catchAsync = require('../error/catchAsync');
 const companyController = new CompanyController();
 
 router.post('/companies', catchAsync( companyController.newCompanyInfo ));
-router.get('/companies/:type',catchAsync( companyController.getAllCompany));//type: company, company-detail, company-service-detail
+router.get('/companies/:type',catchAsync( companyController.getAllCompany));//type: company-detail, company-service-detail
 router.get('/companies/:type/:id',catchAsync( companyController.getCompanyById));
 //type:company-detail, company-service-detail
 //ref:companyId

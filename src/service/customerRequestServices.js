@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const _ = require('lodash');
 const ApiError = require('../error/ApiError');
 const {checkTransactionResults, checkForWriteErrors} = require('../utilities/errorUtil');
-const {customerRequestArrayServerToClient} = require('../utilities/geoObjectUtil');
+const {customerRequestServerToClient, customerRequestArrayServerToClient} = require('../utilities/geoObjectUtil');
 
 const Subscription = require("../models/common/subscription");
 const CustomerRequest = require('../models/common/customerRequest');
@@ -25,19 +25,31 @@ class CustomerRequestServices{
     }
 
     async getAllCustomerRequest(role, id, query){
-        this.result = await CustomerRequest.findAll(role, id, query);
+        this.result = await CustomerRequest.findAll(role, id, query)
+        .populate("companyId", "email mobileNo")
+        .populate("customerId", "email mobileNo")
+        .populate("staffGroupId")
+        .populate("vehicleId");
         this.result = customerRequestArrayServerToClient(this.result);
         return this.result;
     }
     
     async getCustomerRequestById(id){
-        this.result = await CustomerRequest.findById(id);
-        this.result = customerRequestArrayServerToClient(this.result);
+        this.result = await CustomerRequest.findById(id)
+        .populate("companyId", "email mobileNo")
+        .populate("customerId", "email mobileNo")
+        .populate("staffGroupId")
+        .populate("vehicleId");
+        this.result = customerRequestServerToClient(this.result);
         return this.result;
     }
 
     async getCustomerRequestByRef(ref, id, query){
-        this.result = await CustomerRequest.findByRef(ref, id, query);
+        this.result = await CustomerRequest.findByRef(ref, id, query)
+        .populate("companyId", "email mobileNo")
+        .populate("customerId", "email mobileNo")
+        .populate("staffGroupId")
+        .populate("vehicleId");
         this.result = customerRequestArrayServerToClient(this.result);
         return this.result;
     }

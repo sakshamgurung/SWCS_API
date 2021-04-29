@@ -5,6 +5,7 @@ const ApiError = require('../../error/ApiError');
 const schema = new Schema({
     customerId:{
         type:String,
+        ref:"CustomerLogin",
         required:true,
     },
     customerType:{
