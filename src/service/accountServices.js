@@ -116,20 +116,14 @@ class AccountServices {
 	}
 
 	async login(role, loginData) {
-		const { email, password } = loginData;
-		const MobileDeviceId = loginData.deviceId;
+		const { email, password, deviceId } = loginData;
 
 		if (role === "company") {
 			// check email
-			const isEmailExist = await CompanyLogin.find(
-				{ email },
-				{ email: 1 }
-			);
-			//email doesn't exist
+			const isEmailExist = await CompanyLogin.find({ email });
+			//email exist
 			if (isEmailExist.length !== 0) {
-				const currentCompanyUser = await CompanyLogin.find({
-					_id: isEmailExist[0]._id,
-				});
+				const currentCompanyUser = isEmailExist;
 
 				// check password
 				const isPasswordCorrect = await bcrypt.compare(
@@ -153,13 +147,13 @@ class AccountServices {
 
 					// save token to database
 					const saveToken = await UpdateToken(
-						currentCompanyUser[0]._id,
+						currentCompanyUser[0],
 						authToken,
-						MobileDeviceId
+						deviceId
 					);
 
 					if (saveToken.length !== 0) {
-						this.result = await authToken;
+						this.result = authToken;
 					} else {
 						throw ApiError.badRequest(" Token update failed ");
 					}
@@ -167,7 +161,7 @@ class AccountServices {
 					throw ApiError.badRequest(" Password does not match ");
 				}
 			} else {
-				throw ApiError.badRequest(" Failed to match email ");
+				throw ApiError.badRequest(" Email not found ");
 			}
 			return this.result;
 		} else if (role === "superadmin") {
@@ -226,6 +220,11 @@ class AccountServices {
 		if (role === "company") {
 			//identify mobile or web
 			if (!_.isEmpty(deviceId)) {
+				const tempCompany = await CompanyLogin.findById(_id);
+				_.remove(
+					tempCompany.token.mobileDevice,
+					(e) => e == "deviceId"
+				);
 			}
 			//clear uuid
 			//clear token
