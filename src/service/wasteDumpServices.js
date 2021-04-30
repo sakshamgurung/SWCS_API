@@ -102,13 +102,27 @@ class WasteDumpServices{
 
     async getWasteDumpById(id){
         this.result = await WasteDump.findById(id)
-        .populate("wasteListId");
+        .populate({
+            path:"wasteListId",
+            populate:{
+                path:"wasteCatalogId",
+                //select:"wasteType wasteName",
+                model:"WasteCatalog"
+            }
+        });
         return this.result;
     }
     
     async getWasteDumpByRef(ref, id, query){
         this.result = await WasteDump.findByRef(ref, id, query)
-        .populate("wasteListId");
+        .populate({
+            path:"wasteListId",
+            populate:{
+                path:"wasteCatalogId", 
+                //select:"wasteType wasteName", 
+                model:"WasteCatalog"
+            }
+        });
         return this.result;
     }
 
