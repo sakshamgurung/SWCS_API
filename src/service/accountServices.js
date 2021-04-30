@@ -145,6 +145,8 @@ class AccountServices {
 							email: currentCompanyUser[0].email,
 							firstTimeLogin:
 								currentCompanyUser[0].firstTimeLogin,
+							isCompanyAccepted:
+								currentCompanyUser[0].isCompanyAccepted,
 						},
 						config.jwtSecret
 					);
