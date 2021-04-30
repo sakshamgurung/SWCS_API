@@ -1,4 +1,5 @@
 const ApiError = require("../error/ApiError");
+const _ = require("lodash");
 const config = require("../config");
 const { checkForWriteErrors } = require("../utilities/errorUtil");
 const Vehicle = require("../models/companies/vehicle");
@@ -217,9 +218,11 @@ class AccountServices {
 	}
 
 	async logout(role, logoutData) {
-		const { _id, token, deviceId } = logoutData;
+		const { roleId, token, deviceId } = logoutData;
+		console.log("role:", role);
+		console.log("logoutData:", logoutData);
 		if (role === "company") {
-			let tempCompany = await CompanyLogin.findById(_id);
+			let tempCompany = await CompanyLogin.findById(roleId);
 
 			//identify mobile or web
 			if (!_.isEmpty(deviceId)) {
@@ -227,13 +230,14 @@ class AccountServices {
 			} else {
 				_.remove(tempCompany.token.webDevice, (e) => e == token);
 			}
+
 			const companyLogoutResult = await CompanyLogin.findByIdAndUpdate(
-				_id,
+				roleId,
 				tempCompany
 			);
-			checkForWriteErrors(
+			return checkForWriteErrors(
 				companyLogoutResult,
-				"none",
+				"status",
 				"Customer logout failed"
 			);
 		} else if (role === "superadmin") {
@@ -243,7 +247,7 @@ class AccountServices {
 	}
 
 	async passwordReset(role, resetData) {
-		//const { _id, token } = resetData;
+		//const { roleId, token } = resetData;
 		if (role === "company") {
 		} else if (role === "superadmin") {
 		} else if (role === "staff") {
