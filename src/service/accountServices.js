@@ -22,23 +22,39 @@ class AccountServices {
 	async signUp(role, signUpData) {
 		const { email, mobileNo, password } = signUpData;
 		const encryptedPass = await bcrypt.hash(password, 12);
-		const updatedData = await { ...signUpData, password: encryptedPass, firstTimeLogin:true };
+		const updatedData = await {
+			...signUpData,
+			password: encryptedPass,
+			firstTimeLogin: true,
+		};
 
 		if (role == "company") {
-			const tempCompanyLoginWithEmail = await CompanyLogin.find({ email }, { email: 1 });
-			const tempCompanyLoginWithMobileNo = await CompanyLogin.find({ mobileNo }, { mobileNo: 1 });
+			const tempCompanyLoginWithEmail = await CompanyLogin.find(
+				{ email },
+				{ email: 1 }
+			);
+			const tempCompanyLoginWithMobileNo = await CompanyLogin.find(
+				{ mobileNo },
+				{ mobileNo: 1 }
+			);
 
 			if (tempCompanyLoginWithEmail.length != 0) {
 				throw ApiError.badRequest("Email already exist");
 			} else if (tempCompanyLoginWithMobileNo.length != 0) {
 				throw ApiError.badRequest("Mobile no already exist");
 			}
-
+			updatedData["isCompanyAccepted"] = false;
 			this.companyLogin = new CompanyLogin(updatedData);
 			this.result = await this.companyLogin.save();
 		} else if (role == "staff") {
-			const tempStaffLogin = await StaffLogin.find({ email }, { email: 1 });
-			const tempStaffLoginWithMobileNo = await StaffLogin.find({ mobileNo }, { mobileNo: 1 });
+			const tempStaffLogin = await StaffLogin.find(
+				{ email },
+				{ email: 1 }
+			);
+			const tempStaffLoginWithMobileNo = await StaffLogin.find(
+				{ mobileNo },
+				{ mobileNo: 1 }
+			);
 
 			if (tempStaffLogin.length != 0) {
 				throw ApiError.badRequest("Email already exist");
@@ -50,17 +66,39 @@ class AccountServices {
 			this.result = await this.staffLogin.save();
 
 			// logs
-			const totalVehicle = await Vehicle.find({ companyId: signUpData.companyId }).count();
-			const totalStaff = await StaffLogin.find({ companyId: signUpData.companyId }).count();
-			const subs = await Subscription.find({ companyId: signUpData.companyId }).count();
-			console.log(" Staff : Vehicle : Subs : From sub : ", totalStaff, totalVehicle, subs);
-			this.graph = new GraphData({ companyId: signUpData.companyId, subscribers: subs, staff: totalStaff, vehicle: totalVehicle });
+			const totalVehicle = await Vehicle.find({
+				companyId: signUpData.companyId,
+			}).count();
+			const totalStaff = await StaffLogin.find({
+				companyId: signUpData.companyId,
+			}).count();
+			const subs = await Subscription.find({
+				companyId: signUpData.companyId,
+			}).count();
+			console.log(
+				" Staff : Vehicle : Subs : From sub : ",
+				totalStaff,
+				totalVehicle,
+				subs
+			);
+			this.graph = new GraphData({
+				companyId: signUpData.companyId,
+				subscribers: subs,
+				staff: totalStaff,
+				vehicle: totalVehicle,
+			});
 
 			const logResult = await this.graph.save();
 			this.result = await { ...this.result, logResult };
 		} else if (role == "customer") {
-			const tempCustomerLogin = await CustomerLogin.find({ email }, { email: 1 });
-			const tempCustomerLoginWithMobileNo = await CustomerLogin.find({ mobileNo }, { mobileNo: 1 });
+			const tempCustomerLogin = await CustomerLogin.find(
+				{ email },
+				{ email: 1 }
+			);
+			const tempCustomerLoginWithMobileNo = await CustomerLogin.find(
+				{ mobileNo },
+				{ mobileNo: 1 }
+			);
 
 			if (tempCustomerLogin.length != 0) {
 				throw ApiError.badRequest("Email already exist");
@@ -83,15 +121,21 @@ class AccountServices {
 
 		if (role === "company") {
 			// check email
-			const isEmailExist = await CompanyLogin.find({ email }, { email: 1 });
+			const isEmailExist = await CompanyLogin.find(
+				{ email },
+				{ email: 1 }
+			);
 			//email doesn't exist
 			if (isEmailExist.length !== 0) {
 				const currentCompanyUser = await CompanyLogin.find({
-					_id: isEmailExist[0]._id
+					_id: isEmailExist[0]._id,
 				});
 
 				// check password
-				const isPasswordCorrect = await bcrypt.compare(password, currentCompanyUser[0].password);
+				const isPasswordCorrect = await bcrypt.compare(
+					password,
+					currentCompanyUser[0].password
+				);
 
 				if (isPasswordCorrect) {
 					// create and return token
@@ -99,13 +143,18 @@ class AccountServices {
 						{
 							user: currentCompanyUser[0]._id,
 							email: currentCompanyUser[0].email,
-							firstTimeLogin: currentCompanyUser[0].firstTimeLogin
+							firstTimeLogin:
+								currentCompanyUser[0].firstTimeLogin,
 						},
 						config.jwtSecret
 					);
 
 					// save token to database
-					const saveToken = await UpdateToken(currentCompanyUser[0]._id, authToken, MobileDeviceId);
+					const saveToken = await UpdateToken(
+						currentCompanyUser[0]._id,
+						authToken,
+						MobileDeviceId
+					);
 
 					if (saveToken.length !== 0) {
 						this.result = await authToken;
@@ -128,12 +177,15 @@ class AccountServices {
 					const authToken = await jwtToken.sign(
 						{
 							user: isAdminValid[0]._id,
-							email: isAdminValid[0].email
+							email: isAdminValid[0].email,
 						},
 						config.jwtSecret
 					);
 
-					const updateToken = await SuperAdmin.updateOne({ _id: isAdminValid[0]._id }, { token: { webDevice: authToken } });
+					const updateToken = await SuperAdmin.updateOne(
+						{ _id: isAdminValid[0]._id },
+						{ token: { webDevice: authToken } }
+					);
 					if (updateToken.length !== 0) {
 						this.result = await authToken;
 					} else {
@@ -167,7 +219,28 @@ class AccountServices {
 		return this.result;
 	}
 
-	async passwordReset(role, resetData) {}
+	async logout(role, logoutData) {
+		const { _id, token, deviceId } = logoutData;
+		if (role === "company") {
+			//identify mobile or web
+			if (!_.isEmpty(deviceId)) {
+			}
+			//clear uuid
+			//clear token
+		} else if (role === "superadmin") {
+		} else if (role === "staff") {
+		} else if (role === "customer") {
+		}
+	}
+
+	async passwordReset(role, resetData) {
+		//const { _id, token } = resetData;
+		if (role === "company") {
+		} else if (role === "superadmin") {
+		} else if (role === "staff") {
+		} else if (role === "customer") {
+		}
+	}
 }
 
 exports.AccountServices = AccountServices;

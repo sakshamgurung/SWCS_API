@@ -11,7 +11,9 @@ class AccountController {
 			const result = await accountServices.signUp(role, signUpData);
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Account Error:" + error.message);
+			throw ApiError.serverError(
+				"Account: signup Error:" + error.message
+			);
 		}
 	}
 
@@ -33,7 +35,9 @@ class AccountController {
 				response.json(result);
 			}
 		} catch (error) {
-			throw ApiError.serverError("Account Error: " + error.message);
+			throw ApiError.serverError(
+				"Account: login Error: " + error.message
+			);
 		}
 	}
 
@@ -48,6 +52,21 @@ class AccountController {
 			response.json(result);
 		} catch (err) {
 			throw ApiError.serverError("Super Admin Error : " + err.message);
+		}
+	}
+
+	async logout(request, response, next) {
+		try {
+			const { logoutData } = request.body;
+			const { role } = request.params;
+
+			const accountServices = new AccountServices();
+			const result = await accountServices.logout(role, logoutData);
+			response.json(result);
+		} catch (error) {
+			throw ApiError.serverError(
+				"Account: logout Error: " + error.message
+			);
 		}
 	}
 }
