@@ -1,5 +1,6 @@
 const ApiError = require("../error/ApiError");
 const config = require("../config");
+const { checkForWriteErrors } = require("../utilities/errorUtil");
 const Vehicle = require("../models/companies/vehicle");
 const Subscription = require("../models/common/subscription");
 const CompanyLogin = require("../models/companies/companyLogin");
@@ -183,7 +184,7 @@ class AccountServices {
 						{ token: { webDevice: authToken } }
 					);
 					if (updateToken.length !== 0) {
-						this.result = await authToken;
+						this.result = authToken;
 					} else {
 						throw ApiError.badRequest(" Token update failed ");
 					}
@@ -218,16 +219,23 @@ class AccountServices {
 	async logout(role, logoutData) {
 		const { _id, token, deviceId } = logoutData;
 		if (role === "company") {
+			let tempCompany = await CompanyLogin.findById(_id);
+
 			//identify mobile or web
 			if (!_.isEmpty(deviceId)) {
-				const tempCompany = await CompanyLogin.findById(_id);
-				_.remove(
-					tempCompany.token.mobileDevice,
-					(e) => e == "deviceId"
-				);
+				_.remove(tempCompany.token.mobileDevice, (e) => e == token);
+			} else {
+				_.remove(tempCompany.token.webDevice, (e) => e == token);
 			}
-			//clear uuid
-			//clear token
+			const companyLogoutResult = await CompanyLogin.findByIdAndUpdate(
+				_id,
+				tempCompany
+			);
+			checkForWriteErrors(
+				companyLogoutResult,
+				"none",
+				"Customer logout failed"
+			);
 		} else if (role === "superadmin") {
 		} else if (role === "staff") {
 		} else if (role === "customer") {
