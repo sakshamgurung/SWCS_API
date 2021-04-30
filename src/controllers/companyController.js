@@ -7,7 +7,10 @@ class CompanyController {
 			const { companyDetail, companyServiceDetail } = request.body;
 
 			const companyServices = new CompanyServices();
-			const result = await companyServices.newCompanyInfo(companyDetail, companyServiceDetail); // two database will be created
+			const result = await companyServices.newCompanyInfo(
+				companyDetail,
+				companyServiceDetail
+			); // two database will be created
 
 			response.json(result);
 		} catch (error) {
@@ -21,7 +24,10 @@ class CompanyController {
 			const { query } = request;
 
 			const companyServices = new CompanyServices();
-			const result = await companyServices.getAllCompany(companyInfoType, query);
+			const result = await companyServices.getAllCompany(
+				companyInfoType,
+				query
+			);
 
 			response.json(result);
 		} catch (error) {
@@ -35,7 +41,10 @@ class CompanyController {
 			const companyId = request.params.id;
 
 			const companyServices = new CompanyServices();
-			const result = await companyServices.getCompanyById(companyInfoType, companyId);
+			const result = await companyServices.getCompanyById(
+				companyInfoType,
+				companyId
+			);
 			response.json(result);
 		} catch (error) {
 			throw ApiError.serverError("Company by id Error: " + error.message);
@@ -49,11 +58,18 @@ class CompanyController {
 			const { query } = request;
 
 			const companyServices = new CompanyServices();
-			const result = await companyServices.getCompanyByRef(companyInfoType, ref, id, query);
+			const result = await companyServices.getCompanyByRef(
+				companyInfoType,
+				ref,
+				id,
+				query
+			);
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Company by ref Error: " + error.message);
+			throw ApiError.serverError(
+				"Company by ref Error: " + error.message
+			);
 		}
 	}
 
@@ -64,7 +80,14 @@ class CompanyController {
 			const { body } = request;
 
 			const companyServices = new CompanyServices();
-			const { statusCode, status } = await companyServices.updateCompanyById(companyInfoType, companyId, body);
+			const {
+				statusCode,
+				status,
+			} = await companyServices.updateCompanyById(
+				companyInfoType,
+				companyId,
+				body
+			);
 
 			response.status(statusCode).send(status);
 		} catch (error) {
@@ -90,7 +113,10 @@ class CompanyController {
 			const companyId = request.params.id;
 
 			const companyServices = new CompanyServices();
-			const { statusCode, status } = await companyServices.deleteCompanyById(companyId);
+			const {
+				statusCode,
+				status,
+			} = await companyServices.deleteCompanyById(companyId);
 
 			response.status(statusCode).send(status);
 		} catch (error) {
