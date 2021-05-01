@@ -219,8 +219,7 @@ class AccountServices {
 
 	async logout(role, logoutData) {
 		const { roleId, token, deviceId } = logoutData;
-		console.log("role:", role);
-		console.log("logoutData:", logoutData);
+
 		if (role === "company") {
 			let tempCompany = await CompanyLogin.findById(roleId);
 

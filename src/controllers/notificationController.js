@@ -1,59 +1,57 @@
-const {NotificationServices} = require("../service/notificationServices");
-const ApiError = require('../error/ApiError');
+const { NotificationServices } = require("../service/notificationServices");
+const ApiError = require("../error/ApiError");
 
-class NotificationController{
-    async createNewNotification(request, response, next){
-        try {
-            const { body } = request;
+class NotificationController {
+	async getAllNotification(request, response, next) {
+		try {
+			const { role, id } = request.params;
+			const { query } = request;
 
-            const notificationServices = new NotificationServices();
-            const result =  await notificationServices.createNewNotification(body);
+			const notificationServices = new NotificationServices();
+			const result = await notificationServices.getAllNotification(
+				role,
+				id,
+				query
+			);
 
-            response.json(result);
-        } catch (error) {
-            throw ApiError.serverError("Notification Error: " + error.message);
-        }
-    }
+			response.json(result);
+		} catch (error) {
+			throw ApiError.serverError("Notification Error: " + error.message);
+		}
+	}
 
-    async getAllNotification(request, response, next){
-        try{
-            const {role, id} = request.params;
-            const {query} = request;
+	async getNotificationById(request, response, next) {
+		try {
+			const notificationId = request.params.id;
 
-            const notificationServices = new NotificationServices();
-            const result = await notificationServices.getAllNotification(role, id, query);
+			const notificationServices = new NotificationServices();
+			const result = await notificationServices.getNotificationById(
+				notificationId
+			);
 
-            response.json(result);
-        }catch(error){
-            throw ApiError.serverError("Notification Error: " + error.message);
-        }
-    }
+			response.json(result);
+		} catch (error) {
+			throw ApiError.serverError("Notification Error: " + error.message);
+		}
+	}
 
-    async getNotificationById(request, response, next){
-        try{
-            const notificationId = request.params.id;
+	async deleteNotificationById(request, response, next) {
+		try {
+			const notificationId = request.params.id;
 
-            const notificationServices = new NotificationServices();
-            const result = await notificationServices.getNotificationById(notificationId);
+			const notificationServices = new NotificationServices();
+			const {
+				statusCode,
+				status,
+			} = await notificationServices.deleteNotificationById(
+				notificationId
+			);
 
-            response.json(result);
-        }catch(error){
-            throw ApiError.serverError("Notification Error: " + error.message);
-        }
-    }
-
-    async deleteNotificationById(request, response, next){
-        try {
-            const notificationId = request.params.id;
-
-            const notificationServices = new NotificationServices();
-            const {statusCode, status} = await notificationServices.deleteNotificationById(notificationId);
-            
-            response.status(statusCode).send(status);
-        } catch (error) {
-            throw ApiError.serverError("Notification Error: " + error.message);
-        }
-    }
+			response.status(statusCode).send(status);
+		} catch (error) {
+			throw ApiError.serverError("Notification Error: " + error.message);
+		}
+	}
 }
 
 exports.NotificationController = NotificationController;
