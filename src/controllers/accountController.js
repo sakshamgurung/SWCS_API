@@ -1,5 +1,6 @@
 const { AccountServices } = require("../service/accountServices");
 const ApiError = require("../error/ApiError");
+const _ = require("lodash");
 
 class AccountController {
 	async signUp(request, response, next) {
@@ -11,7 +12,7 @@ class AccountController {
 			const result = await accountServices.signUp(role, signUpData);
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Account Error:" + error.message);
+			throw ApiError.serverError("Account: signup Error:" + error.message);
 		}
 	}
 
@@ -25,7 +26,7 @@ class AccountController {
 			const accountServices = new AccountServices();
 			const loginResults = await accountServices.login(role, loginData);
 
-			if (loginResults.length > 1) {
+			if (!_.isEmpty(loginResults)) {
 				result = { loginStatus: "success", token: loginResults };
 				response.json(result);
 			} else {
@@ -33,21 +34,36 @@ class AccountController {
 				response.json(result);
 			}
 		} catch (error) {
-			throw ApiError.serverError("Account Error: " + error.message);
+			throw ApiError.serverError("Account: login Error: " + error.message);
 		}
 	}
 
 	async createSuperAdmin(request, response, next) {
 		try {
 			const { SuperAdminData } = request.body;
-			const accountServices = new AccountServices();
 			let result = {};
+
+			const accountServices = new AccountServices();
 			const resp = await accountServices.SignUpSuperAdmin(SuperAdminData);
-			console.log(" Create super admin result : ", resp);
+
 			result = { status: "super admin create success" };
 			response.json(result);
 		} catch (err) {
 			throw ApiError.serverError("Super Admin Error : " + err.message);
+		}
+	}
+
+	async logout(request, response, next) {
+		try {
+			const { logoutData } = request.body;
+			const { role } = request.params;
+
+			const accountServices = new AccountServices();
+			const result = await accountServices.logout(role, logoutData);
+
+			response.json(result);
+		} catch (error) {
+			throw ApiError.serverError("Account: logout Error: " + error.message);
 		}
 	}
 }
