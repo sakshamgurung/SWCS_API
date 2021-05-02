@@ -39,6 +39,7 @@ connectDB();
 
 app.use(express.json());
 app.use("/assets", express.static(path.join(config.pwd, "assets")));
+console.log("path", path.join(config.pwd, "assets"));
 app.use(express.urlencoded({ extended: false }));
 
 // app.use((req, res, next) => {
