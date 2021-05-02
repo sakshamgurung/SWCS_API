@@ -138,7 +138,7 @@ class CompanyServices {
 				const updateProfileImage = await CompanyDetail.updateOne({ companyId: id }, { companyImage: "assets/images/" + img.filename });
 				const updatedImageData = await CompanyDetail.find({ companyId: id });
 				console.log(" updated profile image : ", updatedImageData);
-				if (updateProfileImage.length != 0 && prevImage.length != 0) {
+				if (updateProfileImage.length != 0 && prevImage && prevImage.length != 0) {
 					await fs.unlink(prevImage, (err) => {
 						if (err) throw ApiError.badRequest("Old profile iamge is not cleared!!!" + err.maessage);
 						console.log("old image remove success : ", err);
