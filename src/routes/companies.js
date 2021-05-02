@@ -11,7 +11,7 @@ const fileStorage = multer.diskStorage({
 		cb(null, "assets/images/");
 	},
 	filename: (req, file, cb) => {
-		cb(null, new Date().toString() + "-company-image-" + file.originalname);
+		cb(null, "companyimage" + file.originalname);
 	}
 });
 
