@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const ApiError = require("../error/ApiError");
-
+const fs = require("fs");
 const { checkTransactionResults, checkForWriteErrors } = require("../utilities/errorUtil");
 
 const CompanyLogin = require("../models/companies/companyLogin");
@@ -124,6 +124,31 @@ class CompanyServices {
 			throw ApiError.badRequest("companyInfoType not found!!!");
 		}
 		return checkForWriteErrors(this.result, "status", "Company update failed");
+	}
+
+	async uploadCompanyProfileImage(img, id, imgtype) {
+		if (imgtype === "profileimage") {
+			const cmpusrdetails = await CompanyDetail.find({ companyId: id });
+			if (cmpusrdetails.length <= 0) {
+				throw ApiError.badRequest("No company exist!!!");
+			} else {
+				//  remove prev image of this name
+				const prevImage = cmpusrdetails[0].companyImage;
+				console.log(" Prev Company image : ", prevImage);
+				const updateProfileImage = await CompanyDetail.updateOne({ companyId: id }, { companyImage: "assets/images/" + img.filename });
+				const updatedImageData = await CompanyDetail.find({ companyId: id });
+				console.log(" updated profile image : ", updatedImageData);
+				if (updateProfileImage.length != 0 && prevImage.length != 0) {
+					await fs.unlink(prevImage, (err) => {
+						if (err) throw ApiError.badRequest("Old profile iamge is not cleared!!!" + err.maessage);
+						console.log("old image remove success : ", err);
+					});
+					this.result = updatedImageData;
+				}
+			}
+		}
+
+		return this.result;
 	}
 
 	async deleteCompanyById(id, updateData) {

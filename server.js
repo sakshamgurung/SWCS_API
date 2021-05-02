@@ -4,7 +4,7 @@ const connectDB = require("./src/loaders/mongoose");
 const apiErrorHandler = require("./src/error/apiErrorHandler");
 const cors = require("cors");
 const wasteCatalogsUrl = require("./src/routes/wasteCatalogs");
-
+const path = require("path");
 const accountUrl = require("./src/routes/account");
 const notificationsUrl = require("./src/routes/notifications");
 
@@ -32,6 +32,7 @@ process.on("uncaughtException", (err) => {
 
 const app = express();
 connectDB();
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

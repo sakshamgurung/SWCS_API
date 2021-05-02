@@ -62,20 +62,20 @@ class AccountServices {
 
 			// logs
 			const totalVehicle = await Vehicle.find({
-				companyId: signUpData.companyId,
+				companyId: signUpData.companyId
 			}).count();
 			const totalStaff = await StaffLogin.find({
-				companyId: signUpData.companyId,
+				companyId: signUpData.companyId
 			}).count();
 			const subs = await Subscription.find({
-				companyId: signUpData.companyId,
+				companyId: signUpData.companyId
 			}).count();
 
 			this.graph = new GraphData({
 				companyId: signUpData.companyId,
 				subscribers: subs,
 				staff: totalStaff,
-				vehicle: totalVehicle,
+				vehicle: totalVehicle
 			});
 
 			const logResult = await this.graph.save();
@@ -116,11 +116,7 @@ class AccountServices {
 							user: currentCompanyUser[0]._id,
 							email: currentCompanyUser[0].email,
 							firstTimeLogin: currentCompanyUser[0].firstTimeLogin,
-<<<<<<< HEAD
 							isCompanyAccepted: currentCompanyUser[0].isCompanyAccepted
-=======
-							isCompanyAccepted: currentCompanyUser[0].isCompanyAccepted,
->>>>>>> main
 						},
 						config.jwtSecret
 					);
@@ -149,7 +145,7 @@ class AccountServices {
 					const authToken = await jwtToken.sign(
 						{
 							user: isAdminValid[0]._id,
-							email: isAdminValid[0].email,
+							email: isAdminValid[0].email
 						},
 						config.jwtSecret
 					);
@@ -181,7 +177,7 @@ class AccountServices {
 							user: currentCustomerUser[0]._id,
 							email: currentCustomerUser[0].email,
 							firstTimeLogin: currentCustomerUser[0].firstTimeLogin,
-							createdDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+							createdDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]")
 						},
 						config.jwtSecret
 					);
@@ -190,7 +186,7 @@ class AccountServices {
 						{
 							user: currentCustomerUser[0]._id,
 							email: currentCustomerUser[0].email,
-							refreshTokenCreatedDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+							refreshTokenCreatedDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]")
 						},
 						config.jwtSecret
 					);
