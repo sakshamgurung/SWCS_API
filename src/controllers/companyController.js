@@ -78,7 +78,6 @@ class CompanyController {
 
 			const companyServices = new CompanyServices();
 			const result = await companyServices.getGraphData(companyId);
-
 			response.json(result);
 		} catch (error) {
 			throw ApiError.serverError("Graph Error: " + error.message);
