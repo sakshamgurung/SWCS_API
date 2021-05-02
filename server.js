@@ -7,7 +7,7 @@ const wasteCatalogsUrl = require("./src/routes/wasteCatalogs");
 const path = require("path");
 const accountUrl = require("./src/routes/account");
 const notificationsUrl = require("./src/routes/notifications");
-
+const bosyParser = require("body-parser");
 const companiesUrl = require("./src/routes/companies");
 const staffUrl = require("./src/routes/staff");
 const vehiclesUrl = require("./src/routes/vehicles");
@@ -32,7 +32,10 @@ process.on("uncaughtException", (err) => {
 
 const app = express();
 connectDB();
+
+app.use(bodyParser.json());
 app.use("/assets", express.static(path.join(__dirname, "assets")));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
