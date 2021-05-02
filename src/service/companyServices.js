@@ -113,11 +113,6 @@ class CompanyServices {
 		if (companyInfoType == "company") {
 			this.result = await CompanyLogin.findById(id);
 		} else if (companyInfoType == "company-detail") {
-<<<<<<< HEAD
-			this.result = await CompanyDetail.find({ companyId: id }).populate("companyId", "email mobileNo");
-		} else if (companyInfoType == "company-service-detail") {
-			this.result = await CompanyServiceDetail.find({ companyId: id }).populate("companyId", "email mobileNo");
-=======
 			this.result = await CompanyDetail.find({ companyId: id }).populate(
 				"companyId",
 				"email mobileNo"
@@ -126,7 +121,6 @@ class CompanyServices {
 			this.result = await CompanyServiceDetail.find({
 				companyId: id,
 			}).populate("companyId", "email mobileNo");
->>>>>>> main
 		} else {
 			throw ApiError.badRequest("companyInfoType not found!!!");
 		}
