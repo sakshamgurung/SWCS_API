@@ -116,11 +116,7 @@ class AccountServices {
 							user: currentCompanyUser[0]._id,
 							email: currentCompanyUser[0].email,
 							firstTimeLogin: currentCompanyUser[0].firstTimeLogin,
-<<<<<<< HEAD
-							isCompanyAccepted: currentCompanyUser[0].isCompanyAccepted
-=======
 							isCompanyAccepted: currentCompanyUser[0].isCompanyAccepted,
->>>>>>> main
 						},
 						config.jwtSecret
 					);
