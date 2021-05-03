@@ -22,7 +22,7 @@ const schema = new Schema(
 			firstName: String,
 			lastName: String,
 		},
-		createdData: {
+		joinedDate: {
 			type: String,
 		},
 		postTitle: {
