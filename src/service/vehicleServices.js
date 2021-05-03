@@ -16,8 +16,9 @@ class VehicleServices {
 	}
 
 	async createNewVehicle(vehicleData) {
+		this.result = {};
 		this.vehicle = new Vehicle(vehicleData);
-		this.result = await this.vehicle.save();
+		this.result.vehicle = await this.vehicle.save();
 
 		// logs
 		const totalVehicle = await Vehicle.find({ companyId: vehicleData.companyId }).count();
@@ -26,8 +27,7 @@ class VehicleServices {
 		console.log(" Staff : Vehicle : Subs : From sub : ", totalStaff, totalVehicle, subs);
 		this.graph = new GraphData({ companyId: vehicleData.companyId, subscribers: subs, staff: totalStaff, vehicle: totalVehicle });
 
-		const logResult = await this.graph.save();
-		this.result = await { ...this.result, logResult };
+		this.result.logResult = await this.graph.save();
 
 		return this.result;
 	}

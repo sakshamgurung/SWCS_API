@@ -1,4 +1,3 @@
-const { isObject } = require("lodash");
 const _ = require("lodash");
 
 function geoObjectClientToServer(body) {

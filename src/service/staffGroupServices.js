@@ -65,20 +65,21 @@ class StaffGroupServices {
 		const session = await mongoose.startSession();
 		try {
 			this.transactionResults = await session.withTransaction(async () => {
-				const prevStaffGroupData = await StaffGroup.findById(id, {}, { session });
-				const { staffId } = prevStaffGroupData[0];
+				const prevStaffGroupData = await StaffGroup.findById(id, { staffId: 1 }, { session });
+				const { staffId } = prevStaffGroupData;
 				const deletedGroupMember = _.difference(staffId, updateData.staffId);
 				const addedGroupMember = _.difference(updateData.staffId, staffId);
 
 				if (deletedGroupMember.length > 0) {
 					for (let gm of deletedGroupMember) {
-						this.result = await StaffDetail.findByIdAndUpdate(gm, { staffGroupId: "" }, { session });
+						this.result = await StaffDetail.findOneAndUpdate({ staffId: gm }, { staffGroupId: id }, { session });
 						checkForWriteErrors(this.result, "none", "Staff group update failed");
 					}
 				}
+
 				if (addedGroupMember.length > 0) {
 					for (let gm of addedGroupMember) {
-						this.result = await StaffDetail.findByIdAndUpdate(gm, { staffGroupId: id }, { session });
+						this.result = await StaffDetail.findOneAndUpdate({ staffId: gm }, { staffGroupId: id }, { session });
 						checkForWriteErrors(this.result, "none", "Staff group update failed");
 					}
 				}
