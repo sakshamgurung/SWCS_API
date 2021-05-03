@@ -124,26 +124,26 @@ class AccountServices {
 						config.jwtSecret
 					);
 
-					const refreshToken = await jwtToken.sign(
-						{
-							user: currentCompanyUser[0]._id,
-							email: currentCompanyUser[0].email,
-							refreshTokenCreatedDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
-						},
-						config.jwtSecret
-					);
+					// const refreshToken = await jwtToken.sign(
+					// 	{
+					// 		user: currentCompanyUser[0]._id,
+					// 		email: currentCompanyUser[0].email,
+					// 		refreshTokenCreatedDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+					// 	},
+					// 	config.jwtSecret
+					// );
 
 					// save token to database
-					//const addTokenResult = await AddTokenV2(currentCompanyUser[0].toObject(), authToken, deviceId);
-					const addTokenResult = await AddTokenV2(role, currentCompanyUser[0].toObject(), authToken, refreshToken, deviceId);
-					checkForWriteErrors(addTokenResult, "none", "Company login failed");
+					const addTokenResult = await AddToken(currentCompanyUser[0].toObject(), authToken, deviceId);
+					//const addTokenResult = await AddTokenV2(role, currentCompanyUser[0].toObject(), authToken, refreshToken, deviceId);
+					//checkForWriteErrors(addTokenResult, "none", "Company login failed");
 
-					this.result = {};
+					//this.result = {};
 
 					if (addTokenResult.length !== 0) {
-						//this.result = authToken;
-						this.result.authToken = authToken;
-						this.result.refreshToken = refreshToken;
+						this.result = authToken;
+						// this.result.authToken = authToken;
+						// this.result.refreshToken = refreshToken;
 					} else {
 						throw ApiError.badRequest(" Token update failed ");
 					}
@@ -293,21 +293,21 @@ class AccountServices {
 			let tempCompany = await CompanyLogin.findById(roleId);
 
 			//identify mobile or web
-			// if (!_.isEmpty(deviceId)) {
-			// 	_.remove(tempCompany.token.mobileDevice, (e) => e == token);
-			// } else {
-			// 	_.remove(tempCompany.token.webDevice, (e) => e == token);
-			// }
 			if (!_.isEmpty(deviceId)) {
-				const tokenIndex = _.findIndex(tempCompany.token.mobileDevice, (e) => e.token == token);
-
-				tempCompany.token.mobileDevice[tokenIndex].token = "";
-				tempCompany.token.mobileDevice[tokenIndex].createdDate = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
-				tempCompany.token.mobileDevice[tokenIndex].refreshToken = "";
-				tempCompany.token.mobileDevice[tokenIndex].refreshTokenCreatedDate = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
+				_.remove(tempCompany.token.mobileDevice, (e) => e == token);
 			} else {
-				_.remove(tempCompany.token.webDevice, (e) => e.token == token);
+				_.remove(tempCompany.token.webDevice, (e) => e == token);
 			}
+			// if (!_.isEmpty(deviceId)) {
+			// 	const tokenIndex = _.findIndex(tempCompany.token.mobileDevice, (e) => e.token == token);
+
+			// 	tempCompany.token.mobileDevice[tokenIndex].token = "";
+			// 	tempCompany.token.mobileDevice[tokenIndex].createdDate = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
+			// 	tempCompany.token.mobileDevice[tokenIndex].refreshToken = "";
+			// 	tempCompany.token.mobileDevice[tokenIndex].refreshTokenCreatedDate = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
+			// } else {
+			// 	_.remove(tempCompany.token.webDevice, (e) => e.token == token);
+			// }
 
 			const companyLogoutResult = await CompanyLogin.findByIdAndUpdate(roleId, tempCompany);
 			return checkForWriteErrors(companyLogoutResult, "status", "Company logout failed");
