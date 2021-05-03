@@ -39,7 +39,7 @@ class WorkServices {
 				let result = await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: true }, { session });
 				checkForWriteErrors(result, "none", "New work failed");
 
-				result = await Vehicle.updateById(vehicleId, { isReserved: true }, session);
+				result = await Vehicle.findByIdAndUpdate(vehicleId, { isReserved: true }, session);
 				checkForWriteErrors(result, "none", "New work failed");
 
 				// creating new work
@@ -51,9 +51,11 @@ class WorkServices {
 				 * work ref in track
 				 * use for...of rather than forEach because forEach will throw error inside from different context
 				 * */
-				for (let tid of geoObjectTrackId) {
-					result = await Track.findByIdAndUpdate(tid, { workId }, { session });
-					checkForWriteErrors(result, "none", "New work failed");
+				if (!_.isEmpty(geoObjectTrackId)) {
+					for (let tid of geoObjectTrackId) {
+						result = await Track.findByIdAndUpdate(tid, { workId }, { session });
+						checkForWriteErrors(result, "none", "New work failed");
+					}
 				}
 			});
 
@@ -92,6 +94,7 @@ class WorkServices {
 				const { workStatus, geoObjectTrackId, staffGroupId, vehicleId } = prevWork;
 
 				if (workStatus == "unconfirmed") {
+					console.log("inside unconfirmed");
 					if (staffGroupId != updateData.staffGroupId) {
 						//reserving new staffgroup
 						const tempStaffGroup = await StaffGroup.findById(updateData.staffGroupId, { isReserved: 1 }, { session });
