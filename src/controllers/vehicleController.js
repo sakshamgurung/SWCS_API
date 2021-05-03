@@ -5,10 +5,10 @@ class VehicleController {
 	async createNewVehicle(request, response, next) {
 		try {
 			const { body } = request;
-
+			console.log("new vehicle body:", body);
 			const vehicleServices = new VehicleServices();
 			const result = await vehicleServices.createNewVehicle(body);
-
+			console.log("result to send as response from controller", result);
 			response.json(result);
 		} catch (error) {
 			throw ApiError.serverError("Vehicle Error: " + error.message);
