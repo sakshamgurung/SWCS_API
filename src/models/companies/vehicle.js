@@ -5,52 +5,52 @@ const schema = new Schema(
 	{
 		companyId: {
 			type: String,
-			ref:"CompanyLogin",
-			required: true
+			ref: "CompanyLogin",
+			required: true,
 		},
 		isReserved: {
 			type: Boolean,
-			required: true
+			required: true,
 		},
 		brandName: {
 			type: String,
-			required: true
+			//required: true
 		},
 		modalNo: {
-			type: String
+			type: String,
 		},
 		plateNo: {
 			type: String,
-			required: true
+			required: true,
 		},
 		vehicleType: {
 			type: String,
 			required: true,
-			enum: ["light", "medium", "heavy"]
+			enum: ["light", "medium", "heavy"],
 		},
 		vehicleColor: {
-			type: String
+			type: String,
 		},
 		fuelCapacity: {
-			type: Number
+			type: Number,
 		},
 		fuelCapacityUnit: {
 			type: String,
-			enum: ["litre"]
+			enum: ["litre"],
 		},
 		wasteCapacity: {
-			type: Number
+			type: Number,
 		},
 		wasteCapacityUnit: {
 			type: String,
-			enum: ["kg", "litre", "metric cube"]
+			enum: ["kg", "litre", "metric cube"],
 		},
 		description: {
-			type: String
-		}
+			type: String,
+		},
 	},
 	{
-		collection: "vehicles"
+		collection: "vehicles",
 	}
 );
 
