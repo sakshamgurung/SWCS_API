@@ -83,8 +83,7 @@ class StaffGroupServices {
 						checkForWriteErrors(this.result, "none", "Staff group update failed");
 					}
 				}
-				console.log("deleted gm", deletedGroupMember);
-				console.log("added gm", addedGroupMember);
+
 				this.result = await StaffGroup.findByIdAndUpdate(id, updateData, { session });
 				checkForWriteErrors(this.result, "none", "Staff group update failed");
 			});

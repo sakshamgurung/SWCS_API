@@ -45,7 +45,6 @@ class StaffServices {
 		if (staffInfoType == "staff") {
 			this.result = await StaffLogin.find({ $and: [{ companyId }, query] });
 		} else if (staffInfoType == "staff-detail") {
-			console.log("companyId", companyId);
 			this.result = await StaffDetail.find({ $and: [{ companyId }, query] })
 				.populate("companyId", "email mobileNo")
 				.populate("staffId", "email mobileNo");

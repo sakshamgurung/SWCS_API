@@ -284,6 +284,22 @@ class AccountServices {
 			return checkForWriteErrors(companyLogoutResult, "status", "Company logout failed");
 		} else if (role === "superadmin") {
 		} else if (role === "staff") {
+			let tempStaff = await StaffLogin.findById(roleId);
+
+			//identify mobile or web
+			if (!_.isEmpty(deviceId)) {
+				const tokenIndex = _.findIndex(tempStaff.token.mobileDevice, (e) => e.token == token);
+
+				tempStaff.token.mobileDevice[tokenIndex].token = "";
+				tempStaff.token.mobileDevice[tokenIndex].createdDate = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
+				tempStaff.token.mobileDevice[tokenIndex].refreshToken = "";
+				tempStaff.token.mobileDevice[tokenIndex].refreshTokenCreatedDate = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
+			} else {
+				_.remove(tempStaff.token.webDevice, (e) => e.token == token);
+			}
+
+			const staffLogoutResult = await StaffLogin.findByIdAndUpdate(roleId, tempStaff);
+			return checkForWriteErrors(staffLogoutResult, "status", "Company logout failed");
 		} else if (role === "customer") {
 			let tempCustomer = await CustomerLogin.findById(roleId);
 
