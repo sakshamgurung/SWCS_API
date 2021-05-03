@@ -16,21 +16,18 @@ class VehicleServices {
 	}
 
 	async createNewVehicle(vehicleData) {
-		console.log("vehicleData inside service", vehicleData);
 		this.result = {};
 		this.vehicle = new Vehicle(vehicleData);
 		this.result.vehicle = await this.vehicle.save();
-		console.log("new vehicleData", this.result.vehicle);
 
 		// logs
 		const totalVehicle = await Vehicle.find({ companyId: vehicleData.companyId }).count();
 		const totalStaff = await staff.find({ companyId: vehicleData.companyId }).count();
 		const subs = await Subscription.find({ companyId: vehicleData.companyId }).count();
-		console.log(" Staff : Vehicle : Subs : From sub : ", totalStaff, totalVehicle, subs);
+
 		this.graph = new GraphData({ companyId: vehicleData.companyId, subscribers: subs, staff: totalStaff, vehicle: totalVehicle });
-		console.log("before log save in vehicle service");
+
 		this.result.logResult = await this.graph.save();
-		console.log("after log save in vehicle service", this.result.logResult);
 
 		return this.result;
 	}
