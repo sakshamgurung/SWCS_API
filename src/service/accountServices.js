@@ -167,13 +167,53 @@ class AccountServices {
 
 			return this.result;
 		} else if (role === "staff") {
+			const currentStaffUser = await StaffLogin.find({ email });
+			if (!_.isEmpty(currentStaffUser)) {
+				const isPasswordCorrect = await bcrypt.compare(password, currentStaffUser[0].password);
+
+				if (isPasswordCorrect) {
+					const authToken = await jwtToken.sign(
+						{
+							user: currentStaffUser[0]._id,
+							email: currentStaffUser[0].email,
+							createdDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+						},
+						config.jwtSecret
+					);
+
+					const refreshToken = await jwtToken.sign(
+						{
+							user: currentStaffUser[0]._id,
+							email: currentStaffUser[0].email,
+							refreshTokenCreatedDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+						},
+						config.jwtSecret
+					);
+
+					// save token to database
+					const addTokenResult = await AddTokenV2(role, currentStaffUser[0].toObject(), authToken, refreshToken, deviceId);
+					this.result = {};
+					checkForWriteErrors(addTokenResult, "none", "Customer login failed");
+
+					if (addTokenResult.length !== 0) {
+						this.result.authToken = authToken;
+						this.result.refreshToken = refreshToken;
+					} else {
+						throw ApiError.badRequest(" Token update failed ");
+					}
+				} else {
+					throw ApiError.badRequest(" Password does not match ");
+				}
+			} else {
+				throw ApiError.badRequest(" Email not found ");
+			}
+			return this.result;
 		} else if (role === "customer") {
 			const currentCustomerUser = await CustomerLogin.find({ email });
 			if (!_.isEmpty(currentCustomerUser)) {
 				const isPasswordCorrect = await bcrypt.compare(password, currentCustomerUser[0].password);
 
 				if (isPasswordCorrect) {
-					// create and return token
 					const authToken = await jwtToken.sign(
 						{
 							user: currentCustomerUser[0]._id,

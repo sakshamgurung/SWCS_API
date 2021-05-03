@@ -1,4 +1,5 @@
 const CompanyLogin = require("../models/companies/companyLogin");
+const StaffLogin = require("../models/staff/staffLogin");
 const CustomerLogin = require("../models/customers/customerLogin");
 const _ = require("lodash");
 const jwt = require("jsonwebtoken");
@@ -110,6 +111,8 @@ async function AddTokenV2(userType, userData, token, refreshToken, mobileDeviceI
 
 	if (userType == "customer") {
 		return CustomerLogin.findOneAndUpdate({ _id: userData._id }, userData);
+	} else if (userType == "staff") {
+		return StaffLogin.findOneAndUpdate({ _id: userData._id }, userData);
 	}
 }
 

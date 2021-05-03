@@ -18,24 +18,29 @@ const schema = new Schema(
 			type: String,
 			required: true,
 		},
-		uuid: [String],
+		token: {
+			mobileDevice: [
+				{
+					uuid: String,
+					token: String,
+					createdDate: Schema.Types.Date,
+					refreshToken: String,
+					refreshTokenCreatedDate: Schema.Types.Date,
+				},
+			],
+			webDevice: [
+				{
+					token: String,
+					createdDate: Schema.Types.Date,
+				},
+			],
+			//required:true
+		},
 		resetToken: {
 			type: String,
 		},
 		resetTokenTimeStamp: {
 			type: String,
-		},
-		token: {
-			type: String,
-			//required:true
-		},
-		refreshToken: {
-			type: String,
-			//required:true,
-		},
-		timeStamp: {
-			type: Schema.Types.Date,
-			//required:true,
 		},
 	},
 	{
