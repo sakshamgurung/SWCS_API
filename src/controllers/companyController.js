@@ -79,7 +79,7 @@ class CompanyController {
 			console.log(" ID : Type : ImageFile : ", id, " +++ ", imagetype, " +++ ", ImageFile.originalname);
 			const companyService = new CompanyServices();
 			const result = await companyService.uploadCompanyProfileImage(ImageFile, id, imagetype);
-
+			console.log(" Image uppp result : ", result);
 			response.json(result);
 		} catch (error) {
 			console.log("Image upload error : ", error);
