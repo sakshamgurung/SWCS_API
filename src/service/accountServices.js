@@ -45,6 +45,7 @@ class AccountServices {
 			this.result = await this.companyLogin.save();
 		} else if (role == "staff") {
 			//staff sign up
+			this.result = {};
 			if (!updatedData.hasOwnProperty("companyId")) {
 				throw ApiError.badRequest("Company id is needed for staff sign up");
 			}
@@ -58,28 +59,27 @@ class AccountServices {
 			}
 
 			this.staffLogin = new StaffLogin(updatedData);
-			this.result = await this.staffLogin.save();
+			this.result.staffLogin = await this.staffLogin.save();
 
 			// logs
 			const totalVehicle = await Vehicle.find({
-				companyId: signUpData.companyId
+				companyId: signUpData.companyId,
 			}).count();
 			const totalStaff = await StaffLogin.find({
-				companyId: signUpData.companyId
+				companyId: signUpData.companyId,
 			}).count();
 			const subs = await Subscription.find({
-				companyId: signUpData.companyId
+				companyId: signUpData.companyId,
 			}).count();
 
 			this.graph = new GraphData({
 				companyId: signUpData.companyId,
 				subscribers: subs,
 				staff: totalStaff,
-				vehicle: totalVehicle
+				vehicle: totalVehicle,
 			});
 
-			const logResult = await this.graph.save();
-			this.result = await { ...this.result, logResult };
+			this.result.logResult = await this.graph.save();
 		} else if (role == "customer") {
 			//Customer sign up
 			const tempCustomerLogin = await CustomerLogin.find({ email }, { email: 1 });
@@ -116,7 +116,7 @@ class AccountServices {
 							user: currentCompanyUser[0]._id,
 							email: currentCompanyUser[0].email,
 							firstTimeLogin: currentCompanyUser[0].firstTimeLogin,
-							isCompanyAccepted: currentCompanyUser[0].isCompanyAccepted
+							isCompanyAccepted: currentCompanyUser[0].isCompanyAccepted,
 						},
 						config.jwtSecret
 					);
@@ -145,7 +145,7 @@ class AccountServices {
 					const authToken = await jwtToken.sign(
 						{
 							user: isAdminValid[0]._id,
-							email: isAdminValid[0].email
+							email: isAdminValid[0].email,
 						},
 						config.jwtSecret
 					);
@@ -177,7 +177,7 @@ class AccountServices {
 							user: currentCustomerUser[0]._id,
 							email: currentCustomerUser[0].email,
 							firstTimeLogin: currentCustomerUser[0].firstTimeLogin,
-							createdDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]")
+							createdDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
 						},
 						config.jwtSecret
 					);
@@ -186,7 +186,7 @@ class AccountServices {
 						{
 							user: currentCustomerUser[0]._id,
 							email: currentCustomerUser[0].email,
-							refreshTokenCreatedDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]")
+							refreshTokenCreatedDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
 						},
 						config.jwtSecret
 					);
