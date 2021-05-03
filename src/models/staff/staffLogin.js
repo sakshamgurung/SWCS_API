@@ -19,9 +19,6 @@ const schema = new Schema(
 			required: true,
 		},
 		uuid: [String],
-		firstTimeLogin: {
-			type: Boolean,
-		},
 		resetToken: {
 			type: String,
 		},
@@ -49,16 +46,9 @@ const schema = new Schema(
 class HelperClass {
 	static findByUUID(uuidArray, query, projection, session) {
 		if (session == undefined) {
-			return this.find(
-				{ $and: [{ uuid: { $in: uuidArray } }, query] },
-				projection
-			);
+			return this.find({ $and: [{ uuid: { $in: uuidArray } }, query] }, projection);
 		} else {
-			return this.find(
-				{ $and: [{ uuid: { $in: uuidArray } }, query] },
-				projection,
-				{ session }
-			);
+			return this.find({ $and: [{ uuid: { $in: uuidArray } }, query] }, projection, { session });
 		}
 	}
 
@@ -66,21 +56,14 @@ class HelperClass {
 		if (session == undefined) {
 			switch (ref) {
 				case "companyId":
-					return this.find(
-						{ $and: [{ companyId: id }, query] },
-						projection
-					);
+					return this.find({ $and: [{ companyId: id }, query] }, projection);
 				default:
 					throw ApiError.badRequest("ref not defined");
 			}
 		} else {
 			switch (ref) {
 				case "companyId":
-					return this.find(
-						{ $and: [{ companyId: id }, query] },
-						projection,
-						{ session }
-					);
+					return this.find({ $and: [{ companyId: id }, query] }, projection, { session });
 				default:
 					throw ApiError.badRequest("ref not defined");
 			}

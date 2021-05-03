@@ -27,7 +27,7 @@ class AccountServices {
 		const { email, mobileNo, password } = signUpData;
 		const encryptedPass = await bcrypt.hash(password, 12);
 
-		const updatedData = await { ...signUpData, password: encryptedPass, firstTimeLogin: true };
+		const updatedData = await { ...signUpData, password: encryptedPass };
 
 		if (role == "company") {
 			//company sign up
@@ -40,6 +40,7 @@ class AccountServices {
 				throw ApiError.badRequest("Mobile no already exist");
 			}
 
+			updatedData["firstTimeLogin"] = true;
 			updatedData["isCompanyAccepted"] = false;
 			this.companyLogin = new CompanyLogin(updatedData);
 			this.result = await this.companyLogin.save();
@@ -91,6 +92,7 @@ class AccountServices {
 				throw ApiError.badRequest("Mobile not already exist");
 			}
 
+			updatedData["firstTimeLogin"] = true;
 			this.customerLogin = new CustomerLogin(updatedData);
 			this.result = await this.customerLogin.save();
 		} else {
