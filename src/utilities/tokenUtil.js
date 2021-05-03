@@ -108,8 +108,9 @@ async function AddTokenV2(userType, userData, token, refreshToken, mobileDeviceI
 			userData.token.webDevice = [{ token, createdDate }];
 		}
 	}
-
-	if (userType == "customer") {
+	if (userType == "company") {
+		return CompanyLogin.findOneAndUpdate({ _id: userData._id }, userData);
+	} else if (userType == "customer") {
 		return CustomerLogin.findOneAndUpdate({ _id: userData._id }, userData);
 	} else if (userType == "staff") {
 		return StaffLogin.findOneAndUpdate({ _id: userData._id }, userData);

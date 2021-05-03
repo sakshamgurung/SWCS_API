@@ -119,15 +119,31 @@ class AccountServices {
 							email: currentCompanyUser[0].email,
 							firstTimeLogin: currentCompanyUser[0].firstTimeLogin,
 							isCompanyAccepted: currentCompanyUser[0].isCompanyAccepted,
+							createdDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+						},
+						config.jwtSecret
+					);
+
+					const refreshToken = await jwtToken.sign(
+						{
+							user: currentCompanyUser[0]._id,
+							email: currentCompanyUser[0].email,
+							refreshTokenCreatedDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
 						},
 						config.jwtSecret
 					);
 
 					// save token to database
-					const addTokenResult = await AddToken(currentCompanyUser[0].toObject(), authToken, deviceId);
+					//const addTokenResult = await AddTokenV2(currentCompanyUser[0].toObject(), authToken, deviceId);
+					const addTokenResult = await AddTokenV2(role, currentCompanyUser[0].toObject(), authToken, refreshToken, deviceId);
+					checkForWriteErrors(addTokenResult, "none", "Company login failed");
+
+					this.result = {};
 
 					if (addTokenResult.length !== 0) {
-						this.result = authToken;
+						//this.result = authToken;
+						this.result.authToken = authToken;
+						this.result.refreshToken = refreshToken;
 					} else {
 						throw ApiError.badRequest(" Token update failed ");
 					}
@@ -192,8 +208,9 @@ class AccountServices {
 
 					// save token to database
 					const addTokenResult = await AddTokenV2(role, currentStaffUser[0].toObject(), authToken, refreshToken, deviceId);
-					this.result = {};
 					checkForWriteErrors(addTokenResult, "none", "Customer login failed");
+
+					this.result = {};
 
 					if (addTokenResult.length !== 0) {
 						this.result.authToken = authToken;
@@ -210,6 +227,7 @@ class AccountServices {
 			return this.result;
 		} else if (role === "customer") {
 			const currentCustomerUser = await CustomerLogin.find({ email });
+
 			if (!_.isEmpty(currentCustomerUser)) {
 				const isPasswordCorrect = await bcrypt.compare(password, currentCustomerUser[0].password);
 
@@ -235,8 +253,9 @@ class AccountServices {
 
 					// save token to database
 					const addTokenResult = await AddTokenV2(role, currentCustomerUser[0].toObject(), authToken, refreshToken, deviceId);
-					this.result = {};
 					checkForWriteErrors(addTokenResult, "none", "Customer login failed");
+
+					this.result = {};
 
 					if (addTokenResult.length !== 0) {
 						this.result.authToken = authToken;
@@ -274,10 +293,20 @@ class AccountServices {
 			let tempCompany = await CompanyLogin.findById(roleId);
 
 			//identify mobile or web
+			// if (!_.isEmpty(deviceId)) {
+			// 	_.remove(tempCompany.token.mobileDevice, (e) => e == token);
+			// } else {
+			// 	_.remove(tempCompany.token.webDevice, (e) => e == token);
+			// }
 			if (!_.isEmpty(deviceId)) {
-				_.remove(tempCompany.token.mobileDevice, (e) => e == token);
+				const tokenIndex = _.findIndex(tempCompany.token.mobileDevice, (e) => e.token == token);
+
+				tempCompany.token.mobileDevice[tokenIndex].token = "";
+				tempCompany.token.mobileDevice[tokenIndex].createdDate = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
+				tempCompany.token.mobileDevice[tokenIndex].refreshToken = "";
+				tempCompany.token.mobileDevice[tokenIndex].refreshTokenCreatedDate = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
 			} else {
-				_.remove(tempCompany.token.webDevice, (e) => e == token);
+				_.remove(tempCompany.token.webDevice, (e) => e.token == token);
 			}
 
 			const companyLogoutResult = await CompanyLogin.findByIdAndUpdate(roleId, tempCompany);
