@@ -290,12 +290,15 @@ class AccountServices {
 		const { roleId, token, deviceId } = logoutData;
 
 		if (role === "company") {
+			console.log("logout data:", logoutData);
 			let tempCompany = await CompanyLogin.findById(roleId);
-
+			console.log("tempCompany", tempCompany);
 			//identify mobile or web
 			if (!_.isEmpty(deviceId)) {
+				console.log("inside device");
 				_.remove(tempCompany.token.mobileDevice, (e) => e == token);
 			} else {
+				console.log("inside web");
 				_.remove(tempCompany.token.webDevice, (e) => e == token);
 			}
 			// if (!_.isEmpty(deviceId)) {
