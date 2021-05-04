@@ -6,7 +6,7 @@ const schema = new Schema(
 		from: {
 			role: {
 				type: String,
-				enum: ["company", "staff", "customer"],
+				enum: ["company", "staff", "customer", "superadmin"],
 			},
 			id: {
 				type: String,
@@ -15,7 +15,7 @@ const schema = new Schema(
 		to: {
 			role: {
 				type: String,
-				enum: ["company", "staff", "customer"],
+				enum: ["company", "staff", "customer", "superadmin"],
 			},
 			id: {
 				type: String,
@@ -44,16 +44,9 @@ const schema = new Schema(
 class HelperClass {
 	static findAll(role, id, query, projection, session) {
 		if (session == undefined) {
-			return this.find(
-				{ $and: [{ "to.role": role }, { "to.id": id }, query] },
-				projection
-			);
+			return this.find({ $and: [{ "to.role": role }, { "to.id": id }, query] }, projection);
 		} else {
-			return this.find(
-				{ $and: [{ "to.role": role }, { "to.id": id }, query] },
-				projection,
-				{ session }
-			);
+			return this.find({ $and: [{ "to.role": role }, { "to.id": id }, query] }, projection, { session });
 		}
 	}
 
@@ -63,10 +56,7 @@ class HelperClass {
 				$and: [{ "to.role": role }, { "to.id": id }, query],
 			});
 		} else {
-			return this.deleteMany(
-				{ $and: [{ "to.role": role }, { "to.id": id }, query] },
-				{ session }
-			);
+			return this.deleteMany({ $and: [{ "to.role": role }, { "to.id": id }, query] }, { session });
 		}
 	}
 }
