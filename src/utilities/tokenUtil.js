@@ -29,7 +29,7 @@ async function AddTokenV2(userType, userData, token, refreshToken, mobileDeviceI
 			//mobile device
 			const isMobileExist = _.findIndex(userData.token.mobileDevice, (e) => e.uuid == mobileDeviceId);
 
-			if (!_.isEmpty(isMobileExist)) {
+			if (isMobileExist != -1) {
 				//mobile uuid already exist
 				userData.token.mobileDevice[isMobileExist].token = token;
 
