@@ -5,6 +5,8 @@ const { checkTransactionResults, checkForWriteErrors } = require("../utilities/e
 
 const Subscription = require("../models/common/subscription");
 const CustomerUsedGeoObject = require("../models/customers/customerUsedGeoObject");
+const CompanyDetail = require("../models/companies/companyDetail");
+const CustomerDetail = require("../models/customers/customerDetail");
 const WasteDump = require("../models/customers/wasteDump");
 const Notification = require("../models/common/notification");
 const Schedule = require("../models/customers/schedule");
@@ -38,13 +40,32 @@ class SubscriptionServices {
 	}
 
 	async getAllSubscriber(companyId, query) {
-		this.result = await Subscription.find({ $and: [{ companyId }, query] })
-		.populate("customerId", "-password");
+		const result = await Subscription.find({ $and: [{ companyId }, query] }).populate("customerId", "-password");
+		this.result = [];
+
+		for (let doc of result) {
+			this.result.push(doc.toObject());
+		}
+
+		for (let doc of this.result) {
+			const res = await CustomerDetail.find({ customerId: doc.customerId._id });
+			doc.customerDetail = res[0];
+		}
+
 		return this.result;
 	}
 	async getAllSubscription(customerId, query) {
-		this.result = await Subscription.find({ $and: [{ customerId }, query] })
-		.populate("companyId", "email mobileNo");
+		const result = await Subscription.find({ $and: [{ customerId }, query] }).populate("companyId", "email mobileNo");
+		this.result = [];
+
+		for (let doc of result) {
+			this.result.push(doc.toObject());
+		}
+
+		for (let doc of this.result) {
+			const res = await CompanyDetail.find({ companyId: doc.companyId._id }, "companyName companyType companyImage");
+			doc.companyDetail = res[0];
+		}
 		return this.result;
 	}
 

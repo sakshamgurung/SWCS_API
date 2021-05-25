@@ -20,23 +20,53 @@ class UtilActionServices {
 				const { type } = verificationData;
 
 				switch (type) {
-					case "usedCompanyServices": {
+					case "companyServicesAndStatus": {
 						const { customerId, companyId } = verificationData;
-						this.result.usedCompanyServices = {};
+						const tempResult = { subscription: "active", subscriptionLoc: "active", oneTime: "active" };
 
-						let result = await Subscription.find({ customerId, companyId }, {}, { session });
-						_.isEmpty(result) ? (this.result.usedCompanyServices.subscription = false) : (this.result.usedCompanyServices.subscription = true);
+						let result = await CustomerRequest.find({ customerId, companyId }, "requestType requestStatus", { session });
 
-						if (this.result.usedCompanyServices.subscription == false) {
-							result = await CustomerRequest.find({ customerId, companyId, requestType: "subscription" }, {}, { session });
-							_.isEmpty(result) ? (this.result.usedCompanyServices.subscription = false) : (this.result.usedCompanyServices.subscription = true);
+						for (let doc of result) {
+							const { requestType, requestStatus } = doc;
+							switch (requestType) {
+								case "subscription": {
+									if (requestStatus == "pending") {
+										tempResult.subscription = "pending";
+										tempResult.subscriptionLoc = "deactive";
+									}
+									break;
+								}
+								case "subscription with location": {
+									if (requestStatus == "pending") {
+										tempResult.subscription = "deactive";
+										tempResult.subscriptionLoc = "pending";
+									}
+									break;
+								}
+								case "one time": {
+									tempResult.oneTime = requestStatus;
+									break;
+								}
+								default: {
+									tempResult.subscription = "active";
+									tempResult.subscriptionLoc = "active";
+									tempResult.oneTime = "active";
+								}
+							}
+							//doc.requestStatus //"pending", "accepted", "assigned", "finished"
+							//doc.requestType //"subscription", "subscription with location", "one time"
 						}
 
-						result = await CustomerRequest.find({ customerId, companyId, requestType: "subscription with location" }, {}, { session });
-						_.isEmpty(result) ? (this.result.usedCompanyServices.subscriptionLoc = false) : (this.result.usedCompanyServices.subscriptionLoc = true);
+						if (tempResult.subscription == "active") {
+							const result2 = await Subscription.find({ customerId, companyId }, {}, { session });
+							if (!_.isEmpty(result2)) {
+								tempResult.subscription = "unsubscribe";
+								tempResult.subscriptionLoc = "deactive";
+							}
+						}
 
-						result = await CustomerRequest.find({ customerId, companyId, requestType: "one time" }, {}, { session });
-						_.isEmpty(result) ? (this.result.usedCompanyServices.oneTime = false) : (this.result.usedCompanyServices.oneTime = true);
+						this.result.companyServicesAndStatus = tempResult;
+						break;
 					}
 				}
 			});

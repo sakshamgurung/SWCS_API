@@ -72,17 +72,26 @@ class WorkServices {
 	}
 
 	async getAllWork(role, id, query) {
-		this.result = await Work.findAll(role, id, query).populate("staffGroupId", "groupName").populate("vehicleId", "plateNo").populate("geoObjectTrackId", "trackName");
+		this.result = await Work.findAll(role, id, query)
+			.populate("staffGroupId", "groupName")
+			.populate("vehicleId", "plateNo")
+			.populate("geoObjectTrackId", "trackName");
 		return this.result;
 	}
 
 	async getWorkById(id) {
-		this.result = await Work.findById(id).populate("staffGroupId", "groupName").populate("vehicleId", "plateNo").populate("geoObjectTrackId", "trackName");
+		this.result = await Work.findById(id)
+			.populate("staffGroupId", "groupName")
+			.populate("vehicleId", "plateNo")
+			.populate("geoObjectTrackId", "trackName");
 		return this.result;
 	}
 
 	async getWorkByRef(ref, id, query) {
-		this.result = await Work.findByRef(ref, id, query).populate("staffGroupId", "groupName").populate("vehicleId", "plateNo").populate("geoObjectTrackId", "trackName");
+		this.result = await Work.findByRef(ref, id, query)
+			.populate("staffGroupId", "groupName")
+			.populate("vehicleId", "plateNo")
+			.populate("geoObjectTrackId", "trackName");
 		return this.result;
 	}
 
@@ -93,7 +102,7 @@ class WorkServices {
 				const prevWork = await Work.findById(id, { workStatus: 1, geoObjectTrackId: 1, staffGroupId, vehicleId }, { session });
 				const { workStatus, geoObjectTrackId, staffGroupId, vehicleId } = prevWork;
 
-				if (workStatus == "unconfirmed") {
+				if (workStatus == "unconfirmed" && updateData.workStatus == "unconfirmed") {
 					console.log("inside unconfirmed");
 					if (staffGroupId != updateData.staffGroupId) {
 						//reserving new staffgroup
@@ -167,12 +176,15 @@ class WorkServices {
 					for (let t of trackId) {
 						const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, {}, session);
 						for (let cugo of tempCustomerUsedGeoObject) {
-							_.remove(cugo.usedTrack, (o) => {
-								return o.trackId == t._id;
-							});
-							const { customerId, usedTrack } = cugo;
-							this.result = await CustomerUsedGeoObject.updateByRef("customerId", customerId, { usedTrack }, session);
-							checkForWriteErrors(this.result, "none", "Work update failed");
+							_.remove(cugo.usedTrack, (o) => o.trackId == t._id);
+							if (_.isEmpty(cugo.usedTrack)) {
+								this.result = await CustomerUsedGeoObject.findByIdAndDelete(cugo._id, { session });
+								checkForWriteErrors(this.result, "none", "Work update failed");
+							} else {
+								const { customerId, usedTrack } = cugo;
+								this.result = await CustomerUsedGeoObject.updateByRef("customerId", customerId, { usedTrack }, session);
+								checkForWriteErrors(this.result, "none", "Work update failed");
+							}
 						}
 						this.result = await Track.findByIdAndUpdate(t._id, { workId: "" }, { session });
 						checkForWriteErrors(this.result, "none", "Work update failed");

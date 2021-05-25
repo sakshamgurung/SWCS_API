@@ -102,11 +102,13 @@ function customerRequestServerToClient(result) {
 function customerRequestArrayServerToClient(arrayResult) {
 	const fResult = [];
 	arrayResult.forEach((o) => {
+		o = o.toObject();
 		if (o.hasOwnProperty("requestCoordinate")) {
-			fResult.push(customerRequestServerToClient(o));
-		} else {
-			fResult.push(o.toObject());
+			const { identifier, coordinates } = o.requestCoordinate;
+			const { latitude, longitude } = coordinates;
+			o.requestCoordinate = { identifier, latitude, longitude };
 		}
+		fResult.push(o);
 	});
 	return fResult;
 }
