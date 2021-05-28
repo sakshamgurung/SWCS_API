@@ -2,11 +2,13 @@ const mongoose = require("mongoose");
 const ApiError = require("../error/ApiError");
 const _ = require("lodash");
 const { checkTransactionResults, checkForWriteErrors } = require("../utilities/errorUtil");
+const { calWasteCondition, calCurrentAmtInKg } = require("../utilities/wasteUtil");
 
 const Subscription = require("../models/common/subscription");
 const CustomerUsedGeoObject = require("../models/customers/customerUsedGeoObject");
 const CompanyDetail = require("../models/companies/companyDetail");
 const CustomerDetail = require("../models/customers/customerDetail");
+const StaffLogin = require("../models/staff/staffLogin");
 const WasteDump = require("../models/customers/wasteDump");
 const Notification = require("../models/common/notification");
 const Schedule = require("../models/customers/schedule");
@@ -69,7 +71,6 @@ class SubscriptionServices {
 		return this.result;
 	}
 
-	//delete the subscription and its information and references
 	async deleteSubscriptionById(id, updateData) {
 		const session = await mongoose.startSession();
 		try {
@@ -116,25 +117,71 @@ class SubscriptionServices {
 					}
 				}
 
-				//delete isCollected==false wasteDump
-				const tempWasteDump = await WasteDump.findByRef("customerId", customerId, {}, { companyId: 1, isCollected: 1 }, session);
-				const removeWasteDump = _.remove(tempWasteDump, (o) => o.companyId == companyId && o.isCollected == false);
+				//delete wasteDump
+				const removeWasteDump = await WasteDump.findByRef("customerId", customerId, { isCollected: false, companyId }, {}, session);
+				let trackToUpdate = [];
 				for (let wd of removeWasteDump) {
-					this.result = await WasteDump.findByIdAndDelete(wd._id, { session });
-					checkForWriteErrors(this.result, "none", "Subscription delete failed");
+					if (wd.geoObjectType == "track") {
+						trackToUpdate.push(wd.geoObjectId);
+					}
+					await WasteDump.findByIdAndDelete(wd._id, { session });
 				}
 
-				//delete notification from company
-				const tempNotification = await Notification.findAll("customer", customerId, {}, { from: 1 }, session);
-				const removeNotification = _.remove(tempNotification, (o) => o.from.role == "company" && o.from.id == companyId);
-				for (let n of removeNotification) {
-					this.result = await Notification.findByIdAndDelete(n._id, { session });
-					checkForWriteErrors(this.result, "none", "Subscription delete failed");
+				trackToUpdate = _.uniq(trackToUpdate);
+				for (let tid of trackToUpdate) {
+					let currentAmount = 0;
+					const tempWasteDump = await WasteDump.findByRef("geoObjectId", tid, { isCollected: false }, { dumpedWaste: 1 }, session);
+
+					for (let wd of tempWasteDump) {
+						for (let dw of wd.dumpedWaste) {
+							currentAmount = calCurrentAmtInKg(currentAmount, dw.amountUnit, dw.amount);
+						}
+					}
+
+					const tempTrack = await Track.findById(tid, { wasteLimit: 1 }, { session });
+					const wasteCondition = calWasteCondition(currentAmount, tempTrack.wasteLimit);
+					await Track.findByIdAndUpdate(tid, { wasteCondition }, { session });
 				}
+
+				//delete notification
+				await Notification.bulkWrite(
+					[
+						{
+							deleteOne: {
+								filter: {
+									$or: [
+										{ "from.role": "company", "from.id": companyId, "to.role": "customer", "to.id": customerId },
+										{
+											"from.role": "customer",
+											"from.id": customerId,
+											"to.role": "company",
+											"to.id": companyId,
+										},
+									],
+								},
+							},
+						},
+					],
+					{ session }
+				);
+
+				const tempStaffLogin = await StaffLogin.findByRef("companyId", companyId, {}, { _id: 1 }, session);
+				await Notification.bulkWrite(
+					tempStaffLogin.map((doc) => ({
+						deleteOne: {
+							filter: {
+								$or: [
+									{ "from.role": "staff", "from.id": doc._id, "to.role": "customer", "to.id": customerId },
+									{ "from.role": "customer", "from.id": customerId, "to.role": "staff", "to.id": doc._id },
+								],
+							},
+						},
+					})),
+					{ session }
+				);
 
 				//delete subscription
-				this.result = await Subscription.findByIdAndDelete(id, { session });
-				checkForWriteErrors(this.result, "none", "Subscription delete failed");
+				await Subscription.findByIdAndDelete(id, { session });
 			});
 			s;
 

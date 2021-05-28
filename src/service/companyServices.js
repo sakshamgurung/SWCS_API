@@ -44,7 +44,7 @@ class CompanyServices {
 
 				this.companyDetail = new CompanyDetail(companyDetail);
 				this.result.companyDetail = await this.companyDetail.save({
-					session
+					session,
 				});
 
 				this.companyServiceDetail = new CompanyServiceDetail(companyServiceDetail);
@@ -74,11 +74,11 @@ class CompanyServices {
 	async getAllCompany(companyInfoType, query) {
 		if (companyInfoType == "company-detail") {
 			this.result = await CompanyDetail.find({
-				$and: [{}, query]
+				$and: [{}, query],
 			}).populate("companyId", "email mobileNo");
 		} else if (companyInfoType == "company-service-detail") {
 			this.result = await CompanyServiceDetail.find({
-				$and: [{}, query]
+				$and: [{}, query],
 			}).populate("companyId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("companyInfoType not found!!!");
@@ -94,7 +94,7 @@ class CompanyServices {
 			this.result = await CompanyDetail.find({ companyId: id }).populate("companyId", "email mobileNo");
 		} else if (companyInfoType == "company-service-detail") {
 			this.result = await CompanyServiceDetail.find({
-				companyId: id
+				companyId: id,
 			}).populate("companyId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("companyInfoType not found!!!");
@@ -156,90 +156,110 @@ class CompanyServices {
 		try {
 			this.transactionResults = await session.withTransaction(async () => {
 				//deleting uncollected waste dump of company
-				const tempWasteDump = await WasteDump.findByRef("companyId", id, {}, { isCollected: 1 }, session);
+				const tempWasteDump = await WasteDump.findByRef("companyId", id, {}, {}, session);
 				const archiveWasteDump = _.remove(tempWasteDump, (o) => o.isCollected == true);
+				const opWD = tempWasteDump.map((doc) => ({
+					deleteOne: {
+						filter: { _id: doc._id },
+					},
+				}));
 
-				for (let wd of archiveWasteDump) {
-					this.result = await WasteDump.findByIdAndUpdate(wd._id, { customerId: "", companyId: "" }, { session });
-					checkForWriteErrors(this.result, "none", "Company delete failed");
-				}
-
-				for (let wd of tempWasteDump) {
-					this.result = await WasteDump.findByIdAndDelete(wd._id, { session });
-					checkForWriteErrors(this.result, "none", "Company delete failed");
-				}
+				const opAWD = archiveWasteDump.map((doc) => ({
+					updateOne: {
+						filter: { _id: doc._id },
+						update: { customerId: "", companyId: "" },
+					},
+				}));
+				const wasteDumpBulkOps = _.cloneDeep([...opWD, ...opAWD]);
+				await WasteDump.bulkWrite(wasteDumpBulkOps, { session });
 
 				//deleting notification
-				const tempSubscription = await Subscription.findAllSubscriber(id, { customerId: 1 }, session);
-				for (let s of tempSubscription) {
-					this.result = await Notification.deleteByRole("customer", s.customerId, {}, session);
-					checkForWriteErrors(this.result, "none", "Company delete failed");
-				}
+				await Subscription.bulkWrite(
+					[
+						{
+							deleteOne: {
+								filter: {
+									$or: [
+										{ "from.role": "company", "from.id": id },
+										{ "to.role": "company", "to.id": id },
+									],
+								},
+							},
+						},
+					],
+					{ session }
+				);
 
 				const tempStaffLogin = await StaffLogin.findByRef("companyId", id, {}, { _id: 1 }, session);
-				for (let sl of tempStaffLogin) {
-					this.result = await Notification.deleteByRole("staff", sl._id, {}, session);
-					checkForWriteErrors(this.result, "none", "Company delete failed");
-				}
-
-				this.result = await Notification.deleteByRole("company", id, {}, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
+				await Notification.bulkWrite(
+					tempStaffLogin.map((doc) => ({
+						deleteOne: {
+							filter: {
+								$or: [
+									{ "from.role": "staff", "from.id": doc._id },
+									{ "to.role": "staff", "to.id": doc._id },
+								],
+							},
+						},
+					})),
+					{ session }
+				);
 
 				//deleting schedule
 				const tempWork = await Work.findByRef("companyId", id, {}, { _id: 1 }, session);
-				for (let w of tempWork) {
-					this.result = await Schedule.deleteByRef("workId", w._id, session);
-					checkForWriteErrors(this.result, "none", "Company delete failed");
-				}
+				await Schedule.bulkWrite(
+					tempWork.map((doc) => ({
+						deleteOne: {
+							filter: {
+								$or: [{ workId: doc._id }],
+							},
+						},
+					})),
+					{ session }
+				);
 
 				const tempCustomerRequest = await CustomerRequest.findByRef("companyId", id, {}, { _id }, session);
-				for (let cr of tempCustomerRequest) {
-					this.result = await Schedule.deleteByRef("customerRequestId", cr._id, session);
-					checkForWriteErrors(this.result, "none", "Company delete failed");
-				}
+				await Schedule.bulkWrite(
+					tempCustomerRequest.map((doc) => ({
+						deleteOne: {
+							filter: {
+								$or: [{ customerRequestId: doc._id }],
+							},
+						},
+					})),
+					{ session }
+				);
 
-				//updating customer used geoObject
+				//updating or deleting customer used geoObject
 				const tempTrack = await Track.findByRef("companyId", id, {}, { _id: 1 }, session);
 				for (let t of tempTrack) {
 					const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, {}, session);
 					for (let cugo of tempCustomerUsedGeoObject) {
 						_.remove(cugo.usedTrack, (o) => o.trackId == t._id);
-						this.result = await CustomerUsedGeoObject.findByIdAndUpdate(cugo._id, { usedTrack }, { session });
-						checkForWriteErrors(this.result, "none", "Company delete failed");
+						if (cugo.usedTrack.length == 0) {
+							await CustomerUsedGeoObject.findByIdAndDelete(cugo._id, { session });
+						} else {
+							await CustomerUsedGeoObject.findByIdAndUpdate(cugo._id, { usedTrack: cugo.usedTrack }, { session });
+						}
 					}
 				}
 
-				this.result = await Subscription.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
-				this.result = await CustomerRequest.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
-				this.result = await Work.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
+				await Subscription.deleteByRef("companyId", id, session);
+				await CustomerRequest.deleteByRef("companyId", id, session);
+				await Work.deleteByRef("companyId", id, session);
 
-				this.result = await Vehicle.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
-				this.result = await Track.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
-				this.result = await Zone.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
-				this.result = await WasteList.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
+				await Vehicle.deleteByRef("companyId", id, session);
+				await Track.deleteByRef("companyId", id, session);
+				await Zone.deleteByRef("companyId", id, session);
+				await WasteList.deleteByRef("companyId", id, session);
 
-				this.result = await StaffLogin.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
-				this.result = await StaffDetail.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
-				this.result = await StaffGroup.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
+				await StaffLogin.deleteByRef("companyId", id, session);
+				await StaffDetail.deleteByRef("companyId", id, session);
+				await StaffGroup.deleteByRef("companyId", id, session);
 
-				this.result = await CompanyDetail.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
-				this.result = await CompanyServiceDetail.deleteByRef("companyId", id, session);
-				checkForWriteErrors(this.result, "none", "Company delete failed");
-				this.result = await CompanyLogin.findByIdAndDelete(id, {
-					session
-				});
-				checkForWriteErrors(this.result, "none", "Company delete failed");
+				await CompanyDetail.deleteByRef("companyId", id, session);
+				await CompanyServiceDetail.deleteByRef("companyId", id, session);
+				await CompanyLogin.findByIdAndDelete(id, { session });
 			});
 
 			return checkTransactionResults(this.transactionResults, "status", "Company delete transaction failed");

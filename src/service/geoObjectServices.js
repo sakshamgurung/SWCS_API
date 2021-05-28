@@ -95,12 +95,7 @@ class GeoObjectServices {
 		try {
 			this.transactionResults = await session.withTransaction(async () => {
 				//removing non collected wasteDump
-				const tempWasteDump = await WasteDump.findByRef("geoObjectId", id, {}, { isCollected: 1 }, session);
-				_.remove(tempWasteDump, (o) => o.isCollected == true);
-				for (let wd of tempWasteDump) {
-					this.result = await WasteDump.findByIdAndDelete(wd._id, { session });
-					checkForWriteErrors(this.result, "none", "Geo object delete failed");
-				}
+				await WasteDump.deleteMany({ geoObjectId: id, isCollected: false }, { session });
 
 				if (geoObjectType == "track") {
 					//removing geoObject ref from work
