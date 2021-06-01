@@ -4,11 +4,13 @@ const ApiError = require("../error/ApiError");
 const { checkForWriteErrors } = require("../utilities/errorUtil");
 
 const WasteDump = require("../models/customers/wasteDump");
+const CompanyDetail = require("../models/companies/companyDetail");
 const Track = require("../models/companies/geoObjectTrack");
 const Zone = require("../models/companies/geoObjectZone");
 const CustomerUsedGeoObject = require("../models/customers/customerUsedGeoObject");
 
 const { calWasteCondition, calCurrentAmtInKg } = require("../utilities/wasteUtil");
+const { mongooseToPlainObjectArray } = require("../utilities/converter");
 
 class WasteDumpServices {
 	constructor() {
@@ -96,6 +98,7 @@ class WasteDumpServices {
 				model: "WasteCatalog",
 			},
 		});
+
 		return this.result;
 	}
 
@@ -108,6 +111,16 @@ class WasteDumpServices {
 				model: "WasteCatalog",
 			},
 		});
+
+		this.result = mongooseToPlainObjectArray(this.result);
+
+		for (let wd of this.result) {
+			if ((ref = "customerId")) {
+				const companyDetail = await CompanyDetail.find({ companyId: wd.companyId._id }, "companyName companyType companyImage");
+				this.result.companyDetail = companyDetail[0];
+			}
+		}
+
 		return this.result;
 	}
 

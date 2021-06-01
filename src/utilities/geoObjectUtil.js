@@ -91,10 +91,11 @@ function customerRequestClientToServer(body) {
 function customerRequestServerToClient(result) {
 	//result is a complex mongoose object so change it to simple object to modify
 	const fResult = result.toObject();
-
-	let { identifier, coordinates } = fResult.requestCoordinate;
-	let { latitude, longitude } = coordinates;
-	fResult.requestCoordinate = { identifier, latitude, longitude };
+	if (fResult.hasOwnProperty("requestCoordinate")) {
+		let { identifier, coordinates } = fResult.requestCoordinate;
+		let { latitude, longitude } = coordinates;
+		fResult.requestCoordinate = { identifier, latitude, longitude };
+	}
 
 	return fResult;
 }

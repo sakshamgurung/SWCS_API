@@ -3,6 +3,7 @@ const ApiError = require("../error/ApiError");
 const _ = require("lodash");
 const { checkTransactionResults, checkForWriteErrors } = require("../utilities/errorUtil");
 const { calWasteCondition, calCurrentAmtInKg } = require("../utilities/wasteUtil");
+const { mongooseToPlainObjectArray } = require("../utilities/converter");
 
 const Subscription = require("../models/common/subscription");
 const CustomerUsedGeoObject = require("../models/customers/customerUsedGeoObject");
@@ -43,11 +44,7 @@ class SubscriptionServices {
 
 	async getAllSubscriber(companyId, query) {
 		const result = await Subscription.find({ $and: [{ companyId }, query] }).populate("customerId", "-password");
-		this.result = [];
-
-		for (let doc of result) {
-			this.result.push(doc.toObject());
-		}
+		this.result = mongooseToPlainObjectArray(result);
 
 		for (let doc of this.result) {
 			const res = await CustomerDetail.find({ customerId: doc.customerId._id });
@@ -58,11 +55,7 @@ class SubscriptionServices {
 	}
 	async getAllSubscription(customerId, query) {
 		const result = await Subscription.find({ $and: [{ customerId }, query] }).populate("companyId", "email mobileNo");
-		this.result = [];
-
-		for (let doc of result) {
-			this.result.push(doc.toObject());
-		}
+		this.result = mongooseToPlainObjectArray(result);
 
 		for (let doc of this.result) {
 			const res = await CompanyDetail.find({ companyId: doc.companyId._id }, "companyName companyType companyImage");

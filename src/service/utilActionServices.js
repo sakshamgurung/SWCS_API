@@ -27,12 +27,13 @@ class UtilActionServices {
 						let result = await CustomerRequest.find({ customerId, companyId }, "requestType requestStatus", { session });
 
 						for (let doc of result) {
-							const { requestType, requestStatus } = doc;
+							const { requestType, requestStatus, _id } = doc;
 							switch (requestType) {
 								case "subscription": {
 									if (requestStatus == "pending") {
 										tempResult.subscription = "pending";
 										tempResult.subscriptionLoc = "deactive";
+										tempResult.subscriptionRequestId = _id;
 									}
 									break;
 								}
@@ -40,11 +41,13 @@ class UtilActionServices {
 									if (requestStatus == "pending") {
 										tempResult.subscription = "deactive";
 										tempResult.subscriptionLoc = "pending";
+										tempResult.subscriptionLocRequestId = _id;
 									}
 									break;
 								}
 								case "one time": {
 									tempResult.oneTime = requestStatus;
+									tempResult.oneTimeRequestId = _id;
 									break;
 								}
 								default: {

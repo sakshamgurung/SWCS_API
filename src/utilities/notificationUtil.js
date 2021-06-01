@@ -32,7 +32,7 @@ function sendNotifications(message) {
 		});
 }
 
-async function storeNotification(from, toRole, targetCollection, message) {
+async function storeNotification(from, toRole, targetCollection, message, session) {
 	let notificationData = {
 		from,
 		targetCollection,
@@ -49,7 +49,11 @@ async function storeNotification(from, toRole, targetCollection, message) {
 		toIds = await CustomerLogin.findByUUID(message.tokens, {}, { _id: 1 });
 	}
 
-	result = await Notification.bulkWrite(
+	if (_.isEmpty(notificationData.targetCollection)) {
+		delete notificationData.targetCollection;
+	}
+
+	await Notification.bulkWrite(
 		toIds.map((toId) => ({
 			insertOne: {
 				document: {
@@ -60,42 +64,44 @@ async function storeNotification(from, toRole, targetCollection, message) {
 					},
 				},
 			},
-		}))
+		})),
+		{ session }
 	);
-
-	checkForWriteErrors(result, "none", "Customer logout failed");
 }
 
-async function notify(req, res, next) {
-	const {
+async function storeNotificationGivenIds(from, toRole, toIdArray, targetCollection, message, session) {
+	let notificationData = {
 		from,
-		toRole,
-		uuidArray,
 		targetCollection,
-		msg,
-		title,
-		data,
-	} = req.body;
-	sendToAll(from, toRole, uuidArray, targetCollection, msg, title, data, res);
+		sentDate: moment().format("YYYY-MM-DDTHH:mm:ss[Z]"),
+		message: _.pick(message, ["notification", "data"]),
+	};
+
+	if (_.isEmpty(notificationData.targetCollection)) {
+		delete notificationData.targetCollection;
+	}
+
+	await Notification.bulkWrite(
+		toIdArray.map((toId) => ({
+			insertOne: {
+				document: {
+					...notificationData,
+					to: {
+						role: toRole,
+						id: toId,
+					},
+				},
+			},
+		})),
+		{ session }
+	);
 }
 
-async function sendToAll(
-	from,
-	toRole,
-	uuidArray,
-	targetCollection,
-	msg,
-	title,
-	data,
-	response
-) {
-	/**
-	 * Creating message to send
-	 */
+async function sendToAll(from, toRole, toIdArray, uuidArray, targetCollection, title, body, data, session) {
 	const message = {
 		notification: {
-			title: title,
-			body: msg,
+			title,
+			body,
 		},
 		data,
 		android: {
@@ -106,6 +112,7 @@ async function sendToAll(
 		},
 	};
 
+	await storeNotificationGivenIds(from, toRole, toIdArray, targetCollection, message, session);
 	/**
 	 * Grouping receiver's id into group of 500 (max limit in fcm)
 	 */
@@ -117,17 +124,14 @@ async function sendToAll(
 			let end = (i + 1) * 500;
 			registrationTokens = uuidArray.slice(start, end);
 			message["tokens"] = registrationTokens;
-			await storeNotification(from, toRole, targetCollection, message);
 			sendNotifications(message);
 		}
 	} else {
 		registrationTokens = uuidArray;
 		message["tokens"] = registrationTokens;
-		await storeNotification(from, toRole, targetCollection, message);
 		sendNotifications(message);
 	}
-	response.sendStatus(200).status("Success");
 }
 
 exports.sendToAll = sendToAll;
-exports.notify = notify;
+exports.storeNotificationGivenIds = storeNotificationGivenIds;

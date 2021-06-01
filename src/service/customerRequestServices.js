@@ -170,20 +170,16 @@ class CustomerRequestServices {
 						//delete subscription
 						const tempSubscription = await Subscription.findAllSubscription(customerId, {}, session);
 						const deleteSubscription = _.remove(tempSubscription, (s) => s.companyId == companyId);
-						this.result = await Subscription.deleteById(deleteSubscription[0]._id, session);
-						checkForWriteErrors(this.result, "none", "Customer request delete error");
+						await Subscription.deleteById(deleteSubscription[0]._id, session);
 					}
 				} else if (requestStatus == "assigned") {
 					//delete schedule
-					this.result = await Schedule.deleteByRef("customerRequestId", id, session);
-					checkForWriteErrors(this.result, "none", "Customer request delete error");
+					await Schedule.deleteByRef("customerRequestId", id, session);
 					//free staffGroup
-					this.result = await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: false }, { session });
-					checkForWriteErrors(this.result, "none", "Customer request delete error");
+					await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: false }, { session });
 				}
 				//delete customerRequest
-				this.result = await CustomerRequest.findByIdAndDelete(id, { session });
-				checkForWriteErrors(this.result, "none", "Customer request delete error");
+				await CustomerRequest.findByIdAndDelete(id, { session });
 			});
 
 			return checkTransactionResults(this.transactionResults, "status", "Customer request delete transaction failed");

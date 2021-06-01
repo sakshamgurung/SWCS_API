@@ -37,6 +37,7 @@ yarn-error.log
 .env
 .env*
 react-native-fb-notifica-dba27-firebase-adminsdk-hnmky-ea39ce6f8e.json
+swcs-customer-firebase-adminsdk-cjq0n-b2b51ecdd0.json
 # BUCK
 buck-out/
 \.buckd/
