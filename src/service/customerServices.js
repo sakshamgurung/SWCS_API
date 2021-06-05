@@ -31,8 +31,7 @@ class CustomerServices {
 				this.customerDetail = new CustomerDetail(customerDetail);
 				this.result.customerDetail = await this.customerDetail.save({ session });
 
-				let result = await CustomerLogin.findByIdAndUpdate(customerId, { firstTimeLogin: false }, { session });
-				checkForWriteErrors(result, "none", "New company info failed");
+				await CustomerLogin.findByIdAndUpdate(customerId, { firstTimeLogin: false }, { session });
 			});
 
 			if (this.transactionResults) {
@@ -49,7 +48,7 @@ class CustomerServices {
 
 	async getAllCustomerInIdArray(customerInfoType, idArray, query) {
 		if (customerInfoType == "customer-detail") {
-			this.result = await CustomerDetail.findAllInIdArray(idArray, query).populate("customerId", "email mobileNo");
+			this.result = await CustomerDetail.findAllInIdArray(idArray, query, "-__v").populate("customerId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("customerInfoType not found!!!");
 		}
@@ -61,7 +60,7 @@ class CustomerServices {
 		if (customerInfoType == "customer") {
 			this.result = await CustomerLogin.findById(id);
 		} else if (customerInfoType == "customer-detail") {
-			this.result = await CustomerDetail.find({ customerId: id }).populate("customerId", "email mobileNo");
+			this.result = await CustomerDetail.find({ customerId: id }, "-__v").populate("customerId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("customerInfoType not found!!!");
 		}
@@ -70,7 +69,7 @@ class CustomerServices {
 
 	async getCustomerByRef(customerInfoType, ref, id, query) {
 		if (customerInfoType == "customer-detail") {
-			this.result = await CustomerDetail.findByRef(ref, id, query).populate("customerId", "email mobileNo");
+			this.result = await CustomerDetail.findByRef(ref, id, query, "-__v").populate("customerId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("customerInfoType not found!!!");
 		}

@@ -70,47 +70,34 @@ class SubscriptionServices {
 			this.transactionResults = await session.withTransaction(async () => {
 				const { customerId, companyId } = updateData;
 
-				const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("customerId", customerId, {}, {}, session);
+				const cugo = await CustomerUsedGeoObject.findByRef("customerId", customerId, {}, {}, session);
+				if (!_.isEmpty(cugo)) {
+					const trackToUpdate = _.remove(cugo[0].usedTrack, (o) => o.companyId == companyId);
 
-				if (!_.isEmpty(tempCustomerUsedGeoObject)) {
-					const updateUsedTrack = _.remove(tempCustomerUsedGeoObject[0].usedTrack, (o) => o.companyId == companyId);
+					//delete schedule of customer for this company
+					if (!_.isEmpty(trackToUpdate)) {
+						const { trackId } = trackToUpdate[0];
+						const track = await Track.findById(trackId, { workId: 1 }, { session });
+						const { workId } = track;
 
-					//delete schedule
-					if (!_.isEmpty(updateUsedTrack)) {
-						const { trackId } = updateUsedTrack[0];
-						const tempTrack = await Track.findById(trackId, { workId: 1 }, { session });
-						const { workId } = tempTrack[0];
+						await Schedule.deleteOne({ workId, customerId }, { session });
 
-						//delete schedule
-						const tempSchedule = await Schedule.findByRef("customerId", customerId, {}, {}, session);
-						const removeSchedule = _.remove(tempSchedule, (o) => o.workId == workId);
-						if (!_.isEmpty(removeSchedule)) {
-							this.result = await Schedule.findByIdAndDelete(removeSchedule[0]._id, { session });
-							checkForWriteErrors(this.result, "none", "Subscription delete failed");
-						}
-
-						//check if there is any schedule for work id
+						//check if there is any schedule for given work id
 						const allSchedule = await Schedule.findByRef("workId", workId, {}, { _id: 1 }, session);
 						if (_.isEmpty(allSchedule)) {
 							//notifiy no schedule of given work and check track
 						}
 					}
 
-					const customerUsedGeoObjectId = tempCustomerUsedGeoObject[0]._id;
-
-					if (_.isEmpty(tempCustomerUsedGeoObject[0].usedTrack)) {
-						//delete customerUsedGeoObject
-						this.result = await CustomerUsedGeoObject.findByIdAndDelete(customerUsedGeoObjectId, { session });
-						checkForWriteErrors(this.result, "none", "Subscription delete failed");
+					if (_.isEmpty(cugo[0].usedTrack)) {
+						await CustomerUsedGeoObject.findByIdAndDelete(cugo[0]._id, { session });
 					} else {
-						//update customerUsedGeoObject
-						const { usedTrack } = tempCustomerUsedGeoObject[0].usedTrack;
-						this.result = await CustomerUsedGeoObject.findByIdAndUpdate(customerUsedGeoObjectId, { usedTrack }, { session });
-						checkForWriteErrors(this.result, "none", "Subscription delete failed");
+						const { usedTrack } = cugo[0].usedTrack;
+						await CustomerUsedGeoObject.findByIdAndUpdate(cugo[0]._id, { usedTrack }, { session });
 					}
 				}
 
-				//delete wasteDump
+				//delete uncollected wasteDump of customer
 				const removeWasteDump = await WasteDump.findByRef("customerId", customerId, { isCollected: false, companyId }, {}, session);
 				let trackToUpdate = [];
 				for (let wd of removeWasteDump) {
