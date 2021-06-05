@@ -43,7 +43,7 @@ class SubscriptionServices {
 	}
 
 	async getAllSubscriber(companyId, query) {
-		const result = await Subscription.find({ $and: [{ companyId }, query] }).populate("customerId", "-password");
+		const result = await Subscription.find({ $and: [{ companyId }, query] }).populate("customerId", "-password -token");
 		this.result = mongooseToPlainObjectArray(result);
 
 		for (let doc of this.result) {
@@ -64,11 +64,11 @@ class SubscriptionServices {
 		return this.result;
 	}
 
-	async deleteSubscriptionById(id, updateData) {
+	async deleteSubscriptionById(id, data) {
 		const session = await mongoose.startSession();
 		try {
 			this.transactionResults = await session.withTransaction(async () => {
-				const { customerId, companyId } = updateData;
+				const { customerId, companyId } = data;
 
 				const cugo = await CustomerUsedGeoObject.findByRef("customerId", customerId, {}, {}, session);
 				if (!_.isEmpty(cugo)) {
@@ -163,7 +163,6 @@ class SubscriptionServices {
 				//delete subscription
 				await Subscription.findByIdAndDelete(id, { session });
 			});
-			s;
 
 			return checkTransactionResults(this.transactionResults, "status", "Subscription delete transaction failed");
 		} catch (e) {

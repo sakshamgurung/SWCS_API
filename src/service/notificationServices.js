@@ -81,7 +81,7 @@ class NotificationServices {
 				const loginInfo = await CustomerLogin.findById(doc.from.id, { email: 1, mobileNo: 1 });
 				const { email, mobileNo } = loginInfo;
 
-				const customerDetail = await CustomerDetail.find({ staffId: doc.from.id }, "contactName businessName");
+				const customerDetail = await CustomerDetail.find({ customerId: doc.from.id }, "contactName businessName");
 				const { contactName, businessName } = customerDetail[0];
 
 				let addedData = {
