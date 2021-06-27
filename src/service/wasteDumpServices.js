@@ -116,8 +116,8 @@ class WasteDumpServices {
 
 		for (let wd of this.result) {
 			if ((ref = "customerId")) {
-				const companyDetail = await CompanyDetail.find({ companyId: wd.companyId._id }, "companyName companyType companyImage");
-				this.result.companyDetail = companyDetail[0];
+				const companyDetail = await CompanyDetail.find({ companyId: wd.companyId }, "companyName companyType companyImage");
+				wd.companyDetail = companyDetail[0];
 			}
 		}
 

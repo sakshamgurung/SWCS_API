@@ -23,11 +23,11 @@ const schema = new Schema(
 		},
 		startDate: {
 			type: String,
-			//type:Schema.Types.Date,
+			type: Schema.Types.Date,
 		},
 		endDate: {
 			type: String,
-			//type:Schema.Types.Date,
+			type: Schema.Types.Date,
 		},
 		staffGroupId: {
 			type: String,
