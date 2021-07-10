@@ -68,7 +68,7 @@ class SubscriptionServices {
 		const session = await mongoose.startSession();
 		try {
 			this.transactionResults = await session.withTransaction(async () => {
-				const { customerId, companyId } = data;
+				const { customerId, companyId } = await Subscription.findById(id, {}, { session });
 
 				const cugo = await CustomerUsedGeoObject.findByRef("customerId", customerId, {}, {}, session);
 				if (!_.isEmpty(cugo)) {
