@@ -96,21 +96,17 @@ class StaffServices {
 		try {
 			this.transactionResults = await session.withTransaction(async () => {
 				//removing deleted staff from the staffGroup collection's staffId field
-				const tempStaffGroup = await StaffGroup.findByRef("staffId", id, {}, session);
+				const tempStaffGroup = await StaffGroup.findByRef("staffId", id, {}, {}, session);
 				_.remove(tempStaffGroup[0].staffId, (o) => o == id);
 				const staffGroupId = tempStaffGroup[0]._id;
 				const staffId = tempStaffGroup[0].staffId;
-				this.result = await StaffGroup.findByIdAndUpdate(staffGroupId, { staffId }, { session });
-				checkForWriteErrors(this.result, "none", "Staff delete failed");
+				//if staffid is empty and work is assigned notify company
+				await StaffGroup.findByIdAndUpdate(staffGroupId, { staffId }, { session });
 
 				//removing staff notification
-				this.result = await Notification.deleteByRole("staff", id, {}, session);
-				checkForWriteErrors(this.result, "none", "Staff delete failed");
-
-				this.result = await StaffLogin.findByIdAndDelete(id, { session });
-				checkForWriteErrors(this.result, "none", "Staff delete failed");
-				this.result = await StaffDetail.findByIdAndDelete(id, { session });
-				checkForWriteErrors(this.result, "none", "Staff delete failed");
+				await Notification.deleteByRole("staff", id, {}, session);
+				await StaffLogin.findByIdAndDelete(id, { session });
+				await StaffDetail.deleteOne({ staffId: id }, { session });
 
 				//notify groupMember about removed staff
 			});
