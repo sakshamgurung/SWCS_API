@@ -86,7 +86,7 @@ class CustomerRequestServices {
 				} else if (requestStatus == "pending" && updateData.requestStatus == "accepted") {
 					if (requestType == "subscription" || requestType == "subscription with location") {
 						const newSubData = { companyId, customerId };
-						await Subscription.create(newSubData, { session });
+						await Subscription.create([newSubData], { session });
 
 						let result = await CustomerRequest.findByIdAndDelete(id, { session });
 						checkForWriteErrors(result, "none", "Customer request update error");
@@ -129,7 +129,7 @@ class CustomerRequestServices {
 							customerId,
 							customerRequestId: id,
 						};
-						await Schedule.create(newSchedule, { session });
+						await Schedule.create([newSchedule], { session });
 					}
 
 					this.result = await CustomerRequest.findByIdAndUpdate(id, updateData, { session });
