@@ -6,6 +6,8 @@ const cors = require("cors");
 const wasteCatalogsUrl = require("./src/routes/wasteCatalogs");
 const path = require("path");
 
+const testUrl = require("./src/routes/testRoute");
+
 const utilActionUrl = require("./src/routes/utilAction");
 const accountUrl = require("./src/routes/account");
 const notificationsUrl = require("./src/routes/notifications");
@@ -50,6 +52,7 @@ app.get("/", (req, res) => {
 const apiVersion = "/api/v1";
 
 app.use(cors());
+app.use(apiVersion, testUrl);
 
 app.use(apiVersion, utilActionUrl);
 app.use(apiVersion, wasteCatalogsUrl);

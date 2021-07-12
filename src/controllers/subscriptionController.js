@@ -51,9 +51,9 @@ class SubscriptionController {
 
 			const subscriptionServices = new SubscriptionServices();
 			const result = await subscriptionServices.deleteSubscriptionById(subscriptionId, body);
-			const { statusCode, status } = result;
-			console.log(result);
-			response.status(statusCode).send(status).json(result);
+			const { statusCode } = result;
+
+			response.status(statusCode).json(result);
 		} catch (error) {
 			throw ApiError.serverError("Subscription Error: " + error.message);
 		}

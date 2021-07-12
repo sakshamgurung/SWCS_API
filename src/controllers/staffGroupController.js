@@ -75,9 +75,10 @@ class StaffGroupController {
 			const staffGroupId = request.params.id;
 
 			const staffGroupServices = new StaffGroupServices();
-			const { statusCode, status } = await staffGroupServices.deleteStaffGroupById(staffGroupId);
+			const result = await staffGroupServices.deleteStaffGroupById(staffGroupId);
+			const { statusCode } = result;
 
-			response.status(statusCode).send(status);
+			response.status(statusCode).json(result);
 		} catch (error) {
 			throw ApiError.serverError("Staff group Error: " + error.message);
 		}

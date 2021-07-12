@@ -104,9 +104,10 @@ class CompanyController {
 			const companyId = request.params.id;
 
 			const companyServices = new CompanyServices();
-			const { statusCode, status } = await companyServices.deleteCompanyById(companyId);
+			const result = await companyServices.deleteCompanyById(companyId);
+			const { statusCode, status } = result;
 
-			response.status(statusCode).send(status);
+			response.status(statusCode).json(result);
 		} catch (error) {
 			throw ApiError.serverError("Company Error: " + error.message);
 		}

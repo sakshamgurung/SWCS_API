@@ -177,7 +177,7 @@ class CompanyServices {
 				await Subscription.bulkWrite(
 					[
 						{
-							deleteOne: {
+							deleteMany: {
 								filter: {
 									$or: [
 										{ "from.role": "company", "from.id": id },
@@ -193,7 +193,7 @@ class CompanyServices {
 				const tempStaffLogin = await StaffLogin.findByRef("companyId", id, {}, { _id: 1 }, session);
 				await Notification.bulkWrite(
 					tempStaffLogin.map((doc) => ({
-						deleteOne: {
+						deleteMany: {
 							filter: {
 								$or: [
 									{ "from.role": "staff", "from.id": doc._id },

@@ -1,92 +1,93 @@
-const {StaffServices} = require("../service/staffServices");
-const ApiError = require('../error/ApiError');
+const { StaffServices } = require("../service/staffServices");
+const ApiError = require("../error/ApiError");
 
-class StaffController{
-    async newStaffInfo(request, response, next){
-        try {
-            const { staffDetail } = request.body;
-            
-            const staffServices = new StaffServices();
-            const result =  await staffServices.newStaffInfo(staffDetail);
+class StaffController {
+	async newStaffInfo(request, response, next) {
+		try {
+			const { staffDetail } = request.body;
 
-            response.json(result);
-        } catch (error) {
-            throw ApiError.serverError("Staff Error: " + error.message);
-        }
-    }
+			const staffServices = new StaffServices();
+			const result = await staffServices.newStaffInfo(staffDetail);
 
-    async getAllStaff(request, response, next){
-        try{
-            const staffInfoType = request.params.type;
-            const companyId = request.params.id;
-            const {query} = request;
+			response.json(result);
+		} catch (error) {
+			throw ApiError.serverError("Staff Error: " + error.message);
+		}
+	}
 
-            const staffServices = new StaffServices();
-            const result = await staffServices.getAllStaff(staffInfoType, companyId, query);
+	async getAllStaff(request, response, next) {
+		try {
+			const staffInfoType = request.params.type;
+			const companyId = request.params.id;
+			const { query } = request;
 
-            response.json(result);
-        }catch(error){
-            throw ApiError.serverError("Staff Error: " + error.message);
-        }
-    }
+			const staffServices = new StaffServices();
+			const result = await staffServices.getAllStaff(staffInfoType, companyId, query);
 
-    async  getStaffById(request, response, next){
-        try{
-            const staffInfoType = request.params.type;
-            const staffId = request.params.id;
-            
-            const staffServices = new StaffServices();
-            const result = await staffServices.getStaffById(staffInfoType, staffId);;
+			response.json(result);
+		} catch (error) {
+			throw ApiError.serverError("Staff Error: " + error.message);
+		}
+	}
 
-            response.json(result);
-        }catch(error){
-            throw ApiError.serverError("Staff Error: " + error.message);
-        }
-    }
+	async getStaffById(request, response, next) {
+		try {
+			const staffInfoType = request.params.type;
+			const staffId = request.params.id;
 
-    async getStaffByRef(request, response, next){
-        try {
-            const staffInfoType = request.params.type;
-            const {ref, id} = request.params;
-            const {query} = request;
+			const staffServices = new StaffServices();
+			const result = await staffServices.getStaffById(staffInfoType, staffId);
 
-            const staffServices = new StaffServices();
-            const result = await staffServices.getStaffByRef(staffInfoType, ref, id, query);
-            
-            response.json(result);
-        } catch (error) {
-            throw ApiError.serverError("Staff by ref Error: " + error.message);
-        }
-    }
+			response.json(result);
+		} catch (error) {
+			throw ApiError.serverError("Staff Error: " + error.message);
+		}
+	}
 
-    async updateStaffById(request, response, next){
-        try{
-            const staffInfoType = request.params.type;
-            const staffId = request.params.id;
-            const {body} = request;
+	async getStaffByRef(request, response, next) {
+		try {
+			const staffInfoType = request.params.type;
+			const { ref, id } = request.params;
+			const { query } = request;
 
-            const staffServices = new StaffServices();
-            const {statusCode, status} = await staffServices.updateStaffById(staffInfoType, staffId, body);
+			const staffServices = new StaffServices();
+			const result = await staffServices.getStaffByRef(staffInfoType, ref, id, query);
 
-            response.status(statusCode).send(status);
-        }catch(error){
-            throw ApiError.serverError("Staff Error: " + error.message);
-        }
-    }
+			response.json(result);
+		} catch (error) {
+			throw ApiError.serverError("Staff by ref Error: " + error.message);
+		}
+	}
 
-    async deleteStaffById(request, response, next){
-        try {
-            const staffId = request.params.id;
-            const {body} = request;
+	async updateStaffById(request, response, next) {
+		try {
+			const staffInfoType = request.params.type;
+			const staffId = request.params.id;
+			const { body } = request;
 
-            const staffServices = new StaffServices();
-            const {statusCode, status} = await staffServices.deleteStaffById(staffId, body);
-            
-            response.status(statusCode).send(status);
-        } catch (error) {
-            throw ApiError.serverError("Staff Error: " + error.message);
-        }
-    }
+			const staffServices = new StaffServices();
+			const { statusCode, status } = await staffServices.updateStaffById(staffInfoType, staffId, body);
+
+			response.status(statusCode).send(status);
+		} catch (error) {
+			throw ApiError.serverError("Staff Error: " + error.message);
+		}
+	}
+
+	async deleteStaffById(request, response, next) {
+		try {
+			const staffId = request.params.id;
+			const { body } = request;
+
+			const staffServices = new StaffServices();
+			const result = await staffServices.deleteStaffById(staffId, body);
+			const { statusCode } = result;
+
+			response.status(statusCode).json(result);
+		} catch (error) {
+			throw ApiError.serverError("Staff Error: " + error.message);
+		}
+	}
 }
 
 exports.StaffController = StaffController;

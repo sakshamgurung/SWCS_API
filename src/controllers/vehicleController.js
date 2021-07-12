@@ -75,9 +75,10 @@ class VehicleController {
 			const vehicleId = request.params.id;
 
 			const vehicleServices = new VehicleServices();
-			const { statusCode, status } = await vehicleServices.deleteVehicleById(vehicleId);
+			const result = await vehicleServices.deleteVehicleById(vehicleId);
+			const { statusCode } = result;
 
-			response.status(statusCode).send(status);
+			response.status(statusCode).json(result);
 		} catch (error) {
 			throw ApiError.serverError("Vehicle Error: " + error.message);
 		}

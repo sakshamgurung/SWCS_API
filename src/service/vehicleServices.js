@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const ApiError = require("../error/ApiError");
 const { checkTransactionResults, checkForWriteErrors } = require("../utilities/errorUtil");
 const Subscription = require("../models/common/subscription");
-const staff = require("../models/staff/staffLogin");
+const Staff = require("../models/staff/staffLogin");
 const Vehicle = require("../models/companies/vehicle");
 const Work = require("../models/common/work");
 const CustomerRequest = require("../models/common/customerRequest");
@@ -22,7 +22,7 @@ class VehicleServices {
 
 		// logs
 		const totalVehicle = await Vehicle.find({ companyId: vehicleData.companyId }).count();
-		const totalStaff = await staff.find({ companyId: vehicleData.companyId }).count();
+		const totalStaff = await Staff.find({ companyId: vehicleData.companyId }).count();
 		const subs = await Subscription.find({ companyId: vehicleData.companyId }).count();
 
 		this.graph = new GraphData({ companyId: vehicleData.companyId, subscribers: subs, staff: totalStaff, vehicle: totalVehicle });

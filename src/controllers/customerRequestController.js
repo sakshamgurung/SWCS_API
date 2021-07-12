@@ -79,9 +79,10 @@ class CustomerRequestController {
 			const { body } = request;
 
 			const customerRequestServices = new CustomerRequestServices();
-			const { statusCode, status } = await customerRequestServices.deleteCustomerRequestById(customerRequestId, body);
+			const result = await customerRequestServices.deleteCustomerRequestById(customerRequestId, body);
+			const { statusCode } = result;
 
-			response.status(statusCode).send(status);
+			response.status(statusCode).json(result);
 		} catch (error) {
 			throw ApiError.serverError("Customer request Error: " + error.message);
 		}

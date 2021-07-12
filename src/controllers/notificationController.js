@@ -8,11 +8,7 @@ class NotificationController {
 			const { query } = request;
 
 			const notificationServices = new NotificationServices();
-			const result = await notificationServices.getAllNotification(
-				role,
-				id,
-				query
-			);
+			const result = await notificationServices.getAllNotification(role, id, query);
 
 			response.json(result);
 		} catch (error) {
@@ -25,9 +21,7 @@ class NotificationController {
 			const notificationId = request.params.id;
 
 			const notificationServices = new NotificationServices();
-			const result = await notificationServices.getNotificationById(
-				notificationId
-			);
+			const result = await notificationServices.getNotificationById(notificationId);
 
 			response.json(result);
 		} catch (error) {
@@ -40,14 +34,10 @@ class NotificationController {
 			const notificationId = request.params.id;
 
 			const notificationServices = new NotificationServices();
-			const {
-				statusCode,
-				status,
-			} = await notificationServices.deleteNotificationById(
-				notificationId
-			);
+			const result = await notificationServices.deleteNotificationById(notificationId);
+			const { statusCode } = result;
 
-			response.status(statusCode).send(status);
+			response.status(statusCode).json(result);
 		} catch (error) {
 			throw ApiError.serverError("Notification Error: " + error.message);
 		}
