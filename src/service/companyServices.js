@@ -72,7 +72,14 @@ class CompanyServices {
 	}
 
 	async getAllCompany(companyInfoType, query) {
-		if (companyInfoType == "company-detail") {
+		if (companyInfoType == "company") {
+			this.result = await CompanyLogin.find(
+				{
+					$and: [{}, query],
+				},
+				"-password -token -uuid"
+			);
+		} else if (companyInfoType == "company-detail") {
 			this.result = await CompanyDetail.find({
 				$and: [{}, query],
 			}).populate("companyId", "email mobileNo");
