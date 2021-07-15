@@ -28,7 +28,7 @@ class SubscriptionServices {
 
 	async createNewSubscription(subscriptionData) {
 		this.subscription = new Subscription(subscriptionData);
-		this.result = await this.subscription.save();
+		const subscriptionResult = await this.subscription.save();
 
 		// logs
 		const totalVehicle = await vehicle.find({ companyId: subscriptionData.companyId }).count();
@@ -38,7 +38,7 @@ class SubscriptionServices {
 		this.graph = new GraphData({ companyId: subscriptionData.companyId, subscribers: subs, staff: totalStaff, vehicle: totalVehicle });
 
 		const logResult = await this.graph.save();
-		this.result = await { ...this.result, logResult };
+		this.result = await { subscriptionResult, logResult };
 		return this.result;
 	}
 

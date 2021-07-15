@@ -45,11 +45,11 @@ class AccountServices {
 			this.companyLogin = new CompanyLogin(updatedData);
 			this.result = await this.companyLogin.save();
 		} else if (role == "staff") {
-			//staff sign up
 			this.result = {};
 			if (!updatedData.hasOwnProperty("companyId")) {
 				throw ApiError.badRequest("Company id is needed for staff sign up");
 			}
+
 			const tempStaffLogin = await StaffLogin.find({ email }, { email: 1 });
 			const tempStaffLoginWithMobileNo = await StaffLogin.find({ mobileNo }, { mobileNo: 1 });
 
