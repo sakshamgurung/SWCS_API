@@ -42,6 +42,7 @@ class AccountServices {
 
 			updatedData["firstTimeLogin"] = true;
 			updatedData["isCompanyAccepted"] = false;
+			updateData["isCompanyDeleted"] = false;
 			this.companyLogin = new CompanyLogin(updatedData);
 			this.result = await this.companyLogin.save();
 		} else if (role == "staff") {

@@ -4,59 +4,55 @@ const Schema = mongoose.Schema;
 const schema = new Schema(
 	{
 		email: {
-			type: String
+			type: String,
 		},
 		mobileNo: {
-			type: String
+			type: String,
 		},
 		password: {
 			type: String,
-			required: true
+			required: true,
 		},
 		firstTimeLogin: {
-			type: Boolean
+			type: Boolean,
 		},
 		uuid: [String],
 		resetToken: {
-			type: String
+			type: String,
 		},
 		resetTokenTimeStamp: {
-			type: String
+			type: String,
 		},
 		token: {
 			mobileDevice: [String],
-			webDevice: [String]
+			webDevice: [String],
 		},
 		refreshToken: {
-			type: String
+			type: String,
 			//required:true,
 		},
 		timeStamp: {
-			type: Schema.Types.Date
+			type: Schema.Types.Date,
 			//required:true,
 		},
 		isCompanyAccepted: {
-			type: Boolean
-		}
+			type: Boolean,
+		},
+		isCompanyDeleted: {
+			type: Boolean,
+		},
 	},
 	{
-		collection: "companyLogins"
+		collection: "companyLogins",
 	}
 );
 
 class HelperClass {
 	static findByUUID(uuidArray, query, projection, session) {
 		if (session == undefined) {
-			return this.find(
-				{ $and: [{ uuid: { $in: uuidArray } }, query] },
-				projection
-			);
+			return this.find({ $and: [{ uuid: { $in: uuidArray } }, query] }, projection);
 		} else {
-			return this.find(
-				{ $and: [{ uuid: { $in: uuidArray } }, query] },
-				projection,
-				{ session }
-			);
+			return this.find({ $and: [{ uuid: { $in: uuidArray } }, query] }, projection, { session });
 		}
 	}
 }
