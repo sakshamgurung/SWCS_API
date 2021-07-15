@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const ApiError = require("../error/ApiError");
 const fs = require("fs");
 const { checkTransactionResults, checkForWriteErrors } = require("../utilities/errorUtil");
+const { mongooseToPlainObjectArray } = require("../utilities/converter");
 
 const CompanyLogin = require("../models/companies/companyLogin");
 const CompanyDetail = require("../models/companies/companyDetail");
@@ -79,6 +80,15 @@ class CompanyServices {
 				},
 				"-password -token -uuid"
 			);
+
+			this.result = mongooseToPlainObjectArray(this.result);
+
+			for (let co of this.result) {
+				const companyDetail = await CompanyDetail.find({ companyId: co._id });
+				co.companyDetail = companyDetail[0];
+			}
+
+			return this.result;
 		} else if (companyInfoType == "company-detail") {
 			this.result = await CompanyDetail.find({
 				$and: [{}, query],
