@@ -135,12 +135,12 @@ class SubscriptionServices {
 											"from.role": "customer",
 											"from.id": customerId,
 											"to.role": "company",
-											"to.id": companyId,
-										},
-									],
-								},
-							},
-						},
+											"to.id": companyId
+										}
+									]
+								}
+							}
+						}
 					],
 					{ session }
 				);
@@ -152,16 +152,23 @@ class SubscriptionServices {
 							filter: {
 								$or: [
 									{ "from.role": "staff", "from.id": doc._id, "to.role": "customer", "to.id": customerId },
-									{ "from.role": "customer", "from.id": customerId, "to.role": "staff", "to.id": doc._id },
-								],
-							},
-						},
+									{ "from.role": "customer", "from.id": customerId, "to.role": "staff", "to.id": doc._id }
+								]
+							}
+						}
 					})),
 					{ session }
 				);
 
 				//delete subscription
 				await Subscription.findByIdAndDelete(id, { session });
+
+				// update graph data
+				const totalVehicle = await vehicle.find({ companyId: companyId }).estimatedDocumentCount();
+				const totalStaff = await staff.find({ companyId: companyId }).estimatedDocumentCount();
+				const subs = await Subscription.find({ companyId: companyId }).estimatedDocumentCount();
+				this.graph = new GraphData({ companyId: companyId, subscribers: subs - 1, staff: totalStaff, vehicle: totalVehicle });
+				await this.graph.save();
 			});
 
 			return checkTransactionResults(this.transactionResults, "status", "Subscription delete transaction failed");
