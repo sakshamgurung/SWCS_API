@@ -27,6 +27,7 @@ const Schedule = require("../models/customers/schedule");
 const WasteDump = require("../models/customers/wasteDump");
 
 const GraphData = require("../models/graph/graphData");
+const AdminGraphData = require("../models/graph/adminGraphData");
 
 class CompanyServices {
 	constructor() {
@@ -34,6 +35,7 @@ class CompanyServices {
 		this.companyServiceDetail = undefined;
 		this.result = undefined;
 		this.transactionResults = undefined;
+		this.admingraph = undefined;
 	}
 
 	async newCompanyInfo(companyDetail, companyServiceDetail) {
@@ -45,7 +47,7 @@ class CompanyServices {
 
 				this.companyDetail = new CompanyDetail(companyDetail);
 				this.result.companyDetail = await this.companyDetail.save({
-					session,
+					session
 				});
 
 				this.companyServiceDetail = new CompanyServiceDetail(companyServiceDetail);
@@ -76,7 +78,7 @@ class CompanyServices {
 		if (companyInfoType == "company") {
 			this.result = await CompanyLogin.find(
 				{
-					$and: [{}, query],
+					$and: [{}, query]
 				},
 				"-password -token -uuid"
 			);
@@ -91,11 +93,11 @@ class CompanyServices {
 			return this.result;
 		} else if (companyInfoType == "company-detail") {
 			this.result = await CompanyDetail.find({
-				$and: [{}, query],
+				$and: [{}, query]
 			}).populate("companyId", "email mobileNo");
 		} else if (companyInfoType == "company-service-detail") {
 			this.result = await CompanyServiceDetail.find({
-				$and: [{}, query],
+				$and: [{}, query]
 			}).populate("companyId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("companyInfoType not found!!!");
@@ -111,7 +113,7 @@ class CompanyServices {
 			this.result = await CompanyDetail.find({ companyId: id }).populate("companyId", "email mobileNo");
 		} else if (companyInfoType == "company-service-detail") {
 			this.result = await CompanyServiceDetail.find({
-				companyId: id,
+				companyId: id
 			}).populate("companyId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("companyInfoType not found!!!");
@@ -132,6 +134,22 @@ class CompanyServices {
 
 	async updateCompanyById(companyInfoType, id, updateData) {
 		if (companyInfoType == "company") {
+			//update admin graph
+			const activeOrg = await CompanyLogin.find({ $and: [{ isCompanyAccepted: true }, { isCompanyDeleted: false }] });
+			const activeReq = await CompanyLogin.find({ $and: [{ isCompanyAccepted: false }, { isCompanyDeleted: false }] });
+			this.admingraph = new AdminGraphData({
+				adminId: id,
+				activeorg: updateData.isCompanyDeleted ? activeOrg.length : updateData.isCompanyAccepted ? activeOrg.length + 1 : activeOrg.length - 1,
+				activereq: updateData.isCompanyDeleted ? activeReq.length - 1 : updateData.isCompanyAccepted ? activeReq.length - 1 : activeReq.length + 1
+			});
+			console.log("admin graph console: ", {
+				adminId: id,
+				activeOrg,
+				activeReq
+			});
+			await this.admingraph.save();
+
+			// update company
 			this.result = await CompanyLogin.findByIdAndUpdate(id, updateData);
 		} else if (companyInfoType == "company-detail") {
 			this.result = await CompanyDetail.findByIdAndUpdate(id, updateData);
@@ -177,15 +195,15 @@ class CompanyServices {
 				const archiveWasteDump = _.remove(tempWasteDump, (o) => o.isCollected == true);
 				const opWD = tempWasteDump.map((doc) => ({
 					deleteOne: {
-						filter: { _id: doc._id },
-					},
+						filter: { _id: doc._id }
+					}
 				}));
 
 				const opAWD = archiveWasteDump.map((doc) => ({
 					updateOne: {
 						filter: { _id: doc._id },
-						update: { customerId: "", companyId: "" },
-					},
+						update: { customerId: "", companyId: "" }
+					}
 				}));
 				const wasteDumpBulkOps = _.cloneDeep([...opWD, ...opAWD]);
 				await WasteDump.bulkWrite(wasteDumpBulkOps, { session });
@@ -196,13 +214,10 @@ class CompanyServices {
 						{
 							deleteMany: {
 								filter: {
-									$or: [
-										{ "from.role": "company", "from.id": id },
-										{ "to.role": "company", "to.id": id },
-									],
-								},
-							},
-						},
+									$or: [{ "from.role": "company", "from.id": id }, { "to.role": "company", "to.id": id }]
+								}
+							}
+						}
 					],
 					{ session }
 				);
@@ -212,12 +227,9 @@ class CompanyServices {
 					tempStaffLogin.map((doc) => ({
 						deleteMany: {
 							filter: {
-								$or: [
-									{ "from.role": "staff", "from.id": doc._id },
-									{ "to.role": "staff", "to.id": doc._id },
-								],
-							},
-						},
+								$or: [{ "from.role": "staff", "from.id": doc._id }, { "to.role": "staff", "to.id": doc._id }]
+							}
+						}
 					})),
 					{ session }
 				);
@@ -228,9 +240,9 @@ class CompanyServices {
 					tempWork.map((doc) => ({
 						deleteOne: {
 							filter: {
-								$or: [{ workId: doc._id }],
-							},
-						},
+								$or: [{ workId: doc._id }]
+							}
+						}
 					})),
 					{ session }
 				);
@@ -240,9 +252,9 @@ class CompanyServices {
 					tempCustomerRequest.map((doc) => ({
 						deleteOne: {
 							filter: {
-								$or: [{ customerRequestId: doc._id }],
-							},
-						},
+								$or: [{ customerRequestId: doc._id }]
+							}
+						}
 					})),
 					{ session }
 				);
