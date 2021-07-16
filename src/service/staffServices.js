@@ -97,11 +97,13 @@ class StaffServices {
 			this.transactionResults = await session.withTransaction(async () => {
 				//removing deleted staff from the staffGroup collection's staffId field
 				const tempStaffGroup = await StaffGroup.findByRef("staffId", id, {}, {}, session);
-				_.remove(tempStaffGroup[0].staffId, (o) => o == id);
-				const staffGroupId = tempStaffGroup[0]._id;
-				const staffId = tempStaffGroup[0].staffId;
-				//if staffid is empty and work is assigned notify company
-				await StaffGroup.findByIdAndUpdate(staffGroupId, { staffId }, { session });
+				if (tempStaffGroup.length != 0) {
+					_.remove(tempStaffGroup[0].staffId, (o) => o == id);
+					const staffGroupId = tempStaffGroup[0]._id;
+					const staffId = tempStaffGroup[0].staffId;
+					//if staffid is empty and work is assigned notify company
+					await StaffGroup.findByIdAndUpdate(staffGroupId, { staffId }, { session });
+				}
 
 				//removing staff notification
 				await Notification.deleteByRole("staff", id, {}, session);
