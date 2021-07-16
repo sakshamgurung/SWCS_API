@@ -5,9 +5,8 @@ class AdminServices {
 		this.result = undefined;
 	}
 
-	async getAdminGraphData(adminId) {
-		console.log("adminId", adminId);
-		this.result = await AdminGraph.find({ adminId: adminId });
+	async getAdminGraphData() {
+		this.result = await AdminGraph.find();
 		console.log("this.result", this.result);
 		return this.result;
 	}

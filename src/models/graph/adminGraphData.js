@@ -13,9 +13,6 @@ const schema = new Schema(
 		activereq: {
 			type: String
 		},
-		total: {
-			type: String
-		},
 		date: {
 			type: Date,
 			default: Date.now

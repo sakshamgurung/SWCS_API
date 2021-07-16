@@ -8,6 +8,6 @@ const companyController = new CompanyController();
 const adminController = new AdminController();
 
 router.get("/company/graphdata/:id", catchAsync(companyController.getGraphDataByCompanyId));
-router.get("/admin/graphdata/:id", catchAsync(adminController.getGraphDataByAdminId));
+router.get("/admin/graphdata", catchAsync(adminController.getGraphDataByAdminId));
 
 module.exports = router;
