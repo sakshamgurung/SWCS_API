@@ -2,11 +2,13 @@ const mongoose = require("mongoose");
 const _ = require("lodash");
 const ApiError = require("../error/ApiError");
 const { checkTransactionResults, checkForWriteErrors } = require("../utilities/errorUtil");
-
+const GraphData = require("../models/graph/graphData");
 const StaffLogin = require("../models/staff/staffLogin");
 const StaffDetail = require("../models/staff/staffDetail");
 const StaffGroup = require("../models/staff/staffGroup");
 const Notification = require("../models/common/notification");
+const Vehicle = require("../models/companies/vehicle");
+const Subscription = require("../models/common/subscription");
 
 class StaffServices {
 	constructor() {
@@ -48,7 +50,6 @@ class StaffServices {
 			this.result = await StaffDetail.find({ $and: [{ companyId }, query] })
 				.populate("companyId", "email mobileNo")
 				.populate("staffId", "email mobileNo");
-			//staffGroupId gives error
 		} else {
 			throw ApiError.badRequest("staffInfoType not found!!!");
 		}
@@ -108,6 +109,15 @@ class StaffServices {
 					//if staffid is empty and work is assigned notify company
 					await StaffGroup.findByIdAndUpdate(staffGroupId, { staffId }, { session });
 				}
+
+				// update graph
+				const companyId = await StaffLogin.findById(id);
+				const totVehicle = await Vehicle.find({ companyId: companyId.companyId });
+				const toSubs = await Subscription.find({ companyId: companyId.companyId });
+				const toStaff = await StaffLogin.find({ companyId: companyId.companyId });
+				this.graph = new GraphData({ companyId: companyId.companyId, subscribers: toSubs.length, staff: toStaff.length - 1, vehicle: totVehicle.length });
+				console.log("staff console: ", { companyId: companyId.companyId, subscribers: toSubs.length, staff: toStaff.length - 1, vehicle: totVehicle.length }, toStaff.length);
+				await this.graph.save();
 
 				//removing staff notification
 				await Notification.deleteByRole("staff", id, {}, session);
