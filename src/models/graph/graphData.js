@@ -5,7 +5,7 @@ const schema = new Schema(
 	{
 		companyId: {
 			type: Schema.Types.ObjectId,
-			ref:"CompanyLogin",
+			ref: "CompanyLogin"
 		},
 		subscribers: {
 			type: String

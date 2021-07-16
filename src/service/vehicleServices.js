@@ -58,6 +58,7 @@ class VehicleServices {
 	async deleteVehicleById(id, updateData) {
 		const session = await mongoose.startSession();
 		try {
+			console.log("Vehicle data delete");
 			this.transactionResults = await session.withTransaction(async () => {
 				//removing delete vehicle from work collection's vehicleId
 				this.result = await Work.updateByRef("vehicleId", id, { vehicleId: "" }, session);
@@ -66,6 +67,14 @@ class VehicleServices {
 				//removing delete vehicle from customerRequest collection's vehicleId
 				this.result = await CustomerRequest.updateByRef("vehicleId", id, { vehicleId: "" }, session);
 				checkForWriteErrors(this.result, "none", "Vehicle delete failed");
+
+				// update graph data
+				const companyId = await Vehicle.findById(id);
+				const totVehicle = await Vehicle.find({ companyId: companyId.companyId });
+				const toSubs = await Subscription.find({ companyId: companyId.companyId });
+				const toStaff = await Staff.find({ companyId: companyId.companyId });
+				this.graph = new GraphData({ companyId: companyId.companyId, subscribers: toSubs.length, staff: toStaff.length, vehicle: totVehicle.length - 1 });
+				await this.graph.save();
 
 				this.result = await Vehicle.findByIdAndDelete(id, { session });
 				checkForWriteErrors(this.result, "none", "Vehicle delete failed");

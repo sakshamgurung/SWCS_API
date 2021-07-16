@@ -60,7 +60,9 @@ class StaffServices {
 		if (staffInfoType == "staff") {
 			this.result = await StaffLogin.findById(id);
 		} else if (staffInfoType == "staff-detail") {
-			this.result = await StaffDetail.find({ staffId: id }).populate("companyId", "email mobileNo").populate("staffId", "email mobileNo");
+			this.result = await StaffDetail.find({ staffId: id })
+				.populate("companyId", "email mobileNo")
+				.populate("staffId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("staffInfoType not found!!!");
 		}
@@ -71,7 +73,9 @@ class StaffServices {
 		if (staffInfoType == "staff") {
 			this.result = await StaffLogin.findByRef(ref, id, query);
 		} else if (staffInfoType == "staff-detail") {
-			this.result = await StaffDetail.findByRef(ref, id, query).populate("companyId", "email mobileNo").populate("staffId", "email mobileNo");
+			this.result = await StaffDetail.findByRef(ref, id, query)
+				.populate("companyId", "email mobileNo")
+				.populate("staffId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("staffInfoType not found!!!");
 		}
