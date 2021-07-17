@@ -11,6 +11,7 @@ const CompanyDetail = require("../models/companies/companyDetail");
 const Schedule = require("../models/customers/schedule");
 const StaffGroup = require("../models/staff/staffGroup");
 const Vehicle = require("../models/companies/vehicle");
+const { sendToAll } = require("../utilities/notificationUtil");
 
 class CustomerRequestServices {
 	constructor() {
@@ -81,76 +82,93 @@ class CustomerRequestServices {
 				const { companyId, customerId, requestStatus, requestType } = prevCustomerRequest;
 
 				if (requestStatus == "pending" && updateData.requestStatus == "pending") {
-					let result = await CustomerRequest.findByIdAndUpdate(id, updateData, { session });
-					checkForWriteErrors(result, "none", "Customer request update error");
+					await CustomerRequest.findByIdAndUpdate(id, updateData, { session });
 				} else if (requestStatus == "pending" && updateData.requestStatus == "denied") {
-					//delete the request send notification
-					let result = await CustomerRequest.findByIdAndDelete(id, { session });
-					checkForWriteErrors(result, "none", "Customer request update error");
+					await CustomerRequest.findByIdAndDelete(id, { session });
+					const customerIdArray = [customerId];
+					//notify
+					if (customerIdArray.length != 0) {
+						const custLogin = await CustomerLogin.findAllInIdArray(
+							customerIdArray,
+							{ "token.mobileDevice": { $exists: true, $ne: [] } },
+							"token",
+							session
+						);
+
+						const uuidArray = [];
+						for (let cl of custLogin) {
+							if (cl.token.mobileDevice) {
+								for (let md of cl.token.mobileDevice) {
+									uuidArray.push(md.uuid);
+								}
+							}
+						}
+
+						let from = { role: "company", id: companyId },
+							targetCollection = {},
+							title,
+							body,
+							data;
+
+						targetCollection = {};
+						title = "Request denied";
+						body = `Request: is denied.`;
+						data = { status: "requestAccepted" };
+
+						await sendToAll(from, "customer", customerIdArray, uuidArray, targetCollection, title, body, data, session);
+					}
 				} else if (requestStatus == "pending" && updateData.requestStatus == "accepted") {
 					if (requestType == "subscription" || requestType == "subscription with location") {
 						const newSubData = { companyId, customerId };
 						await Subscription.create([newSubData], { session });
 
-						let result = await CustomerRequest.findByIdAndDelete(id, { session });
-						checkForWriteErrors(result, "none", "Customer request update error");
+						await CustomerRequest.findByIdAndDelete(id, { session });
 					} else if (requestType == "one time") {
-						let result = await CustomerRequest.findByIdAndUpdate(id, { requestStatus: "accepted" }, { session });
-						checkForWriteErrors(result, "none", "Customer request update error");
-					}
-				} else if (requestStatus == "accepted") {
-					const { staffGroupId, vehicleId } = updateData;
-					if (updateData.requestStatus == "assigned" && _.isEmpty(staffGroupId) && _.isEmpty(vehicleId)) {
-						throw ApiError.badRequest("staff group or vehicle not assigned for one-time task.");
-					}
-
-					if (prevCustomerRequest.staffGroupId != staffGroupId) {
-						const tempStaffGroup = await StaffGroup.findById(staffGroupId, { isReserved: 1 }, { session });
-						if (tempStaffGroup.isReserved) {
-							throw ApiError.badRequest("staff group is reserved.");
-						}
-
-						this.result = await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: true }, { session });
-						checkForWriteErrors(this.result, "none", "Customer request update error");
-						this.result = await StaffGroup.findByIdAndUpdate(prevCustomerRequest.staffGroupId, { isReserved: false }, { session });
-						checkForWriteErrors(this.result, "none", "Customer request update error");
-					}
-
-					if (prevCustomerRequest.vehicleId != vehicleId) {
-						const tempVehicle = await Vehicle.findById(vehicleId, { isReserved: 1 }, { session });
-						if (tempVehicle.isReserved) {
-							throw ApiError.badRequest("vehicle is reserved.");
-						}
-
-						this.result = await Vehicle.findByIdAndUpdate(vehicleId, { isReserved: true }, { session });
-						checkForWriteErrors(this.result, "none", "Customer request update error");
-						this.result = await Vehicle.findByIdAndUpdate(prevCustomerRequest.vehicleId, { isReserved: false }, { session });
-						checkForWriteErrors(this.result, "none", "Customer request update error");
-					}
-
-					if (updateData.requestStatus == "assigned") {
 						const newSchedule = {
 							customerId,
 							customerRequestId: id,
 						};
 						await Schedule.create([newSchedule], { session });
+						await CustomerRequest.findByIdAndUpdate(id, { requestStatus: "accepted" }, { session });
 					}
+					const customerIdArray = [customerId];
+					//notify
+					if (customerIdArray.length != 0) {
+						const custLogin = await CustomerLogin.findAllInIdArray(
+							customerIdArray,
+							{ "token.mobileDevice": { $exists: true, $ne: [] } },
+							"token",
+							session
+						);
 
-					this.result = await CustomerRequest.findByIdAndUpdate(id, updateData, { session });
-					checkForWriteErrors(this.result, "none", "Customer request update error");
-
-					//send notification to driver
-				} else if (requestStatus == "assigned" && updateData.requestStatus == "finished") {
-					const { staffGroupId } = updateData;
-					//delete schedule
-					this.result = await Schedule.deleteByRef("customerRequestId", id, session);
-					checkForWriteErrors(this.result, "none", "Customer request update error");
-					//free staffGroup
-					this.result = await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: false }, { session });
-					checkForWriteErrors(this.result, "none", "Customer request update error");
-					//delete customerRequest
-					this.result = await CustomerRequest.findByIdAndDelete(id, { session });
-					checkForWriteErrors(this.result, "none", "Customer request update error");
+						const uuidArray = [];
+						for (let cl of custLogin) {
+							if (cl.token.mobileDevice) {
+								for (let md of cl.token.mobileDevice) {
+									uuidArray.push(md.uuid);
+								}
+							}
+						}
+						let from = { role: "company", id: companyId },
+							targetCollection = {},
+							title,
+							body,
+							data;
+						if (requestType == "subscription" || requestType == "subscription with location") {
+							title = "Subscription request accepted";
+							body = `Your subscription request is accepted.Check your subscription list.`;
+							data = { status: "subscribed" };
+						} else {
+							targetCollection = { name: "customerRequests", id };
+							title = "Request accepted";
+							body = `Request: ${workTitle} is accepted. Check your schedule.`;
+							data = { status: "requestAccepted" };
+						}
+						await sendToAll(from, "customer", customerIdArray, uuidArray, targetCollection, title, body, data, session);
+					}
+				} else if (requestStatus == "accepted" && updateData.requestStatus == "finished") {
+					await Schedule.deleteByRef("customerRequestId", id, session);
+					await CustomerRequest.findByIdAndDelete(id, { session });
 				}
 			});
 
@@ -167,22 +185,11 @@ class CustomerRequestServices {
 		try {
 			this.transactionResults = await session.withTransaction(async () => {
 				const tempCustomerRequestId = await CustomerRequest.findById(id, {}, { session });
-				const { requestStatus, requestType, customerId, companyId, staffGroupId } = tempCustomerRequestId;
+				const { requestStatus } = tempCustomerRequestId;
 
 				if (requestStatus == "accepted") {
-					if (requestType == "subscription" || requestType == "subscription with location") {
-						//delete subscription
-						const tempSubscription = await Subscription.findAllSubscription(customerId, {}, session);
-						const deleteSubscription = _.remove(tempSubscription, (s) => s.companyId == companyId);
-						await Subscription.deleteById(deleteSubscription[0]._id, session);
-					}
-				} else if (requestStatus == "assigned") {
-					//delete schedule
 					await Schedule.deleteByRef("customerRequestId", id, session);
-					//free staffGroup
-					await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: false }, { session });
 				}
-				//delete customerRequest
 				await CustomerRequest.findByIdAndDelete(id, { session });
 			});
 
