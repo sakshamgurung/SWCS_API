@@ -291,7 +291,8 @@ class WorkServices {
 						}
 						await Track.findByIdAndUpdate(t._id, { $unset: { workId: 1 } }, { session });
 					}
-
+					await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: false }, { session });
+					await Vehicle.findByIdAndUpdate(vehicleId, { isReserved: false }, { session });
 					await Schedule.deleteByRef("workId", id, session);
 					await Work.findByIdAndUpdate(id, { workStatus: "finished" }, { session });
 				}
@@ -321,12 +322,8 @@ class WorkServices {
 					await Track.findByIdAndUpdate(t._id, { $unset: { workId: 1 } }, { session });
 				}
 
-				//free vehicle
 				await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: false }, { session });
-
-				//free staffgroup
 				await Vehicle.findByIdAndUpdate(vehicleId, { isReserved: false }, session);
-
 				await Work.findByIdAndDelete(id, { session });
 			});
 
