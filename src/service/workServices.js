@@ -190,6 +190,7 @@ class WorkServices {
 				} else if (workStatus == "unconfirmed" && updateData.workStatus == "confirmed") {
 					const customerIdArray = [];
 					const trackId = await Track.findByRef("workId", id, {}, { _id: 1, companyId: 1 }, session);
+
 					for (let t of trackId) {
 						const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, { customerId: 1 }, session);
 						for (let cugo of tempCustomerUsedGeoObject) {
@@ -198,41 +199,43 @@ class WorkServices {
 						}
 					}
 
-					await Schedule.bulkWrite(
-						customerIdArray.map((customerId) => ({
-							insertOne: {
-								document: {
-									customerId,
-									workId: id,
+					if (customerIdArray.length != 0) {
+						await Schedule.bulkWrite(
+							customerIdArray.map((customerId) => ({
+								insertOne: {
+									document: {
+										customerId,
+										workId: id,
+									},
 								},
-							},
-						})),
-						{ session }
-					);
+							})),
+							{ session }
+						);
 
-					//notify
-					const custLogin = await CustomerLogin.findAllInIdArray(
-						customerIdArray,
-						{ "token.mobileDevice": { $exists: true, $ne: [] } },
-						"token",
-						session
-					);
+						//notify
+						const custLogin = await CustomerLogin.findAllInIdArray(
+							customerIdArray,
+							{ "token.mobileDevice": { $exists: true, $ne: [] } },
+							"token",
+							session
+						);
 
-					const uuidArray = [];
-					for (let cl of custLogin) {
-						if (cl.token.mobileDevice) {
-							for (let md of cl.token.mobileDevice) {
-								uuidArray.push(md.uuid);
+						const uuidArray = [];
+						for (let cl of custLogin) {
+							if (cl.token.mobileDevice) {
+								for (let md of cl.token.mobileDevice) {
+									uuidArray.push(md.uuid);
+								}
 							}
 						}
-					}
 
-					const from = { role: "company", id: companyId };
-					const targetCollection = { name: "works", id };
-					const title = "New work is confirmed";
-					const body = `New work: ${workTitle} is confirmed for your area. Check your schedule for pickup date and time.`;
-					const data = { status: "workConfirmed" };
-					await sendToAll(from, "customer", customerIdArray, uuidArray, targetCollection, title, body, data, session);
+						const from = { role: "company", id: companyId };
+						const targetCollection = { name: "works", id };
+						const title = "New work is confirmed";
+						const body = `New work: ${workTitle} is confirmed for your area. Check your schedule for pickup date and time.`;
+						const data = { status: "workConfirmed" };
+						await sendToAll(from, "customer", customerIdArray, uuidArray, targetCollection, title, body, data, session);
+					}
 
 					await Work.findByIdAndUpdate(id, { workStatus: "confirmed" }, { session });
 				} else if (workStatus == "confirmed" && updateData.workStatus == "on progress") {
@@ -247,28 +250,30 @@ class WorkServices {
 					}
 
 					//notify
-					const custLogin = await CustomerLogin.findAllInIdArray(
-						customerIdArray,
-						{ "token.mobileDevice": { $exists: true, $ne: [] } },
-						"token",
-						session
-					);
+					if (customerIdArray.length != 0) {
+						const custLogin = await CustomerLogin.findAllInIdArray(
+							customerIdArray,
+							{ "token.mobileDevice": { $exists: true, $ne: [] } },
+							"token",
+							session
+						);
 
-					const uuidArray = [];
-					for (let cl of custLogin) {
-						if (cl.token.mobileDevice) {
-							for (let md of cl.token.mobileDevice) {
-								uuidArray.push(md.uuid);
+						const uuidArray = [];
+						for (let cl of custLogin) {
+							if (cl.token.mobileDevice) {
+								for (let md of cl.token.mobileDevice) {
+									uuidArray.push(md.uuid);
+								}
 							}
 						}
-					}
 
-					const from = { role: "company", id: companyId };
-					const targetCollection = { name: "works", id };
-					const title = "Work is under progress";
-					const body = `Work: ${workTitle} is under progress in your area. Check your schedule for pickup date and time.`;
-					const data = { status: "workOnProgress" };
-					await sendToAll(from, "customer", customerIdArray, uuidArray, targetCollection, title, body, data, session);
+						const from = { role: "company", id: companyId };
+						const targetCollection = { name: "works", id };
+						const title = "Work is under progress";
+						const body = `Work: ${workTitle} is under progress in your area. Check your schedule for pickup date and time.`;
+						const data = { status: "workOnProgress" };
+						await sendToAll(from, "customer", customerIdArray, uuidArray, targetCollection, title, body, data, session);
+					}
 
 					await Work.findByIdAndUpdate(id, { workStatus: "on progress" }, { session });
 				} else if (workStatus == "on progress" && updateData.workStatus == "finished") {
