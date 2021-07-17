@@ -67,20 +67,21 @@ class StaffGroupServices {
 			this.transactionResults = await session.withTransaction(async () => {
 				const prevStaffGroupData = await StaffGroup.findById(id, { staffId: 1 }, { session });
 				const { staffId } = prevStaffGroupData;
-				const deletedGroupMember = _.difference(staffId, updateData.staffId);
-				const addedGroupMember = _.difference(updateData.staffId, staffId);
-
-				if (deletedGroupMember.length > 0) {
-					for (let gm of deletedGroupMember) {
-						this.result = await StaffDetail.findOneAndUpdate({ staffId: gm }, { staffGroupId: "" }, { session });
-						checkForWriteErrors(this.result, "none", "Staff group update failed");
+				if (updateData.hasOwnProperty("staffId")) {
+					const deletedGroupMember = _.difference(staffId, updateData.staffId);
+					const addedGroupMember = _.difference(updateData.staffId, staffId);
+					if (deletedGroupMember.length > 0) {
+						for (let gm of deletedGroupMember) {
+							this.result = await StaffDetail.findOneAndUpdate({ staffId: gm }, { $unset: { staffGroupId: 1 } }, { session });
+							checkForWriteErrors(this.result, "none", "Staff group update failed");
+						}
 					}
-				}
 
-				if (addedGroupMember.length > 0) {
-					for (let gm of addedGroupMember) {
-						this.result = await StaffDetail.findOneAndUpdate({ staffId: gm }, { staffGroupId: id }, { session });
-						checkForWriteErrors(this.result, "none", "Staff group update failed");
+					if (addedGroupMember.length > 0) {
+						for (let gm of addedGroupMember) {
+							this.result = await StaffDetail.findOneAndUpdate({ staffId: gm }, { staffGroupId: id }, { session });
+							checkForWriteErrors(this.result, "none", "Staff group update failed");
+						}
 					}
 				}
 
@@ -103,16 +104,16 @@ class StaffGroupServices {
 				//removing deleted staffGroupId from the staffDetail collection
 				const tempStaffDetail = await StaffDetail.findByRef("staffGroupId", id, {}, session);
 				for (let sd of tempStaffDetail) {
-					this.result = await StaffDetail.findByIdAndUpdate(sd._id, { staffGroupId: "" }, { session });
+					this.result = await StaffDetail.findByIdAndUpdate(sd._id, { $unset: { staffGroupId: 1 } }, { session });
 					checkForWriteErrors(this.result, "none", "Staff group delete failed");
 				}
 
 				//removing deleted staffgroup from the work collection's staffGroupId field
-				this.result = await Work.updateByRef("staffGroupId", id, { staffGroupId: "" }, session);
+				this.result = await Work.updateByRef("staffGroupId", id, { $unset: { staffGroupId: 1 } }, session);
 				checkForWriteErrors(this.result, "none", "Staff group delete failed");
 
 				//removing deleted staffgroup from the customerRequest collection's staffGroupId field
-				this.result = await CustomerRequest.updateByRef("staffGroupId", id, { staffGroupId: "" }, session);
+				this.result = await CustomerRequest.updateByRef("staffGroupId", id, { $unset: { staffGroupId: 1 } }, session);
 				checkForWriteErrors(this.result, "none", "Staff group delete failed");
 
 				this.result = await StaffGroup.findByIdAndDelete(id, { session });

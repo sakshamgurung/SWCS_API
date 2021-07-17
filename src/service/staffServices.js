@@ -61,9 +61,7 @@ class StaffServices {
 		if (staffInfoType == "staff") {
 			this.result = await StaffLogin.findById(id);
 		} else if (staffInfoType == "staff-detail") {
-			this.result = await StaffDetail.find({ staffId: id })
-				.populate("companyId", "email mobileNo")
-				.populate("staffId", "email mobileNo");
+			this.result = await StaffDetail.find({ staffId: id }).populate("companyId", "email mobileNo").populate("staffId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("staffInfoType not found!!!");
 		}
@@ -74,9 +72,7 @@ class StaffServices {
 		if (staffInfoType == "staff") {
 			this.result = await StaffLogin.findByRef(ref, id, query);
 		} else if (staffInfoType == "staff-detail") {
-			this.result = await StaffDetail.findByRef(ref, id, query)
-				.populate("companyId", "email mobileNo")
-				.populate("staffId", "email mobileNo");
+			this.result = await StaffDetail.findByRef(ref, id, query).populate("companyId", "email mobileNo").populate("staffId", "email mobileNo");
 		} else {
 			throw ApiError.badRequest("staffInfoType not found!!!");
 		}
@@ -107,7 +103,11 @@ class StaffServices {
 					const staffGroupId = tempStaffGroup[0]._id;
 					const staffId = tempStaffGroup[0].staffId;
 					//if staffid is empty and work is assigned notify company
-					await StaffGroup.findByIdAndUpdate(staffGroupId, { staffId }, { session });
+					if (staffId.length == 0) {
+						await StaffGroup.findByIdAndUpdate(staffGroupId, { $unset: { staffId: 1 } }, { session });
+					} else {
+						await StaffGroup.findByIdAndUpdate(staffGroupId, { staffId }, { session });
+					}
 				}
 
 				// update graph
@@ -115,8 +115,17 @@ class StaffServices {
 				const totVehicle = await Vehicle.find({ companyId: companyId.companyId });
 				const toSubs = await Subscription.find({ companyId: companyId.companyId });
 				const toStaff = await StaffLogin.find({ companyId: companyId.companyId });
-				this.graph = new GraphData({ companyId: companyId.companyId, subscribers: toSubs.length, staff: toStaff.length - 1, vehicle: totVehicle.length });
-				console.log("staff console: ", { companyId: companyId.companyId, subscribers: toSubs.length, staff: toStaff.length - 1, vehicle: totVehicle.length }, toStaff.length);
+				this.graph = new GraphData({
+					companyId: companyId.companyId,
+					subscribers: toSubs.length,
+					staff: toStaff.length - 1,
+					vehicle: totVehicle.length,
+				});
+				console.log(
+					"staff console: ",
+					{ companyId: companyId.companyId, subscribers: toSubs.length, staff: toStaff.length - 1, vehicle: totVehicle.length },
+					toStaff.length
+				);
 				await this.graph.save();
 
 				//removing staff notification

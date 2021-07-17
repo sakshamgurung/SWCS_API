@@ -12,7 +12,7 @@ const fileStorage = multer.diskStorage({
 	},
 	filename: (req, file, cb) => {
 		cb(null, "companyimage" + file.originalname);
-	}
+	},
 });
 
 const fileFilter = (req, file, cb) => {
@@ -29,7 +29,7 @@ router.post("/companies", catchAsync(companyController.newCompanyInfo));
 router.get("/companies/:type", catchAsync(companyController.getAllCompany)); //type: company-detail, company-service-detail
 router.get("/companies/:type/:id", catchAsync(companyController.getCompanyById));
 //type:company-detail, company-service-detail
-//ref:companyId
+//r:companyId
 router.get("/companies/:type/:ref/:id", catchAsync(companyController.getCompanyByRef));
 router.put("/companies/:type/:id", catchAsync(companyController.updateCompanyById));
 router.delete("/companies/:id", catchAsync(companyController.deleteCompanyById));

@@ -136,7 +136,7 @@ class WorkServices {
 				const { companyId, workTitle, workStatus, geoObjectTrackId, staffGroupId, vehicleId } = prevWork;
 
 				if (workStatus == "unconfirmed" && updateData.workStatus == "unconfirmed") {
-					if (staffGroupId != updateData.staffGroupId) {
+					if (updateData.hasOwnProperty("staffGroupId") && staffGroupId != updateData.staffGroupId) {
 						//reserving new staffgroup
 						const tempStaffGroup = await StaffGroup.findById(updateData.staffGroupId, { isReserved: 1 }, { session });
 
@@ -150,7 +150,7 @@ class WorkServices {
 						await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: false }, { session });
 					}
 
-					if (vehicleId != updateData.vehicleId) {
+					if (updateData.hasOwnProperty("vehicleId") && vehicleId != updateData.vehicleId) {
 						//reserving new vehicle
 						const tempVehicle = await Vehicle.findById(updateData.vehicleId, { isReserved: 1 }, { session });
 
@@ -163,18 +163,19 @@ class WorkServices {
 						//free previous vehicle
 						await Vehicle.findByIdAndUpdate(vehicleId, { isReserved: false }, { session });
 					}
+					if (updateData.hasOwnProperty("geoObjectTrackId")) {
+						const deletedTrackId = _.difference(geoObjectTrackId, updateData.geoObjectTrackId);
+						const addedTrackId = _.difference(updateData.geoObjectTrackId, geoObjectTrackId);
 
-					const deletedTrackId = _.difference(geoObjectTrackId, updateData.geoObjectTrackId);
-					const addedTrackId = _.difference(updateData.geoObjectTrackId, geoObjectTrackId);
-
-					if (deletedTrackId.length > 0) {
-						for (let t of deletedTrackId) {
-							await Track.findByIdAndUpdate(t, { workId: "" }, { session });
+						if (deletedTrackId.length > 0) {
+							for (let t of deletedTrackId) {
+								await Track.findByIdAndUpdate(t, { $unset: { workId: 1 } }, { session });
+							}
 						}
-					}
-					if (addedTrackId.length > 0) {
-						for (let t of addedTrackId) {
-							await Track.findByIdAndUpdate(t, { workId: id }, { session });
+						if (addedTrackId.length > 0) {
+							for (let t of addedTrackId) {
+								await Track.findByIdAndUpdate(t, { workId: id }, { session });
+							}
 						}
 					}
 
@@ -277,7 +278,7 @@ class WorkServices {
 								await CustomerUsedGeoObject.updateByRef("customerId", customerId, { usedTrack }, session);
 							}
 						}
-						await Track.findByIdAndUpdate(t._id, { workId: "" }, { session });
+						await Track.findByIdAndUpdate(t._id, { $unset: { workId: 1 } }, { session });
 					}
 
 					await Schedule.deleteByRef("workId", id, session);
@@ -306,14 +307,14 @@ class WorkServices {
 				//deleting work ref from geoObjectTrack
 				const tempTrack = await Track.findByRef("workId", id, {}, { _id: 1 }, session);
 				for (let t of tempTrack) {
-					await Track.findByIdAndUpdate(t._id, { workId: "" }, { session });
+					await Track.findByIdAndUpdate(t._id, { $unset: { workId: 1 } }, { session });
 				}
 
 				//free vehicle
 				await StaffGroup.findByIdAndUpdate(staffGroupId, { isReserved: false }, { session });
 
 				//free staffgroup
-				await Vehicle.updateeById(vehicleId, { isReserved: false }, session);
+				await Vehicle.findByIdAndUpdate(vehicleId, { isReserved: false }, session);
 
 				await Work.findByIdAndDelete(id, { session });
 			});

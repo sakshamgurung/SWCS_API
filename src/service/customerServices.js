@@ -113,7 +113,7 @@ class CustomerServices {
 				const opAWD = archiveWasteDump.map((doc) => ({
 					updateOne: {
 						filter: { _id: doc._id },
-						update: { customerId: "" },
+						update: { $unset: { customerId: 1 } },
 					},
 				}));
 

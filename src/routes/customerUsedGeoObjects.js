@@ -1,13 +1,13 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const {CustomerUsedGeoObjectController} = require('../controllers/customerUsedGeoObjectController');
-const catchAsync = require('../error/catchAsync');
+const { CustomerUsedGeoObjectController } = require("../controllers/customerUsedGeoObjectController");
+const catchAsync = require("../error/catchAsync");
 
 const customerUsedGeoObjectController = new CustomerUsedGeoObjectController();
 
-router.get('/customer-used-geo-objects/:id',catchAsync( customerUsedGeoObjectController.getCustomerUsedGeoObjectById));
-//ref:customerId, usedTrack.trackId
-router.get('/customer-used-geo-objects/:ref/:id',catchAsync( customerUsedGeoObjectController.getCustomerUsedGeoObjectByRef));
+router.get("/customer-used-geo-objects/:id", catchAsync(customerUsedGeoObjectController.getCustomerUsedGeoObjectById));
+//r:customerId, usedTrack.trackId
+router.get("/customer-used-geo-objects/:ref/:id", catchAsync(customerUsedGeoObjectController.getCustomerUsedGeoObjectByRef));
 module.exports = router;
 /**
  * auto created when
