@@ -14,6 +14,7 @@ const bcrypt = require("bcryptjs");
 const SuperAdmin = require("../models/superadmin/superadmin");
 const GraphData = require("../models/graph/graphData");
 const { AddToken, AddTokenV2 } = require("../utilities/tokenUtil");
+const validator = require("validator").default;
 
 class AccountServices {
 	constructor() {
@@ -25,6 +26,15 @@ class AccountServices {
 
 	async signUp(role, signUpData) {
 		const { email, mobileNo, password } = signUpData;
+		if (!validator.isEmail(email)) {
+			throw ApiError.badRequest("Email is not valid");
+		}
+		if (_.isEmpty(password)) {
+			throw ApiError.badRequest("Password is empty");
+		}
+		if (_.isEmpty(mobileNo)) {
+			throw ApiError.badRequest("Mobile number is empty");
+		}
 		const encryptedPass = await bcrypt.hash(password, 12);
 
 		const updatedData = await { ...signUpData, password: encryptedPass };
@@ -105,7 +115,12 @@ class AccountServices {
 
 	async login(role, loginData) {
 		const { email, password, deviceId } = loginData;
-
+		if (!validator.isEmail(email)) {
+			throw ApiError.badRequest("Email is not valid");
+		}
+		if (_.isEmpty(password)) {
+			throw ApiError.badRequest("Password is empty");
+		}
 		if (role === "company") {
 			const currentCompanyUser = await CompanyLogin.find({ email });
 
