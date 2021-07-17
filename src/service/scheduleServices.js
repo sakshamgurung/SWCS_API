@@ -19,11 +19,15 @@ class ScheduleServices {
 			if (s.hasOwnProperty("workId")) {
 				const { companyId } = s.workId;
 				const companyDetail = await CompanyDetail.find({ companyId }, "companyId companyName ");
-				s.companyDetail = companyDetail[0];
+				if (!_.isEmpty(companyDetail)) {
+					s.companyDetail = companyDetail[0];
+				}
 			} else if (s.hasOwnProperty("customerRequestId")) {
 				const { companyId } = s.customerRequestId;
 				const companyDetail = await CompanyDetail.find({ companyId }, "companyId companyName ");
-				s.companyDetail = companyDetail[0];
+				if (!_.isEmpty(companyDetail)) {
+					s.companyDetail = companyDetail[0];
+				}
 			}
 		}
 
@@ -38,11 +42,15 @@ class ScheduleServices {
 			if (s.hasOwnProperty("workId")) {
 				const { companyId } = s.workId;
 				const companyDetail = await CompanyDetail.find({ companyId }, "companyId companyName ");
-				s.companyDetail = companyDetail[0];
+				if (!_.isEmpty(companyDetail)) {
+					s.companyDetail = companyDetail[0];
+				}
 			} else if (s.hasOwnProperty("customerRequestId")) {
 				const { companyId } = s.customerRequestId;
 				const companyDetail = await CompanyDetail.find({ companyId }, "companyId companyName ");
-				s.companyDetail = companyDetail[0];
+				if (!_.isEmpty(companyDetail)) {
+					s.companyDetail = companyDetail[0];
+				}
 			}
 		}
 
@@ -59,11 +67,15 @@ class ScheduleServices {
 			if (s.hasOwnProperty("workId")) {
 				const { companyId } = s.workId;
 				const companyDetail = await CompanyDetail.find({ companyId }, "companyId companyName ");
-				s.companyDetail = companyDetail[0];
+				if (!_.isEmpty(companyDetail)) {
+					s.companyDetail = companyDetail[0];
+				}
 			} else if (s.hasOwnProperty("customerRequestId")) {
 				const { companyId } = s.customerRequestId;
 				const companyDetail = await CompanyDetail.find({ companyId }, "companyId companyName ");
-				s.companyDetail = companyDetail[0];
+				if (!_.isEmpty(companyDetail)) {
+					s.companyDetail = companyDetail[0];
+				}
 			}
 		}
 

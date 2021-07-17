@@ -87,7 +87,9 @@ class CompanyServices {
 
 			for (let co of this.result) {
 				const companyDetail = await CompanyDetail.find({ companyId: co._id });
-				co.companyDetail = companyDetail[0];
+				if (companyDetail.length != 0) {
+					co.companyDetail = companyDetail[0];
+				}
 			}
 
 			return this.result;

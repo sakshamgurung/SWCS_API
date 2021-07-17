@@ -36,7 +36,9 @@ class CustomerRequestServices {
 
 		for (let doc of this.result) {
 			const res = await CompanyDetail.find({ companyId: doc.companyId._id }, "companyName companyType companyImage");
-			doc.companyDetail = res[0];
+			if (res.length != 0) {
+				doc.companyDetail = res[0];
+			}
 		}
 
 		return this.result;
@@ -63,7 +65,9 @@ class CustomerRequestServices {
 
 		for (let doc of this.result) {
 			const res = await CompanyDetail.find({ companyId: doc.companyId._id }, "companyName companyType companyImage");
-			doc.companyDetail = res[0];
+			if (res.length != 0) {
+				doc.companyDetail = res[0];
+			}
 		}
 
 		return this.result;

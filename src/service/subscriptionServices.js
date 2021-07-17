@@ -48,7 +48,9 @@ class SubscriptionServices {
 
 		for (let doc of this.result) {
 			const res = await CustomerDetail.find({ customerId: doc.customerId._id });
-			doc.customerDetail = res[0];
+			if (!_.isEmpty(res)) {
+				doc.customerDetail = res[0];
+			}
 		}
 
 		return this.result;
@@ -59,7 +61,9 @@ class SubscriptionServices {
 
 		for (let doc of this.result) {
 			const res = await CompanyDetail.find({ companyId: doc.companyId._id }, "companyName companyType companyImage");
-			doc.companyDetail = res[0];
+			if (!_.isEmpty(res)) {
+				doc.companyDetail = res[0];
+			}
 		}
 		return this.result;
 	}
@@ -135,12 +139,12 @@ class SubscriptionServices {
 											"from.role": "customer",
 											"from.id": customerId,
 											"to.role": "company",
-											"to.id": companyId
-										}
-									]
-								}
-							}
-						}
+											"to.id": companyId,
+										},
+									],
+								},
+							},
+						},
 					],
 					{ session }
 				);
@@ -152,10 +156,10 @@ class SubscriptionServices {
 							filter: {
 								$or: [
 									{ "from.role": "staff", "from.id": doc._id, "to.role": "customer", "to.id": customerId },
-									{ "from.role": "customer", "from.id": customerId, "to.role": "staff", "to.id": doc._id }
-								]
-							}
-						}
+									{ "from.role": "customer", "from.id": customerId, "to.role": "staff", "to.id": doc._id },
+								],
+							},
+						},
 					})),
 					{ session }
 				);

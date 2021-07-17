@@ -44,12 +44,16 @@ class NotificationServices {
 
 				if (doc.targetCollection && doc.targetCollection.name == "works") {
 					const work = await Work.findById(doc.targetCollection.id, "workTitle workStatus");
-					const { _id, workTitle, workStatus } = work;
-					addedData = { ...addedData, workTitle, workStatus, workId: _id };
+					if (!_.isEmpty(work)) {
+						const { _id, workTitle, workStatus } = work;
+						addedData = { ...addedData, workTitle, workStatus, workId: _id };
+					}
 				} else if (doc.targetCollection && doc.targetCollection.name == "customerRequests") {
 					const customerRequest = await CustomerRequest.findById(doc.targetCollection.id, "requestStatus ");
-					const { _id, requestStatus } = customerRequest;
-					addedData = { ...addedData, requestStatus, customerRequestId: _id };
+					if (!_.isEmpty(customerRequest)) {
+						const { _id, requestStatus } = customerRequest;
+						addedData = { ...addedData, requestStatus, customerRequestId: _id };
+					}
 				}
 
 				doc.message.data = { ...doc.message.data, ...addedData };
@@ -68,36 +72,46 @@ class NotificationServices {
 
 				if (doc.targetCollection.name == "works") {
 					const work = await Work.findById(doc.targetCollection.id, "workTitle workStatus");
-					const { _id, workTitle, workStatus } = work;
-					addedData = { ...addedData, workTitle, workStatus, workId: _id };
+					if (!_.isEmpty(work)) {
+						const { _id, workTitle, workStatus } = work;
+						addedData = { ...addedData, workTitle, workStatus, workId: _id };
+					}
 				} else if (doc.targetCollection.name == "customerRequests") {
 					const customerRequest = await CustomerRequest.findById(doc.targetCollection.id, "requestStatus ");
-					const { _id, requestStatus } = customerRequest;
-					addedData = { ...addedData, requestStatus, customerRequestId: _id };
+					if (!_.isEmpty(customerRequest)) {
+						const { _id, requestStatus } = customerRequest;
+						addedData = { ...addedData, requestStatus, customerRequestId: _id };
+					}
 				}
 
 				doc.message.data = { ...doc.message.data, ...addedData };
 			} else if (fromRole == "customer") {
 				const loginInfo = await CustomerLogin.findById(doc.from.id, { email: 1, mobileNo: 1 });
-				const { email, mobileNo } = loginInfo;
-
-				const customerDetail = await CustomerDetail.find({ customerId: doc.from.id }, "contactName businessName");
-				const { contactName, businessName } = customerDetail[0];
-
-				let addedData = {
-					email,
-					mobileNo,
-					contactName: `${contactName.firstName} ${contactName.lastName}`,
-					businessName,
-				};
-
-				if (doc.targetCollection.name == "customerRequests") {
-					const customerRequest = await CustomerRequest.findById(doc.targetCollection.id, "_id ");
-					const { _id } = customerRequest;
-					addedData = { ...addedData, customerRequestId: _id };
+				let email, mobileNo;
+				if (!_.isEmpty(loginInfo)) {
+					email = loginInfo.email;
+					mobileNo = loginInfo.mobileNo;
 				}
 
-				doc.message.data = { ...doc.message.data, ...addedData };
+				const customerDetail = await CustomerDetail.find({ customerId: doc.from.id }, "contactName businessName");
+				if (!_.isEmpty(customerDetail)) {
+					const { contactName, businessName } = customerDetail[0];
+
+					let addedData = {
+						email,
+						mobileNo,
+						contactName: `${contactName.firstName} ${contactName.lastName}`,
+						businessName,
+					};
+
+					if (doc.targetCollection.name == "customerRequests") {
+						const customerRequest = await CustomerRequest.findById(doc.targetCollection.id, "_id ");
+						const { _id } = customerRequest;
+						addedData = { ...addedData, customerRequestId: _id };
+					}
+
+					doc.message.data = { ...doc.message.data, ...addedData };
+				}
 			} else if (fromRole == "superadmin") {
 				const loginInfo = await SuperAdmin.findById(doc.from.id, { email: 1 });
 

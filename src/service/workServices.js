@@ -87,7 +87,9 @@ class WorkServices {
 		for (let w of this.result) {
 			const { companyId } = w;
 			const companyDetail = await CompanyDetail.find({ companyId: companyId._id });
-			w.companyDetail = companyDetail[0];
+			if (!_.isEmpty(companyDetail)) {
+				w.companyDetail = companyDetail[0];
+			}
 		}
 
 		return this.result;
@@ -104,7 +106,9 @@ class WorkServices {
 			this.result = this.result.toObject();
 			const { companyId } = this.result;
 			const companyDetail = await CompanyDetail.find({ companyId: companyId._id }, "companyName companyId");
-			this.result.companyDetail = companyDetail[0];
+			if (!_.isEmpty(companyDetail)) {
+				this.result.companyDetail = companyDetail[0];
+			}
 		}
 
 		return this.result;
@@ -122,7 +126,9 @@ class WorkServices {
 		for (let w of this.result) {
 			const { companyId } = w;
 			const companyDetail = await CompanyDetail.find({ companyId: companyId._id });
-			w.companyDetail = companyDetail[0];
+			if (!_.isEmpty(companyDetail)) {
+				w.companyDetail = companyDetail[0];
+			}
 		}
 
 		return this.result;
