@@ -12,7 +12,10 @@ class AccountController {
 			const result = await accountServices.signUp(role, signUpData);
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Account: signup Error:" + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Account: signup Error:" + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -34,7 +37,10 @@ class AccountController {
 				response.json(result);
 			}
 		} catch (error) {
-			throw ApiError.serverError("Account: login Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Account: login Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -48,8 +54,11 @@ class AccountController {
 
 			result = { status: "super admin create success" };
 			response.json(result);
-		} catch (err) {
-			throw ApiError.serverError("Super Admin Error : " + err.message);
+		} catch (error) {
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Super Admin Error : " + err.message);
+			}
+			throw error;
 		}
 	}
 
@@ -63,7 +72,10 @@ class AccountController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Account: logout Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Account: logout Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

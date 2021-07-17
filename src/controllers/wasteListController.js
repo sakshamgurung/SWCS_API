@@ -11,7 +11,10 @@ class WasteListController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste list Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste list Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -25,7 +28,10 @@ class WasteListController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste list Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste list Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -38,7 +44,10 @@ class WasteListController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste list Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste list Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -52,7 +61,10 @@ class WasteListController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste list by ref Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste list by ref Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -66,7 +78,10 @@ class WasteListController {
 
 			response.status(statusCode).send(status);
 		} catch (error) {
-			throw ApiError.serverError("Waste list Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste list Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -80,7 +95,10 @@ class WasteListController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste list Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste list Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

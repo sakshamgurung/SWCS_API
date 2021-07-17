@@ -11,7 +11,10 @@ class WasteCatalogController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste catalog Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste catalog Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -24,7 +27,10 @@ class WasteCatalogController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste catalog Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste catalog Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -37,7 +43,10 @@ class WasteCatalogController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste catalog Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste catalog Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -51,7 +60,10 @@ class WasteCatalogController {
 
 			response.status(statusCode).send(status);
 		} catch (error) {
-			throw ApiError.serverError("Waste catalog Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste catalog Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -66,7 +78,10 @@ class WasteCatalogController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste catalog Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste catalog Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

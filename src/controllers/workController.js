@@ -11,7 +11,10 @@ class WorkController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Work Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Work Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -25,7 +28,10 @@ class WorkController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Work Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Work Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -38,7 +44,10 @@ class WorkController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Work Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Work Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -52,7 +61,10 @@ class WorkController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Work by ref Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Work by ref Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -66,7 +78,10 @@ class WorkController {
 
 			response.status(statusCode).send(status);
 		} catch (error) {
-			throw ApiError.serverError("Work Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Work Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -81,7 +96,10 @@ class WorkController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("Work Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Work Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

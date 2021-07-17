@@ -12,7 +12,10 @@ class TestController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("TestController Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("TestController Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

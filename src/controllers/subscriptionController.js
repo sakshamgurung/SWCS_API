@@ -12,7 +12,10 @@ class SubscriptionController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Subscription Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Subscription Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 	//for customer
@@ -26,7 +29,10 @@ class SubscriptionController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Subscription Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Subscription Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 	//for company
@@ -40,7 +46,10 @@ class SubscriptionController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Subscription Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Subscription Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 	//for customer
@@ -55,7 +64,10 @@ class SubscriptionController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("Subscription Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Subscription Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

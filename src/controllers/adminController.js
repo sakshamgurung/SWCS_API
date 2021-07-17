@@ -10,7 +10,10 @@ class AdminController {
 			const result = await adminServices.getAdminGraphData();
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Graph Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Graph Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

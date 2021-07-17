@@ -11,7 +11,10 @@ class UtilActionController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Util Action Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Util Action Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

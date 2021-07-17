@@ -11,7 +11,10 @@ class WasteDumpController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste dump object Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste dump object Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -24,7 +27,10 @@ class WasteDumpController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste dump object Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste dump object Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -38,7 +44,10 @@ class WasteDumpController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste dump by ref Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste dump by ref Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -52,7 +61,10 @@ class WasteDumpController {
 
 			response.status(statusCode).send(status);
 		} catch (error) {
-			throw ApiError.serverError("Waste dump object Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste dump object Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -67,7 +79,10 @@ class WasteDumpController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("Waste dump object Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Waste dump object Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

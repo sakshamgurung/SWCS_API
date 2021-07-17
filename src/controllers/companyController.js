@@ -11,7 +11,10 @@ class CompanyController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Company Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Company Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -25,7 +28,10 @@ class CompanyController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("All Company Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("All Company Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -38,7 +44,10 @@ class CompanyController {
 			const result = await companyServices.getCompanyById(companyInfoType, companyId);
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Company by id Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Company by id Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -53,7 +62,10 @@ class CompanyController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Company by ref Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Company by ref Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -68,7 +80,10 @@ class CompanyController {
 
 			response.status(statusCode).send(status);
 		} catch (error) {
-			throw ApiError.serverError("Company Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Company Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -83,7 +98,10 @@ class CompanyController {
 			response.json(result);
 		} catch (error) {
 			console.log("Image upload error : ", error);
-			throw ApiError.serverError("Company Image Upload Error : " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Company Image Upload Error : " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -95,7 +113,10 @@ class CompanyController {
 			const result = await companyServices.getGraphData(companyId);
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Graph Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Graph Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -109,7 +130,10 @@ class CompanyController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("Company Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Company Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

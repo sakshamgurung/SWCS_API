@@ -13,7 +13,10 @@ class CustomerRequestController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Customer request Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Customer request Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -27,7 +30,10 @@ class CustomerRequestController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Customer request Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Customer request Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -40,7 +46,10 @@ class CustomerRequestController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Customer request Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Customer request Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -54,7 +63,10 @@ class CustomerRequestController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("CustomerRequest by ref Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("CustomerRequest by ref Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -69,7 +81,10 @@ class CustomerRequestController {
 
 			response.status(statusCode).send(status);
 		} catch (error) {
-			throw ApiError.serverError("Customer request Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Customer request Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -84,7 +99,10 @@ class CustomerRequestController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("Customer request Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Customer request Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

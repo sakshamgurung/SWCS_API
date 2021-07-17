@@ -14,7 +14,10 @@ class GeoObjectController {
 			const result = await geoObjectServices.createNewGeoObject(geoObjectType, body);
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Geo object Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Geo object Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -29,7 +32,10 @@ class GeoObjectController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Geo object Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Geo object Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -43,7 +49,10 @@ class GeoObjectController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Geo object Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Geo object Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -58,7 +67,10 @@ class GeoObjectController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Geo object by ref Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Geo object by ref Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -74,7 +86,10 @@ class GeoObjectController {
 
 			response.status(statusCode).send(status);
 		} catch (error) {
-			throw ApiError.serverError("Geo object Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Geo object Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -89,7 +104,10 @@ class GeoObjectController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("Geo object Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Geo object Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }

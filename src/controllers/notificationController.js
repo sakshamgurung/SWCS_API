@@ -12,7 +12,10 @@ class NotificationController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Notification Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Notification Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -25,7 +28,10 @@ class NotificationController {
 
 			response.json(result);
 		} catch (error) {
-			throw ApiError.serverError("Notification Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Notification Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 
@@ -39,7 +45,10 @@ class NotificationController {
 
 			response.status(statusCode).json(result);
 		} catch (error) {
-			throw ApiError.serverError("Notification Error: " + error.message);
+			if (error.statusCode == 500) {
+				throw ApiError.serverError("Notification Error: " + error.message);
+			}
+			throw error;
 		}
 	}
 }
