@@ -11,6 +11,8 @@ const StaffGroup = require("../models/staff/staffGroup");
 const Vehicle = require("../models/companies/vehicle");
 const Track = require("../models/companies/geoObjectTrack");
 const CustomerLogin = require("../models/customers/customerLogin");
+const WasteDump = require("../models/customers/wasteDump");
+const Zone = require("../models/companies/geoObjectZone");
 const { sendToAll } = require("../utilities/notificationUtil");
 const ApiError = require("../error/ApiError");
 
@@ -279,6 +281,16 @@ class WorkServices {
 				} else if (workStatus == "on progress" && updateData.workStatus == "finished") {
 					const trackId = await Track.findByRef("workId", id, {}, { _id: 1 }, session);
 					for (let t of trackId) {
+						const archiveTrack = await Track.findById(geoObjectId, {}, { session });
+						const archiveZone = await Zone.find({ companyId: archiveTrack.companyId }, {}, { session });
+						updateData.archive = {
+							trackPoints: archiveTrack.trackPoints,
+							zonePoints: archiveZone.zonePoints,
+						};
+						updateData.isCollected = false;
+
+						await WasteDump.updateMany({ geoObjectId: t._id }, { ...updateData, $unset: { customerId: 1 } }, { session });
+
 						const tempCustomerUsedGeoObject = await CustomerUsedGeoObject.findByRef("usedTrack.trackId", t._id, {}, {}, session);
 						for (let cugo of tempCustomerUsedGeoObject) {
 							_.remove(cugo.usedTrack, (o) => o.trackId == t._id);
