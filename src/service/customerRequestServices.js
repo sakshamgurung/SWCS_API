@@ -4,7 +4,7 @@ const _ = require("lodash");
 const ApiError = require("../error/ApiError");
 const { checkTransactionResults, checkForWriteErrors } = require("../utilities/errorUtil");
 const { customerRequestServerToClient, customerRequestArrayServerToClient } = require("../utilities/geoObjectUtil");
-
+const Staff = require("../models/staff/staffLogin");
 const Subscription = require("../models/common/subscription");
 const CustomerRequest = require("../models/common/customerRequest");
 const CompanyDetail = require("../models/companies/companyDetail");
@@ -12,12 +12,14 @@ const Schedule = require("../models/customers/schedule");
 const StaffGroup = require("../models/staff/staffGroup");
 const Vehicle = require("../models/companies/vehicle");
 const { sendToAll } = require("../utilities/notificationUtil");
+const GraphData = require("../models/graph/graphData");
 
 class CustomerRequestServices {
 	constructor() {
 		this.customerRequest = undefined;
 		this.result = undefined;
 		this.transactionResults = undefined;
+		this.graph = undefined;
 	}
 
 	async createNewCustomerRequest(customerRequestData) {
@@ -127,6 +129,22 @@ class CustomerRequestServices {
 						await CustomerRequest.findByIdAndUpdate(id, { requestStatus: "accepted" }, { session });
 					}
 					const customerIdArray = [customerId];
+
+					// update graph data
+					const totalVehicle = await Vehicle.find({ companyId: companyId });
+					const totalStaff = await Staff.find({ companyId: companyId });
+					const subs = await Subscription.find({ companyId: companyId });
+
+					console.log("Accept customer request", {
+						companyId: companyId,
+						subscribers: subs.length + 1,
+						staff: totalStaff.length,
+						vehicle: totalVehicle.length
+					});
+
+					this.graph = new GraphData({ companyId: companyId, subscribers: subs.length + 1, staff: totalStaff.length, vehicle: totalVehicle.length });
+					await this.graph.save({ session });
+
 					//notify
 					if (customerIdArray.length != 0) {
 						const custLogin = await CustomerLogin.findAllInIdArray(customerIdArray, { "token.mobileDevice": { $exists: true, $ne: [] } }, "token", session);

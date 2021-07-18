@@ -164,21 +164,23 @@ class SubscriptionServices {
 					{ session }
 				);
 
-				//delete subscription
-				await Subscription.findByIdAndDelete(id, { session });
-
 				// update graph data
-				const totalVehicle = await vehicle.find({ companyId: companyId }).estimatedDocumentCount();
-				const totalStaff = await staff.find({ companyId: companyId }).estimatedDocumentCount();
-				const subs = await Subscription.find({ companyId: companyId }).estimatedDocumentCount();
+				const totalVehicle = await vehicle.find({ companyId: companyId });
+				const totalStaff = await staff.find({ companyId: companyId });
+				const subs = await Subscription.find({ companyId: companyId });
+
 				console.log("{ companyId: companyId, subscribers: subs - 1, staff: totalStaff, vehicle: totalVehicle }", {
 					companyId: companyId,
-					subscribers: subs - 1,
-					staff: totalStaff,
-					vehicle: totalVehicle
+					subscribers: subs.length - 1,
+					staff: totalStaff.length,
+					vehicle: totalVehicle.length
 				});
-				this.graph = new GraphData({ companyId: companyId, subscribers: subs - 1, staff: totalStaff, vehicle: totalVehicle });
+
+				this.graph = new GraphData({ companyId: companyId, subscribers: subs.length - 1, staff: totalStaff.length, vehicle: totalVehicle.length });
 				await this.graph.save();
+
+				//delete subscription
+				await Subscription.findByIdAndDelete(id, { session });
 			});
 
 			return checkTransactionResults(this.transactionResults, "status", "Subscription delete transaction failed");
