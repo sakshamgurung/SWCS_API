@@ -88,12 +88,7 @@ class CustomerRequestServices {
 					const customerIdArray = [customerId];
 					//notify
 					if (customerIdArray.length != 0) {
-						const custLogin = await CustomerLogin.findAllInIdArray(
-							customerIdArray,
-							{ "token.mobileDevice": { $exists: true, $ne: [] } },
-							"token",
-							session
-						);
+						const custLogin = await CustomerLogin.findAllInIdArray(customerIdArray, { "token.mobileDevice": { $exists: true, $ne: [] } }, "token", session);
 
 						const uuidArray = [];
 						for (let cl of custLogin) {
@@ -126,7 +121,7 @@ class CustomerRequestServices {
 					} else if (requestType == "one time") {
 						const newSchedule = {
 							customerId,
-							customerRequestId: id,
+							customerRequestId: id
 						};
 						await Schedule.create([newSchedule], { session });
 						await CustomerRequest.findByIdAndUpdate(id, { requestStatus: "accepted" }, { session });
@@ -134,12 +129,7 @@ class CustomerRequestServices {
 					const customerIdArray = [customerId];
 					//notify
 					if (customerIdArray.length != 0) {
-						const custLogin = await CustomerLogin.findAllInIdArray(
-							customerIdArray,
-							{ "token.mobileDevice": { $exists: true, $ne: [] } },
-							"token",
-							session
-						);
+						const custLogin = await CustomerLogin.findAllInIdArray(customerIdArray, { "token.mobileDevice": { $exists: true, $ne: [] } }, "token", session);
 
 						const uuidArray = [];
 						for (let cl of custLogin) {
@@ -192,7 +182,6 @@ class CustomerRequestServices {
 				}
 				await CustomerRequest.findByIdAndDelete(id, { session });
 			});
-
 			return checkTransactionResults(this.transactionResults, "status", "Customer request delete transaction failed");
 		} catch (e) {
 			throw ApiError.serverError("Customer request delete transaction abort due to error: " + e.message);

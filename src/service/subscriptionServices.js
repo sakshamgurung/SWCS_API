@@ -139,12 +139,12 @@ class SubscriptionServices {
 											"from.role": "customer",
 											"from.id": customerId,
 											"to.role": "company",
-											"to.id": companyId,
-										},
-									],
-								},
-							},
-						},
+											"to.id": companyId
+										}
+									]
+								}
+							}
+						}
 					],
 					{ session }
 				);
@@ -156,10 +156,10 @@ class SubscriptionServices {
 							filter: {
 								$or: [
 									{ "from.role": "staff", "from.id": doc._id, "to.role": "customer", "to.id": customerId },
-									{ "from.role": "customer", "from.id": customerId, "to.role": "staff", "to.id": doc._id },
-								],
-							},
-						},
+									{ "from.role": "customer", "from.id": customerId, "to.role": "staff", "to.id": doc._id }
+								]
+							}
+						}
 					})),
 					{ session }
 				);
@@ -171,6 +171,12 @@ class SubscriptionServices {
 				const totalVehicle = await vehicle.find({ companyId: companyId }).estimatedDocumentCount();
 				const totalStaff = await staff.find({ companyId: companyId }).estimatedDocumentCount();
 				const subs = await Subscription.find({ companyId: companyId }).estimatedDocumentCount();
+				console.log("{ companyId: companyId, subscribers: subs - 1, staff: totalStaff, vehicle: totalVehicle }", {
+					companyId: companyId,
+					subscribers: subs - 1,
+					staff: totalStaff,
+					vehicle: totalVehicle
+				});
 				this.graph = new GraphData({ companyId: companyId, subscribers: subs - 1, staff: totalStaff, vehicle: totalVehicle });
 				await this.graph.save();
 			});
