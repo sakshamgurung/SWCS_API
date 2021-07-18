@@ -3,7 +3,7 @@ const ApiError = require("../error/ApiError");
 const fs = require("fs");
 const { checkTransactionResults, checkForWriteErrors } = require("../utilities/errorUtil");
 const { mongooseToPlainObjectArray } = require("../utilities/converter");
-
+const _ = require("lodash");
 const CompanyLogin = require("../models/companies/companyLogin");
 const CompanyDetail = require("../models/companies/companyDetail");
 const CompanyServiceDetail = require("../models/companies/companyServiceDetail");

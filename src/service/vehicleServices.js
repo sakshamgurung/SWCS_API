@@ -7,7 +7,7 @@ const Vehicle = require("../models/companies/vehicle");
 const Work = require("../models/common/work");
 const CustomerRequest = require("../models/common/customerRequest");
 const GraphData = require("../models/graph/graphData");
-
+const _ = require("lodash");
 class VehicleServices {
 	constructor() {
 		this.vehicle = undefined;

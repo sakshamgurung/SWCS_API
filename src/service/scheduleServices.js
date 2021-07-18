@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const Schedule = require("../models/customers/schedule");
 const CompanyDetail = require("../models/companies/companyDetail");
 
@@ -14,7 +15,7 @@ class ScheduleServices {
 			.populate("workId")
 			.populate("customerRequestId", "companyId customerId requestStatus");
 		this.result = mongooseToPlainObjectArray(this.result);
-
+		console.log("afasd", this.result);
 		for (let s of this.result) {
 			if (s.hasOwnProperty("workId")) {
 				const { companyId } = s.workId;
